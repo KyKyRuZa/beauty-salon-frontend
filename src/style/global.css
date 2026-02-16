@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap');
+.page{
+  font-family: 'Jost';
+  line-height: 24px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: hsl(0, 0%, 96%);
+}
+::-webkit-scrollbar {
+  display: none;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}

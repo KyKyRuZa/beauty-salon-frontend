@@ -1,0 +1,90 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  
+}
+
+.main {
+  flex-grow: 1;
+  padding: 40px 60px;
+  margin: 100px 0px;
+  background-color: #fff;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 456px);
+  gap: 30px;
+  justify-content: center;
+}
+
+.card {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: transform 0.3s ease;
+  width: 456px;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+}
+
+.imageWrapper {
+  position: relative;
+  padding-top: 66.67%; 
+  background-size: cover;
+  background-position: center;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
+}
+
+.content {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  color: white;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0 0 8px;
+}
+
+.description {
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 30px 20px;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .imageWrapper {
+    padding-top: 100%; /* 1:1 for mobile */
+  }
+}

@@ -1,0 +1,17 @@
+.recomended-container{
+    margin: 100px 260px;
+}
+
+.recomended-container h1 {
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 40px;
+  color: #333;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  justify-items: center;
+}

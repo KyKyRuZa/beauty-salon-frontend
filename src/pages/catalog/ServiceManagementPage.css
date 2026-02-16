@@ -1,0 +1,22 @@
+.service-management-page {
+  padding: 20px 0;
+  min-height: calc(100vh - 200px); /* Adjust based on header/footer height */
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.service-management-page h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.service-management-page p {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+}

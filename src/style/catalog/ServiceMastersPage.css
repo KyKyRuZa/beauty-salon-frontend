@@ -1,0 +1,92 @@
+.service-masters-page {
+  padding: 20px 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.service-masters-header {
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: #3498db;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-button:hover {
+  text-decoration: underline;
+}
+
+.selected-service-preview {
+  margin: 20px auto;
+  max-width: 350px;
+}
+
+.service-details-section {
+  padding: 0 20px;
+}
+
+.service-details-section h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #333;
+}
+
+.service-details-content {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 25px;
+}
+
+.service-details-content p {
+  margin: 10px 0;
+  line-height: 1.6;
+}
+
+.book-now-button {
+  background-color: #3498db;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  display: block;
+}
+
+.book-now-button:hover {
+  background-color: #2980b9;
+}
+
+.service-actions {
+  text-align: center;
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .service-details-content {
+    padding: 15px;
+  }
+  
+  .selected-service-preview {
+    max-width: 100%;
+  }
+  
+  .book-now-button {
+    max-width: 100%;
+  }
+}

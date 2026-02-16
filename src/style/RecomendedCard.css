@@ -1,0 +1,176 @@
+.master-card {
+  width: 100%;
+  max-width: 340px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 36px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.master-avatar {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.master-info {
+  flex: 1;
+}
+.master-title{
+    display: flex;
+    gap:60px;
+}
+
+.master-role {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: hsl(0, 0%, 10%);
+  margin-bottom: 4px;
+}
+
+.master-name {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: #333;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+}
+
+.rating-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #000;
+}
+
+.star-icon {
+  font-size: 18px !important;
+  color: #ffb400;
+  margin-left: 4px;
+}
+
+.has-edu {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background-color: #f0f0f0;
+  color: #666;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 20px;
+  z-index: 2;   
+  border: none;
+}
+
+.master-card.has-education .has-edu {
+  background-color: #e6f9e6;
+  border: 1px solid green;
+}
+
+.master-details {
+  margin: 12px 0 20px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.detail-icon {
+  font-size: 1rem;
+  color: #777;
+  margin-right: 8px;
+  min-width: 20px;
+}
+
+.detail-text {
+  font-size: 14px;
+  color: #444;
+  line-height: 1.4;
+}
+
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%;
+}
+
+.card-top{
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  width: 100%;
+}
+
+.book-btn {
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 300px;
+}
+
+.book-btn:hover {
+  background-color: #333;
+}
+
+.view-profile-btn {
+  background-color: #FFA9AC;
+  color: #fff;
+  border: 1px solid #ffb6c1;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.view-profile-btn:hover {
+  background-color: #fa8589;
+}
+
+.favorite-btn {
+    padding: 8px;
+    background: none;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.favorite-icon {
+  font-size: 20px !important;
+  color: #333;
+}
+
+.favorite-icon.active {
+  color: #ff4081;
+}

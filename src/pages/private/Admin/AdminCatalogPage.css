@@ -1,0 +1,10 @@
+.admin-catalog-page {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.admin-catalog-page h1 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+}

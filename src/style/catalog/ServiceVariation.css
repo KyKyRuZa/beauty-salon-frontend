@@ -1,0 +1,72 @@
+.service-variation {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  background: white;
+}
+
+.service-variation:hover {
+  background-color: #f9f9f9;
+}
+
+.variation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.variation-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.popular-badge {
+  background-color: #f39c12;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.variation-description {
+  margin: 0 0 12px 0;
+  color: #666;
+}
+
+.variation-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.variation-provider {
+  display: flex;
+  gap: 8px;
+}
+
+.provider-type {
+  background-color: #3498db;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.variation-meta {
+  display: flex;
+  gap: 16px;
+}
+
+.variation-price {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.variation-duration {
+  color: #7f8c8d;
+}
