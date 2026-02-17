@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
-import '../Profile.css';
+import '../../../style/Profile.css';
 import photo from '../../../assets/photo.png';
 import Header from "../../../components/UI/Header";
 import { getCatalogServices as CatalogService } from "../../../api/catalog";
+import BookingHistory from "../../../components/booking/BookingHistory";
+import { getFavorites } from "../../../api/favorites";
 
 const ClientProfile = ({ handleLogout }) => {
   const { user, profile, updateProfile: updateProfileInternal } = useAuth();
@@ -12,28 +14,43 @@ const ClientProfile = ({ handleLogout }) => {
   const [activeSection, setActiveSection] = useState('recommendations');
   const [recommendations, setRecommendations] = useState([]);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
 
 
   // Загрузка рекомендаций при активации секции
   useEffect(() => {
     if (activeSection === 'recommendations') {
       loadRecommendations();
+    } else if (activeSection === 'favorites') {
+      loadFavorites();
     }
   }, [activeSection]);
 
   const loadRecommendations = async () => {
     setLoadingRecommendations(true);
     try {
-      // Получаем все услуги и берем первые 3 как рекомендации
       const response = await CatalogService();
-      // API теперь возвращает услуги в формате { data: [...] }
       const services = response.data.data || [];
       setRecommendations(services.slice(0, 3));
     } catch (error) {
       console.error('Ошибка при загрузке рекомендаций:', error);
-      setRecommendations([]); // В случае ошибки показываем пустой список
+      setRecommendations([]);
     } finally {
       setLoadingRecommendations(false);
+    }
+  };
+
+  const loadFavorites = async () => {
+    setLoadingFavorites(true);
+    try {
+      const response = await getFavorites();
+      setFavorites(response.data || []);
+    } catch (error) {
+      console.error('Ошибка загрузки избранных:', error);
+      setFavorites([]);
+    } finally {
+      setLoadingFavorites(false);
     }
   };
 
@@ -43,11 +60,7 @@ const ClientProfile = ({ handleLogout }) => {
       case 'orders':
         return (
           <section className="section">
-            <h2 className="section-title">МОИ ЗАКАЗЫ</h2>
-            <div className="orders-list">
-                <p>В разработке</p>
-            </div>
-            <button className="btn-primary full-width">Показать все заказы</button>
+            <BookingHistory />
           </section>
         );
 
@@ -84,6 +97,50 @@ const ClientProfile = ({ handleLogout }) => {
                 <p>В разработке</p>
             </div>
             <button className="btn-primary full-width">Показать все отзывы</button>
+          </section>
+        );
+
+      case 'favorites':
+        return (
+          <section className="section">
+            <h2 className="section-title">ИЗБРАННЫЕ МАСТЕРА</h2>
+            {loadingFavorites ? (
+              <p>Загрузка...</p>
+            ) : favorites.length > 0 ? (
+              <div className="favorites-grid">
+                {favorites.map(master => (
+                  <div key={master.id} className="favorite-card">
+                    <img 
+                      src={master.image_url || photo} 
+                      alt={`${master.first_name} ${master.last_name}`}
+                      className="favorite-avatar"
+                    />
+                    <h3>{master.first_name} {master.last_name}</h3>
+                    <p className="favorite-specialty">{master.specialization || 'Специализация не указана'}</p>
+                    <div className="favorite-info">
+                      <span className="material-symbols-outlined icon">star</span>
+                      <span>{master.rating || 'N/A'}</span>
+                    </div>
+                    <button 
+                      className="btn-primary"
+                      onClick={() => navigate(`/provider/${master.id}?type=master`)}
+                    >
+                      Перейти в профиль
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="no-favorites">
+                <p>У вас пока нет избранных мастеров</p>
+                <button 
+                  className="btn-primary"
+                  onClick={() => navigate('/catalog')}
+                >
+                  Найти мастеров
+                </button>
+              </div>
+            )}
           </section>
         );
 
@@ -200,6 +257,14 @@ const ClientProfile = ({ handleLogout }) => {
             >
               <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>shopping_bag</span>
               Мои заказы
+            </button>
+
+            <button
+              className={`sidebar-btn ${activeSection === 'favorites' ? 'active' : ''}`}
+              onClick={() => setActiveSection('favorites')}
+            >
+              <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>favorite</span>
+              Избранное
             </button>
 
             <button

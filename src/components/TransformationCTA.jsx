@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import './TransformationCTA.css';
+import '../style/TransformationCTA.css';
 import womanImage from '../assets/cta-woman.png';
 
 const TransformationCTA = () => {

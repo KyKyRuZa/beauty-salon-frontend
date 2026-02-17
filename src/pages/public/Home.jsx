@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Header from "../../components/UI/Header";
 import Footer from "../../components/UI/Footer";
 import WelcomeBanner from '../../components/WelcomeBanner';

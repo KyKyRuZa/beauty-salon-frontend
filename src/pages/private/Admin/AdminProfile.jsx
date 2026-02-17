@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { getCurrentAdmin, updateCurrentAdmin } from '../../../api/admin';
-import './AdminProfile.css';
+import '../../../style/AdminProfile.css';
 
 const AdminProfile = () => {
   const { user, profile } = useAuth();

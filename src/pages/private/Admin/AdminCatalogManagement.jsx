@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getCatalogCategories, 
-  createCatalogCategory, 
-  updateCatalogCategory, 
-  deleteCatalogCategory 
+import {
+  getCatalogCategories,
+  createCatalogCategory,
+  updateCatalogCategory,
+  deleteCatalogCategory
 } from '../../../api/catalog';
-import './AdminCatalogManagement.css';
+import '../../../style/catalog/AdminCatalogManagement.css';
 
 const AdminCatalogManagement = () => {
   const [categories, setCategories] = useState([]);

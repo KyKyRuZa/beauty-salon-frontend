@@ -1,6 +1,7 @@
 /* CategoryProvidersPage Styles */
 
 .category-providers-page {
+  margin-top: 80px;
   min-height: 100vh;
   background: #f8f9fa;
   padding-bottom: 40px;
@@ -55,10 +56,6 @@
   flex-wrap: wrap;
   gap: 16px;
   align-items: center;
-  padding: 16px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .filter-select {
@@ -126,7 +123,7 @@
 
 .services-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fill, 340px);
   gap: 24px;
 }
 
@@ -138,11 +135,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer;
-}
-
-.provider-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .card-badge {
@@ -173,8 +165,8 @@
 }
 
 .provider-avatar {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border-radius: 12px;
   object-fit: cover;
   flex-shrink: 0;
@@ -309,6 +301,17 @@
 .btn-favorite:hover {
   color: #ff4757;
   border-color: #ff4757;
+}
+
+.btn-favorite.active {
+  color: #ff4757;
+  border-color: #ff4757;
+  background: #fff0f1;
+}
+
+.btn-favorite:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .material-symbols-outlined {

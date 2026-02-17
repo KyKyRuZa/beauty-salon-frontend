@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import ChangePasswordForm from "../../../components/auth/ChangePasswordForm";
 import Header from "../../../components/UI/Header";
-import "../EditProfile.css";
+import "../../../style/EditProfile.css";
 
 const EditProfile = () => {
   const { user, profile, loading: authLoading, updateProfile, getFullProfile, getCurrentUser } = useAuth();

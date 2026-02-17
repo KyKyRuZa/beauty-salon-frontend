@@ -14,10 +14,11 @@ import ServiceManagementPage from './pages/catalog/ServiceManagementPage';
 import AdminCatalogPage from './pages/private/Admin/AdminCatalogPage';
 import ServiceMastersPage from './pages/catalog/ServiceMastersPage';
 import CategoryProvidersPage from './pages/catalog/CategoryProvidersPage';
-import TimeSlotsPage from './pages/catalog/TimeSlotsPage';
+import TimeSlotsSelector from './components/booking/TimeSlotsSelector';
 import AdminPanel from './pages/private/Admin/AdminPanel';
 import AdminProtectedRoute from './components/auth/AdminProtectedRoute';
 import AdminAuthContainer from './pages/public/admin/AdminAuthContainer';
+import ProviderProfile from './pages/public/ProviderProfile';
 
 
 function App() {
@@ -32,7 +33,8 @@ function App() {
               <Route path="/catalog/services/manage" element={<ServiceManagementPage />} />
               <Route path="/catalog/service/:serviceId/masters" element={<ServiceMastersPage />} />
               <Route path="/catalog/category/:categoryId/providers" element={<CategoryProvidersPage />} />
-              <Route path="/catalog/provider/:providerId/timeslots" element={<TimeSlotsPage />} />
+              <Route path="/catalog/provider/:providerId/timeslots" element={<TimeSlotsSelector />} />
+              <Route path="/provider/:providerId" element={<ProviderProfile />} />
               <Route path="/admin/catalog" element={<AdminCatalogPage />} />
               <Route path="/auth" element={<AuthContainer />} />
               <Route path="/admin/auth" element={<AdminAuthContainer />} />

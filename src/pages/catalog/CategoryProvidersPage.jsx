@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCatalog } from '../../context/CatalogContext';
+import { useAuth } from '../../context/AuthContext';
+import { toggleFavorite } from '../../api/favorites';
 import Header from '../../components/UI/Header';
 import Footer from '../../components/UI/Footer';
 import '../../style/catalog/CategoryProvidersPage.css';
@@ -8,7 +10,11 @@ import '../../style/catalog/CategoryProvidersPage.css';
 const CategoryProvidersPage = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const hasLoaded = useRef(false); // Для отслеживания, были ли данные уже загружены
+
+  const [favorites, setFavorites] = useState({}); // { [providerId]: boolean }
+  const [loadingFavorites, setLoadingFavorites] = useState({}); // { [providerId]: boolean }
   
   const {
     selectedCategory,
@@ -93,6 +99,36 @@ const CategoryProvidersPage = () => {
   const handleProfile = useCallback((providerId, type) => {
     navigate(`/provider/${providerId}?type=${type}`);
   }, [navigate]);
+
+  const handleToggleFavorite = useCallback(async (e, providerId, providerType) => {
+    e.stopPropagation();
+
+    if (!user) {
+      alert('Для добавления в избранное необходимо войти в систему');
+      return;
+    }
+
+    // Оптимистичное обновление UI
+    setFavorites(prev => ({
+      ...prev,
+      [providerId]: !prev[providerId]
+    }));
+
+    try {
+      setLoadingFavorites(prev => ({ ...prev, [providerId]: true }));
+      await toggleFavorite(providerId);
+    } catch (error) {
+      console.error('Ошибка переключения избранного:', error);
+      alert(error.response?.data?.message || 'Ошибка при изменении избранного');
+      // Откат изменения при ошибке
+      setFavorites(prev => ({
+        ...prev,
+        [providerId]: !prev[providerId]
+      }));
+    } finally {
+      setLoadingFavorites(prev => ({ ...prev, [providerId]: false }));
+    }
+  }, [user]);
 
   // Трансформация данных для отображения - мемоизируем результат
   const transformedServices = useMemo(() => {
@@ -187,7 +223,6 @@ const CategoryProvidersPage = () => {
           </div>
         </div>
 
-        {/* Grid Section */}
         <div className="services-section">
           <div className="services-grid">
             {transformedServices.map((item) => (
@@ -241,8 +276,14 @@ const CategoryProvidersPage = () => {
                     >
                       ЗАПИСАТЬСЯ
                     </button>
-                    <button className="btn-favorite">
-                      <span className="material-symbols-outlined">favorite_border</span>
+                    <button 
+                      className={`btn-favorite ${favorites[item.provider.id] ? 'active' : ''}`}
+                      onClick={(e) => handleToggleFavorite(e, item.provider.id, item.provider.type)}
+                      disabled={loadingFavorites[item.provider.id]}
+                    >
+                      <span className="material-symbols-outlined">
+                        {favorites[item.provider.id] ? 'favorite' : 'favorite_border'}
+                      </span>
                     </button>
                   </div>
 

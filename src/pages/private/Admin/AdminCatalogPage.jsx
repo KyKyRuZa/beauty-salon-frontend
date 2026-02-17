@@ -1,6 +1,6 @@
 import React from 'react';
 import AdminCatalogManagement from './AdminCatalogManagement';
-import './AdminCatalogPage.css';
+import '../../../style/catalog/AdminCatalogPage.css';
 
 const AdminCatalogPage = () => {
   return (

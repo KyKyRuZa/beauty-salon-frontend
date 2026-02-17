@@ -9,7 +9,7 @@ import ServicesManagement from './ServicesManagement';
 import OrdersManagement from './OrdersManagement';
 import AdminsManagement from './AdminsManagement';
 import AdminProfile from './AdminProfile';
-import './AdminPanel.css';
+import '../../../style/catalog/AdminPanel.css';
 
 const AdminPanel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);

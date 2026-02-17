@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
-import '../Profile.css';
+import '../../../style/Profile.css';
 import photo from '../../../assets/photo.png';
 import Header from "../../../components/UI/Header";
 import { ServiceManagement } from "../../../components/catalog";
+import ReviewsList from "../../../components/reviews/ReviewsList";
 
 const SalonProfile = ({ handleLogout }) => {
   const { user, profile, updateProfile: updateProfileInternal } = useAuth();
@@ -55,6 +56,18 @@ const SalonProfile = ({ handleLogout }) => {
             <ServiceManagement />
           </section>
         );
+
+      case 'reviews':
+        return (
+          <section className="section">
+            <h2 className="section-title">ОТЗЫВЫ КЛИЕНТОВ</h2>
+            <ReviewsList
+              salonId={profile?.id}
+              showForm={false}
+            />
+          </section>
+        );
+
       case 'settings':
         return (
           <section className="section">
@@ -206,6 +219,14 @@ const SalonProfile = ({ handleLogout }) => {
             >
               <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>work_outline</span>
               Услуги
+            </button>
+
+            <button
+              className={`sidebar-btn ${activeSection === 'reviews' ? 'active' : ''}`}
+              onClick={() => setActiveSection('reviews')}
+            >
+              <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>star_border</span>
+              Отзывы
             </button>
 
             <button

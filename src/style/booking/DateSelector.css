@@ -1,0 +1,100 @@
+/* DateSelector Styles */
+
+.date-selector {
+  margin-bottom: 30px;
+}
+
+.date-selector-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px;
+}
+
+.dates-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.date-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 10px;
+  background: white;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 80px;
+}
+
+.date-item:hover:not(.disabled) {
+  border-color: #ff6b8a;
+  background: #fff5f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 138, 0.2);
+}
+
+.date-item.selected {
+  background: #ff6b8a;
+  border-color: #ff6b8a;
+  color: white;
+}
+
+.date-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f5f5f5;
+}
+
+.date-day-name {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 5px;
+  text-transform: capitalize;
+}
+
+.date-full {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.date-item.selected .date-day-name,
+.date-item.selected .date-full {
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dates-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  .date-item {
+    padding: 12px 8px;
+    min-height: 70px;
+  }
+
+  .date-day-name {
+    font-size: 12px;
+  }
+
+  .date-full {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dates-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .date-item {
+    padding: 10px 6px;
+    min-height: 60px;
+  }
+}

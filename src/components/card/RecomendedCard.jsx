@@ -1,21 +1,63 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { toggleFavorite, checkFavorite } from '../../api/favorites';
 import '../../style/RecomendedCard.css';
 
 const RecomendedCard = ({
-  education = false, 
-  name, 
-  specialty, 
-  location, 
-  workHours, 
-  rating, 
+  education = false,
+  name,
+  specialty,
+  location,
+  workHours,
+  rating,
   photoUrl,
-  isFavorite = false,
-  onToggleFavorite,
+  masterId,
+  isFavorite: parentIsFavorite,
+  onToggleFavorite: parentOnToggleFavorite,
   onBook,
   onViewProfile,
   role = 'master',
 }) => {
+  const { user } = useAuth();
+  const [isFavorite, setIsFavorite] = useState(parentIsFavorite || false);
   const roleLabel = role === 'salon' ? 'Салон красоты' : 'Бьюти-мастер';
+
+  // Проверка статуса избранного при загрузке
+  useEffect(() => {
+    if (user && masterId && parentIsFavorite === undefined) {
+      checkFavoriteStatus();
+    }
+  }, [masterId, user]);
+
+  const checkFavoriteStatus = async () => {
+    try {
+      const response = await checkFavorite(masterId);
+      setIsFavorite(response.data.isFavorite);
+    } catch (error) {
+      console.error('Ошибка проверки статуса избранного:', error);
+    }
+  };
+
+  const handleToggleFavorite = async (e) => {
+    e.stopPropagation();
+
+    if (!user) {
+      alert('Для добавления в избранное необходимо войти в систему');
+      return;
+    }
+
+    try {
+      const response = await toggleFavorite(masterId);
+      setIsFavorite(response.data.added);
+
+      if (parentOnToggleFavorite) {
+        parentOnToggleFavorite(masterId, response.data.added);
+      }
+    } catch (error) {
+      console.error('Ошибка переключения избранного:', error);
+      alert(error.response?.data?.message || 'Ошибка при изменении избранного');
+    }
+  };
 
   return (
     <div className={`master-card ${education ? 'has-education' : ''}`}>
@@ -63,7 +105,7 @@ const RecomendedCard = ({
           </button>
           <button
             className="favorite-btn"
-            onClick={onToggleFavorite}
+            onClick={handleToggleFavorite}
             aria-label={isFavorite ? "Убрать из избранного" : "Добавить в избранное"}
           >
             <span

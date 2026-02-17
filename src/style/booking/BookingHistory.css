@@ -1,0 +1,227 @@
+.booking-history-container {
+  padding: 1rem 0;
+}
+
+.booking-history-loading,
+.booking-history-error {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #999;
+}
+
+.booking-history-error {
+  color: #c00;
+  background: #fee;
+  border-radius: 8px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Фильтры */
+.booking-filters {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.filter-btn {
+  background: #f5f5f5;
+  color: #666;
+  border: none;
+  padding: 0.5rem 1.25rem;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+  background: #eee;
+}
+
+.filter-btn.active {
+  background: #ff6b8a;
+  color: white;
+}
+
+/* Список записей */
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.no-bookings {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #999;
+  background: #f9f9f9;
+  border-radius: 12px;
+}
+
+/* Карточка бронирования */
+.booking-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border-left: 4px solid #ccc;
+}
+
+.booking-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.booking-card.status-pending {
+  border-left-color: #ffb400;
+}
+
+.booking-card.status-confirmed {
+  border-left-color: #4caf50;
+}
+
+.booking-card.status-cancelled {
+  border-left-color: #f44336;
+}
+
+.booking-card.status-completed {
+  border-left-color: #2196f3;
+}
+
+.booking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.service-info {
+  flex: 1;
+}
+
+.service-name {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.master-name {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.master-name .icon {
+  font-size: 1.25rem;
+}
+
+.booking-status {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.booking-status.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.booking-status.status-confirmed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.booking-status.status-cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.booking-status.status-completed {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+/* Детали бронирования */
+.booking-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+.detail-item .icon {
+  font-size: 1.25rem;
+  color: #ff6b8a;
+}
+
+/* Действия */
+.booking-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.btn-cancel {
+  background: transparent;
+  color: #f44336;
+  border: 2px solid #f44336;
+  padding: 0.6rem 1.5rem;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background: #f44336;
+  color: white;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .booking-header {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .booking-status {
+    align-self: flex-start;
+  }
+
+  .booking-filters {
+    justify-content: flex-start;
+  }
+
+  .booking-actions {
+    justify-content: stretch;
+  }
+
+  .btn-cancel {
+    width: 100%;
+  }
+}

@@ -5,7 +5,7 @@ import ClientProfile from "./Client/ClientProfile";
 import MasterProfile from "./Master/MasterProfile";
 import SalonProfile from "./Salon/SalonProfile";
 import Header from "../../components/UI/Header";
-import './Profile.css';
+import '../../style/Profile.css';
 
 const Profile = () => {
   const { user, loading: authLoading, logout } = useAuth();

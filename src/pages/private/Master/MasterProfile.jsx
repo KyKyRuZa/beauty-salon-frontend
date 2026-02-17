@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
-import '../Profile.css';
+import '../../../style/Profile.css';
 import photo from '../../../assets/photo.png';
 import Header from "../../../components/UI/Header";
 import { ServiceManagement } from "../../../components/catalog";
+import ReviewsList from "../../../components/reviews/ReviewsList";
 
 const MasterProfile = ({ handleLogout }) => {
   const { user, profile, updateProfile: updateProfileInternal } = useAuth();
@@ -57,10 +58,10 @@ const MasterProfile = ({ handleLogout }) => {
         return (
           <section className="section">
             <h2 className="section-title">ОТЗЫВЫ КЛИЕНТОВ</h2>
-            <div className="reviews-list">
-              <p>В разработке</p>
-            </div>
-            <button className="btn-primary full-width">Показать все отзывы</button>
+            <ReviewsList
+              masterId={profile?.id}
+              showForm={false}
+            />
           </section>
         );
       

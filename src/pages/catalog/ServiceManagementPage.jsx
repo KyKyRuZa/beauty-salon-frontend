@@ -1,6 +1,6 @@
 import React from 'react';
 import { ServiceManagement } from '../../components/catalog';
-import './ServiceManagementPage.css';
+import '../../style/catalog/ServiceManagementPage.css';
 
 const ServiceManagementPage = () => {
   return (
