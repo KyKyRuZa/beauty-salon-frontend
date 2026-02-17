@@ -93,7 +93,7 @@ const CategoryProvidersPage = () => {
   }, [services, getMasterImage, getSalonImage, providerImages]);
 
   const handleBook = useCallback((service) => {
-    navigate(`/catalog/provider/${service.provider.id}/service/${service.id}/timeslots?type=${service.provider.type}`);
+    navigate(`/catalog/provider/${service.provider.id}/timeslots?type=${service.provider.type}&service=${service.id}`);
   }, [navigate]);
 
   const handleProfile = useCallback((providerId, type) => {

@@ -6,6 +6,7 @@ import photo from '../../../assets/photo.png';
 import Header from "../../../components/UI/Header";
 import { ServiceManagement } from "../../../components/catalog";
 import ReviewsList from "../../../components/reviews/ReviewsList";
+import MasterSchedule from "../../../components/master/MasterSchedule";
 
 const MasterProfile = ({ handleLogout }) => {
   const { user, profile, updateProfile: updateProfileInternal } = useAuth();
@@ -39,10 +40,7 @@ const MasterProfile = ({ handleLogout }) => {
         return (
           <section className="section">
             <h2 className="section-title">МОЁ РАСПИСАНИЕ</h2>
-            <div className="orders-list">
-                <p>В разработке</p>
-            </div>
-            <button className="btn-primary full-width">Управлять расписанием</button>
+            <MasterSchedule />
           </section>
         );
 

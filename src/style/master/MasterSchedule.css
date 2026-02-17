@@ -1,0 +1,540 @@
+.master-schedule {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.schedule-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.date-picker {
+  padding: 10px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.date-picker:hover {
+  border-color: #7b61ff;
+}
+
+.date-picker:focus {
+  outline: none;
+  border-color: #7b61ff;
+}
+
+/* Schedule Creator */
+.schedule-creator {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.creator-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.creator-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.availability-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #e8f5e9;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #2e7d32;
+}
+
+.availability-info .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.btn-load-availability {
+  padding: 4px 12px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-load-availability:hover {
+  background: #43a047;
+}
+
+.creator-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  flex: 1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 140px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #666;
+}
+
+.time-input,
+.duration-input {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  transition: border-color 0.2s;
+}
+
+.time-input:hover,
+.duration-input:hover {
+  border-color: #7b61ff;
+}
+
+.time-input:focus,
+.duration-input:focus {
+  outline: none;
+  border-color: #7b61ff;
+}
+
+.duration-input {
+  width: 80px;
+}
+
+.btn-create-schedule {
+  padding: 10px 20px;
+  background: #7b61ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-create-schedule:hover {
+  background: #6a4feb;
+}
+
+.btn-create-schedule:active {
+  background: #5a3ed8;
+}
+
+/* Slots Section */
+.slots-section {
+  margin-top: 24px;
+}
+
+.slots-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.slots-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.btn-add-slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: #7b61ff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-add-slot:hover {
+  background: #6a4feb;
+}
+
+.btn-add-slot .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* Loading & Error */
+.loading,
+.error {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+.error {
+  color: #d32f2f;
+  background: #ffebee;
+  border-radius: 8px;
+}
+
+/* No Slots */
+.no-slots {
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+}
+
+.no-slots .material-symbols-outlined {
+  font-size: 48px;
+  color: #ccc;
+  margin-bottom: 12px;
+}
+
+.no-slots p {
+  margin: 8px 0;
+}
+
+.no-slots .hint {
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* Slots List */
+.slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #4caf50;
+  transition: box-shadow 0.2s;
+}
+
+.slot-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.slot-item.booked {
+  border-left-color: #ff9800;
+  background: #fff3e0;
+}
+
+.slot-item.blocked {
+  border-left-color: #f44336;
+  background: #ffebee;
+}
+
+.slot-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.slot-time .start-time {
+  font-size: 16px;
+}
+
+.slot-time .separator {
+  color: #999;
+}
+
+.slot-time .end-time {
+  font-size: 16px;
+  color: #666;
+}
+
+.slot-status {
+  flex: 1;
+  margin-left: 24px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-badge.free {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.booked {
+  background: #ffe0b2;
+  color: #e65100;
+}
+
+.status-badge.blocked {
+  background: #ffcdd2;
+  color: #c62828;
+}
+
+.slot-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.slot-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-edit {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.btn-edit:hover {
+  background: #bbdefb;
+}
+
+.btn-delete {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.btn-delete:hover {
+  background: #ffcdd2;
+}
+
+.slot-actions .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: #f5f5f5;
+}
+
+.modal-close .material-symbols-outlined {
+  font-size: 20px;
+  color: #666;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.modal-form .form-group {
+  gap: 6px;
+}
+
+.modal-form .time-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.modal-actions button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-cancel {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #e0e0e0;
+}
+
+.btn-cancel:hover {
+  background: #eeeeee;
+}
+
+.btn-confirm {
+  background: #7b61ff;
+  color: #fff;
+  border: none;
+}
+
+.btn-confirm:hover {
+  background: #6a4feb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .schedule-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .date-picker {
+    width: 100%;
+  }
+
+  .creator-form {
+    flex-direction: column;
+  }
+
+  .form-row {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .form-group {
+    width: 100%;
+  }
+
+  .time-input,
+  .duration-input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .btn-create-schedule {
+    width: 100%;
+  }
+
+  .slots-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-add-slot {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .slot-item {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .slot-status {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .slot-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}

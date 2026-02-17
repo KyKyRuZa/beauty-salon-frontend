@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { getMyBookings, cancelBooking } from '../../api/booking';
 import '../../style/booking/BookingHistory.css';
 
-/**
- * Компонент истории бронирований для клиента
- */
 const BookingHistory = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);

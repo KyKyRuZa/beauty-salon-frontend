@@ -1,13 +1,6 @@
 import React from 'react';
 import '../../style/booking/DateSelector.css';
 
-/**
- * Компонент выбора даты
- * @param {Object} props
- * @param {Array} props.availableDates - Массив доступных дат [{date: '2026-02-16', available: true}]
- * @param {string} props.selectedDate - Выбранная дата
- * @param {function} props.onDateSelect - Callback при выборе даты
- */
 const DateSelector = ({ availableDates = [], selectedDate, onDateSelect }) => {
   // Если нет доступных дат, генерируем следующие 7 дней
   const dates = availableDates.length > 0 

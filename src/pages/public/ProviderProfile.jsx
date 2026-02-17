@@ -86,8 +86,9 @@ const ProviderProfile = () => {
     }
   };
 
-  const handleBook = () => {
-    navigate(`/catalog/provider/${providerId}/timeslots?type=${providerType}`);
+  const handleBook = (serviceId) => {
+    const url = `/catalog/provider/${providerId}/timeslots?type=${providerType}${serviceId ? `&service=${serviceId}` : ''}`;
+    navigate(url);
   };
 
   const handleWriteReview = () => {
