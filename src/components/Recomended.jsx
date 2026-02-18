@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../style/Recomended.css';
+import '../styles/Recomended.css';
 import RecomendedCard from './card/RecomendedCard';
 import photo from '../assets/photo.png';
 

@@ -1,6 +1,6 @@
 import api from './api';
 import { z } from 'zod';
-import { updateUserSchema } from '../validation';
+import { updateUserSchema } from '../validations';
 
 class UserService {
   // Получение профиля текущего пользователя

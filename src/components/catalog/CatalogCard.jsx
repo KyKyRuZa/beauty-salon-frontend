@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import '../../style/catalog/CatalogCard.css';
+import '../../styles/catalog/CatalogCard.css';
 
 const CatalogCard = ({ service, onClick }) => {
   return (

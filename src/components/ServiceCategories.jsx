@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import '../style/ServiceCategories.css';
+import '../styles/ServiceCategories.css';
 import firstImage from '../assets/1.png';
 import secondImage from '../assets/2.png';
 import thirdImage from '../assets/3.png';

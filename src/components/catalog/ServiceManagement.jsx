@@ -12,7 +12,7 @@ import {
   getCatalogCategories
 } from '../../api/catalog';
 import api from '../../api/api';
-import '../../style/catalog/ServiceManagement.css';
+import '../../styles/catalog/ServiceManagement.css';
 
 const ServiceManagement = () => {
   const [services, setServices] = useState([]);

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { getCatalogCategories } from '../../api/catalog';
 import { useNavigate } from 'react-router-dom';
 import ServiceCategory from '../../components/catalog/ServiceCategory';
-import Header from '../../components/UI/Header';
-import Footer from '../../components/UI/Footer';
-import '../../style/catalog/CatalogPage.css';
+import Header from '../../components/ui/Header';
+import Footer from '../../components/ui/Footer';
+import '../../styles/catalog/CatalogPage.css';
 
 const CatalogPage = () => {
   const navigate = useNavigate();

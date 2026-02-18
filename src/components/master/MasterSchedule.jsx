@@ -4,16 +4,23 @@ import {
   createTimeSlot,
   updateTimeSlot,
   deleteTimeSlot,
-  getAvailabilityWithSlots
+  getAvailabilityWithSlots,
+  setAvailability
 } from '../../api/timeslots';
-import '../../style/master/MasterSchedule.css';
+import { getMasterServices } from '../../api/catalog';
+import { useAuth } from '../../context/AuthContext';
+import '../../styles/master/MasterSchedule.css';
 
 const MasterSchedule = () => {
+  const { profile } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [slots, setSlots] = useState([]);
   const [availabilityData, setAvailabilityData] = useState(null); // Расписание на дату
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedService, setSelectedService] = useState(''); // Выбранная услуга
+  const [masterServices, setMasterServices] = useState([]); // Услуги мастера
+  const [loadingServices, setLoadingServices] = useState(true);
 
   // Состояние для модального окна создания/редактирования
   const [modalOpen, setModalOpen] = useState(false);
@@ -30,24 +37,88 @@ const MasterSchedule = () => {
     slot_duration: 60
   });
 
-  // Загрузка слотов при изменении даты
+  // Загрузка услуг мастера
+  useEffect(() => {
+    loadMasterServices();
+  }, []);
+
+  const loadMasterServices = async () => {
+    try {
+      setLoadingServices(true);
+      const response = await getMasterServices();
+      console.log('Загрузка услуг мастера, ответ:', response);
+      
+      // Получаем данные из ответа
+      // response.data.data - массив услуг, response.data.success - флаг успеха
+      const servicesData = response?.data?.data || response?.data || response;
+      
+      if (servicesData && Array.isArray(servicesData)) {
+        setMasterServices(servicesData);
+        console.log('Услуги мастера загружены:', servicesData);
+        // Если есть хотя бы одна услуга, выбираем первую по умолчанию
+        if (servicesData.length > 0) {
+          setSelectedService(servicesData[0].id.toString());
+          console.log('Выбрана услуга по умолчанию:', servicesData[0].id, servicesData[0].name);
+        }
+      } else {
+        console.warn('Услуги мастера не получены или пустые:', servicesData);
+        setMasterServices([]);
+      }
+    } catch (err) {
+      console.error('Ошибка загрузки услуг мастера:', err);
+      setError('Не удалось загрузить услуги мастера');
+    } finally {
+      setLoadingServices(false);
+    }
+  };
+
+  // Загрузка слотов при изменении даты и выбранной услуги
   useEffect(() => {
     loadScheduleAndSlots(selectedDate);
-  }, [selectedDate]);
+  }, [selectedDate, selectedService]);
 
   const loadScheduleAndSlots = async (date) => {
     setLoading(true);
     setError(null);
     try {
-      console.log('Загрузка расписания со слотами для даты:', date);
+      console.log('Загрузка расписания со слотами для даты:', date, 'услуга:', selectedService);
+      
+      // Если услуга не выбрана, не загружаем слоты
+      if (!selectedService) {
+        console.log('Услуга не выбрана, пропускаем загрузку слотов');
+        setSlots([]);
+        setAvailabilityData(null);
+        setLoading(false);
+        return;
+      }
+      
+      // Получаем master_id из профиля (profile.id для мастера)
+      const masterId = profile?.id;
+      console.log('MasterSchedule: masterId из profile:', masterId, 'profile:', profile);
+      
+      if (!masterId) {
+        console.error('MasterSchedule: masterId не найден');
+        setSlots([]);
+        setAvailabilityData(null);
+        setLoading(false);
+        return;
+      }
+      
       // Получаем расписание со слотами
-      const response = await getAvailabilityWithSlots(date);
+      const response = await getAvailabilityWithSlots(date, masterId);
       console.log('Ответ getAvailabilityWithSlots:', response);
 
       if (response.data) {
         setAvailabilityData(response.data);
-        setSlots(response.data.slots || []);
-        console.log('Установлены слоты из расписания:', response.data.slots?.length);
+        let loadedSlots = response.data.slots || [];
+
+        // Фильтруем слоты по выбранной услуге или null (универсальные)
+        loadedSlots = loadedSlots.filter(slot =>
+          slot.service_id === parseInt(selectedService) || slot.service_id === null
+        );
+
+        setSlots(loadedSlots);
+        console.log('Установлены слоты из расписания:', loadedSlots?.length);
       } else {
         setAvailabilityData(null);
         setSlots([]);
@@ -59,11 +130,19 @@ const MasterSchedule = () => {
       // Если расписания нет (404), пробуем загрузить только слоты
       try {
         console.log('Пробуем загрузить только слоты...');
-        const slotsResponse = await getMasterSlots({ date });
+        const masterId = profile?.id;
+        const slotsResponse = await getMasterSlots({ date, master_id: masterId });
         console.log('Ответ getMasterSlots:', slotsResponse);
-        setSlots(slotsResponse.data || []);
+
+        let loadedSlots = slotsResponse.data || [];
+        // Фильтруем слоты по выбранной услуге или null (универсальные)
+        loadedSlots = loadedSlots.filter(slot =>
+          slot.service_id === parseInt(selectedService) || slot.service_id === null
+        );
+
+        setSlots(loadedSlots);
         setAvailabilityData(null);
-        console.log('Установлены слоты напрямую:', slotsResponse.data?.length);
+        console.log('Установлены слоты напрямую:', loadedSlots?.length);
       } catch (slotsErr) {
         console.error('Ошибка getMasterSlots:', slotsErr.response?.data);
         setError('Не удалось загрузить расписание');
@@ -85,11 +164,20 @@ const MasterSchedule = () => {
 
   const handleOpenEditModal = (slot) => {
     setEditingSlot(slot);
-    const startTime = new Date(slot.start_time);
-    const endTime = new Date(slot.end_time);
+    
+    // Парсим время из строки формата YYYY-MM-DDTHH:mm:ss или ISO
+    const parseTime = (timeString) => {
+      if (!timeString) return '00:00';
+      // Извлекаем время из строки
+      const timePart = timeString.includes('T') 
+        ? timeString.split('T')[1].substring(0, 5) 
+        : timeString.substring(0, 5);
+      return timePart;
+    };
+    
     setSlotForm({
-      start_time: startTime.toTimeString().slice(0, 5),
-      end_time: endTime.toTimeString().slice(0, 5)
+      start_time: parseTime(slot.start_time),
+      end_time: parseTime(slot.end_time)
     });
     setModalOpen(true);
   };
@@ -101,6 +189,17 @@ const MasterSchedule = () => {
 
   const handleSaveSlot = async () => {
     try {
+      // Создаём дату с локальным временем и конвертируем в формат YYYY-MM-DDTHH:mm:ss
+      const formatLocalTime = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      };
+      
       const startDateTime = new Date(`${selectedDate}T${slotForm.start_time}`);
       const endDateTime = new Date(`${selectedDate}T${slotForm.end_time}`);
 
@@ -111,13 +210,13 @@ const MasterSchedule = () => {
 
       if (editingSlot) {
         await updateTimeSlot(editingSlot.id, {
-          start_time: startDateTime.toISOString(),
-          end_time: endDateTime.toISOString()
+          start_time: formatLocalTime(startDateTime),
+          end_time: formatLocalTime(endDateTime)
         });
       } else {
         await createTimeSlot({
-          start_time: startDateTime.toISOString(),
-          end_time: endDateTime.toISOString()
+          start_time: formatLocalTime(startDateTime),
+          end_time: formatLocalTime(endDateTime)
         });
       }
 
@@ -145,22 +244,32 @@ const MasterSchedule = () => {
     console.log('=== handleCreateSchedule START ===');
     console.log('scheduleForm:', scheduleForm);
     console.log('selectedDate:', selectedDate);
-    
+    console.log('selectedService:', selectedService);
+
+    // Валидация: услуга обязательна
+    if (!selectedService) {
+      alert('Выберите услугу');
+      return;
+    }
+
     // Значения по умолчанию, если форма пуста
     const startTime = scheduleForm.start_time || '09:00';
     const endTime = scheduleForm.end_time || '18:00';
     const slotDuration = scheduleForm.slot_duration || 60;
-    
-    console.log('Подготовленные данные:', { startTime, endTime, slotDuration });
-    
+
+    console.log('Подготовленные данные:', { startTime, endTime, slotDuration, serviceId: selectedService });
+
     try {
-      console.log('Вызов setAvailabilityData...');
-      const response = await setAvailabilityData({
+      console.log('Вызов setAvailability...');
+      const requestData = {
         date: selectedDate,
         start_time: startTime,
         end_time: endTime,
-        slot_duration: parseInt(slotDuration)
-      });
+        slot_duration: parseInt(slotDuration),
+        service_id: parseInt(selectedService) // Обязательно передаём service_id
+      };
+      
+      const response = await setAvailability(requestData);
       console.log('Расписание создано:', response);
       await loadScheduleAndSlots(selectedDate);
       alert('Расписание успешно создано');
@@ -173,6 +282,18 @@ const MasterSchedule = () => {
   };
 
   const formatTime = (dateString) => {
+    if (!dateString) return '';
+    
+    // Если строка содержит время в формате HH:mm:ss или HH:mm
+    if (dateString.includes(':')) {
+      // Извлекаем время из строки (например, "09:00:00" или "2026-02-18T09:00:00.000Z")
+      const timePart = dateString.includes('T') 
+        ? dateString.split('T')[1].substring(0, 5) 
+        : dateString.substring(0, 5);
+      return timePart;
+    }
+    
+    // Для обычных Date строк
     const date = new Date(dateString);
     return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
   };
@@ -211,8 +332,12 @@ const MasterSchedule = () => {
             <div className="availabilityData-info">
               <span className="material-symbols-outlined">schedule</span>
               <span>
-                {availabilityData.start_time} - {availabilityData.end_time} 
+                {availabilityData.start_time} - {availabilityData.end_time}
                 (слот по {availabilityData.slot_duration || 60} мин)
+                {availabilityData.service_id && (() => {
+                  const service = masterServices.find(s => s.id === availabilityData.service_id);
+                  return service ? ` • ${service.name}` : '';
+                })()}
               </span>
               <button
                 onClick={() => {
@@ -221,6 +346,7 @@ const MasterSchedule = () => {
                     end_time: availabilityData.end_time,
                     slot_duration: availabilityData.slot_duration || 60
                   });
+                  setSelectedService(availabilityData.service_id?.toString() || '');
                 }}
                 className="btn-load-availabilityData"
               >
@@ -229,48 +355,77 @@ const MasterSchedule = () => {
             </div>
           )}
         </div>
-        <div className="creator-form">
-          <div className="form-row">
-            <div className="form-group">
-              <label>Начало работы</label>
-              <input
-                type="time"
-                value={scheduleForm.start_time}
-                onChange={(e) => setScheduleForm({ ...scheduleForm, start_time: e.target.value })}
-                className="time-input"
-              />
-            </div>
-            <div className="form-group">
-              <label>Окончание работы</label>
-              <input
-                type="time"
-                value={scheduleForm.end_time}
-                onChange={(e) => setScheduleForm({ ...scheduleForm, end_time: e.target.value })}
-                className="time-input"
-              />
-            </div>
-            <div className="form-group">
-              <label>Длительность слота (мин)</label>
-              <input
-                type="number"
-                value={scheduleForm.slot_duration}
-                onChange={(e) => setScheduleForm({ ...scheduleForm, slot_duration: e.target.value })}
-                min="15"
-                step="15"
-                className="duration-input"
-              />
-            </div>
+        
+        {loadingServices ? (
+          <div className="loading-services">Загрузка услуг...</div>
+        ) : masterServices.length === 0 ? (
+          <div className="no-services">
+            <p>У вас пока нет услуг. Сначала создайте услугу в каталоге.</p>
           </div>
-          <button onClick={handleCreateSchedule} className="btn-create-schedule">
-            Создать расписание на день
-          </button>
-        </div>
+        ) : (
+          <div className="creator-form">
+            <div className="form-row">
+              <div className="form-group">
+                <label>Услуга *</label>
+                <select
+                  value={selectedService}
+                  onChange={(e) => setSelectedService(e.target.value)}
+                  className="service-select"
+                >
+                  {masterServices.map(service => (
+                    <option key={service.id} value={service.id}>
+                      {service.name} ({service.price} ₽)
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Начало работы</label>
+                <input
+                  type="time"
+                  value={scheduleForm.start_time}
+                  onChange={(e) => setScheduleForm({ ...scheduleForm, start_time: e.target.value })}
+                  className="time-input"
+                />
+              </div>
+              <div className="form-group">
+                <label>Окончание работы</label>
+                <input
+                  type="time"
+                  value={scheduleForm.end_time}
+                  onChange={(e) => setScheduleForm({ ...scheduleForm, end_time: e.target.value })}
+                  className="time-input"
+                />
+              </div>
+              <div className="form-group">
+                <label>Длительность слота (мин)</label>
+                <input
+                  type="number"
+                  value={scheduleForm.slot_duration}
+                  onChange={(e) => setScheduleForm({ ...scheduleForm, slot_duration: e.target.value })}
+                  min="15"
+                  step="15"
+                  className="duration-input"
+                />
+              </div>
+            </div>
+            <button onClick={handleCreateSchedule} className="btn-create-schedule" disabled={!selectedService}>
+              Создать расписание на день
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Список слотов */}
       <div className="slots-section">
         <div className="slots-header">
-          <h4 className="slots-title">Слоты на {formatDate(selectedDate)}</h4>
+          <h4 className="slots-title">
+            Слоты на {formatDate(selectedDate)}
+            {selectedService && (() => {
+              const service = masterServices.find(s => s.id === parseInt(selectedService));
+              return service ? ` • ${service.name}` : '';
+            })()}
+          </h4>
           <button onClick={handleOpenCreateModal} className="btn-add-slot">
             <span className="material-symbols-outlined">add</span>
             Добавить слот
@@ -290,42 +445,61 @@ const MasterSchedule = () => {
 
         {!loading && !error && slots.length > 0 && (
           <div className="slots-list">
-            {slots.map((slot) => (
-              <div key={slot.id} className={`slot-item ${slot.status}`}>
-                <div className="slot-time">
-                  <span className="start-time">{formatTime(slot.start_time)}</span>
-                  <span className="separator">-</span>
-                  <span className="end-time">{formatTime(slot.end_time)}</span>
+            {slots.map((slot) => {
+              // Находим название услуги для слота
+              const service = masterServices.find(s => s.id === slot.service_id);
+              
+              return (
+                <div key={slot.id} className={`slot-item ${slot.status}`}>
+                  <div className="slot-time">
+                    <span className="start-time">{formatTime(slot.start_time)}</span>
+                    <span className="separator">-</span>
+                    <span className="end-time">{formatTime(slot.end_time)}</span>
+                  </div>
+                  <div className="slot-info">
+                    {service && (
+                      <span className="service-name" title={service.name}>
+                        
+                        {service.name}
+                      </span>
+                    )}
+                    {!service && !slot.service_id && (
+                      <span className="service-name universal">
+                        <span className="material-symbols-outlined">all_inclusive</span>
+                        Все услуги
+                      </span>
+                    )}
+                  </div>
+                  <div className="slot-status">
+                    <span className={`status-badge ${slot.status}`}>
+                      {slot.status === 'free' && 'Свободен'}
+                      {slot.status === 'booked' && 'Забронирован'}
+                      {slot.status === 'blocked' && 'Заблокирован'}
+                    </span>
+                  </div>
+                  <div className="slot-actions">
+                    {slot.status === 'free' && (
+                      <>
+                        <button
+                          onClick={() => handleOpenEditModal(slot)}
+                          className="btn-edit"
+                          title="Редактировать"
+                        >
+                          <span className="material-symbols-outlined">edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSlot(slot.id)}
+                          className="btn-delete"
+                          title="Удалить"
+                        >
+                          <span className="material-symbols-outlined">delete</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
-                <div className="slot-status">
-                  <span className={`status-badge ${slot.status}`}>
-                    {slot.status === 'free' && 'Свободен'}
-                    {slot.status === 'booked' && 'Забронирован'}
-                    {slot.status === 'blocked' && 'Заблокирован'}
-                  </span>
-                </div>
-                <div className="slot-actions">
-                  {slot.status === 'free' && (
-                    <>
-                      <button
-                        onClick={() => handleOpenEditModal(slot)}
-                        className="btn-edit"
-                        title="Редактировать"
-                      >
-                        <span className="material-symbols-outlined">edit</span>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSlot(slot.id)}
-                        className="btn-delete"
-                        title="Удалить"
-                      >
-                        <span className="material-symbols-outlined">delete</span>
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

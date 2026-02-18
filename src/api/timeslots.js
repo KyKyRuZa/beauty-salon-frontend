@@ -52,8 +52,21 @@ export const getAvailability = async (params) => {
   return response.data;
 };
 
-export const getAvailabilityWithSlots = async (date) => {
-  const response = await api.get(`/availability/${date}`);
+export const getAvailabilityWithSlots = async (date, masterId = null) => {
+  const params = {};
+  if (masterId) {
+    params.master_id = masterId;
+  }
+  const response = await api.get(`/availability/${date}`, { params });
+  return response.data;
+};
+
+export const getAvailableDates = async (masterId, serviceId = null) => {
+  const params = { master_id: masterId };
+  if (serviceId) {
+    params.service_id = serviceId;
+  }
+  const response = await api.get('/availability/available-dates', { params });
   return response.data;
 };
 

@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCatalogServiceById } from '../../api/catalog';
 import ServiceCatalogCard from '../../components/catalog/ServiceCatalogCard';
-import Header from '../../components/UI/Header';
-import Footer from '../../components/UI/Footer';
-import '../../style/catalog/ServiceMastersPage.css';
+import Header from '../../components/ui/Header';
+import Footer from '../../components/ui/Footer';
+import '../../styles/catalog/ServiceMastersPage.css';
 
 const ServiceMastersPage = () => {
   const { serviceId } = useParams();

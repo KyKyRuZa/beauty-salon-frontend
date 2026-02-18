@@ -1,25 +1,27 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import '../../style/catalog/ServiceCategory.css';
+import '../../styles/catalog/ServiceCategory.css';
 
 const ServiceCategory = ({ category, onClick }) => {
   return (
     <div className="service-category" onClick={() => onClick(category)}>
       {category.image_url && (
-        <img 
-          src={category.image_url} 
-          alt={category.name} 
+        <div
           className="category-image"
-          onError={(e) => {
-            e.target.style.display = 'none';
-          }}
+          style={{ backgroundImage: `url(${category.image_url})` }}
         />
       )}
       <div className="category-content">
-        <h3 className="category-title">{category.name}</h3>
+        <div className="category-header">
+          <h3 className="category-title">{category.name}</h3>
+          <span className="category-arrow">›</span>
+        </div>
         <p className="category-description">
           {category.description || 'Описание отсутствует'}
         </p>
+        <button className="btn-select" onClick={(e) => e.stopPropagation()}>
+          ВЫБРАТЬ САЛОН / МАСТЕРА
+        </button>
       </div>
     </div>
   );

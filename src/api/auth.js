@@ -1,6 +1,6 @@
 import api from './api'
 import { z } from 'zod';
-import { registerSchema, loginSchema, profileEditSchema, adminRegisterSchema, adminLoginSchema } from '../validation';
+import { registerSchema, loginSchema, profileEditSchema, adminRegisterSchema, adminLoginSchema } from '../validations';
 
 class AuthService {
   constructor() {

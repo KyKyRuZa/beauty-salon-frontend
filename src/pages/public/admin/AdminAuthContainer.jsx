@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Header from '../../../components/UI/Header';
-import AdminLoginForm from '../../../components/auth/AdminLoginForm';
-import AdminRegisterForm from '../../../components/auth/AdminRegisterForm';
-import "../../../style/auth/AuthContainer.css";
+import Header from '../../../components/ui/Header';
+import AdminLoginForm from '../../../components/admin/AdminLoginForm';
+import AdminRegisterForm from '../../../components/admin/AdminRegisterForm';
+import "../../../styles/auth/AuthContainer.css";
 
 const AdminAuthContainer = () => {
   const navigate = useNavigate();

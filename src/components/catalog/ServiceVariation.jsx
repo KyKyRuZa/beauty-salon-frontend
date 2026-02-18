@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import '../../style/catalog/ServiceVariation.css';
+import '../../styles/catalog/ServiceVariation.css';
 
 const ServiceVariation = ({ variation, onSelect }) => {
   // Форматирование времени для отображения

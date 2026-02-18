@@ -1,12 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import '../style/TransformationCTA.css';
+import '../styles/TransformationCTA.css';
 import womanImage from '../assets/cta-woman.png';
 
 const TransformationCTA = () => {
   return (
     <section className="transformation-cta">
-      <div className="container">
+      <div className="cta-container">
         <div className="cta-content">
           <div className="cta-text">
             <h2 className="cta-title">
@@ -16,7 +16,7 @@ const TransformationCTA = () => {
               Выберите услугу, салон, мастера и удобное время. Всё рядом и без лишних звонков —
               красота начинается с одного клика.
             </p>
-            <Link to="/booking" className="btn btn-primary">
+            <Link to="/booking" className="btn btn-cta">
               ЗАПИСАТЬСЯ НА ПРИЕМ
             </Link>
           </div>

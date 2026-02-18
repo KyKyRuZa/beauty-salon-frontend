@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import '../../style/catalog/ServiceCatalogCard.css';
+import '../../styles/catalog/ServiceCatalogCard.css';
 
 const ServiceCatalogCard = ({ service, onClick }) => {
   // Форматирование цены

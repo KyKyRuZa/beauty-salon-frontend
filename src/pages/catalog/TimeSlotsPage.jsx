@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import Header from '../../components/UI/Header';
-import Footer from '../../components/UI/Footer';
+import Header from '../../components/ui/Header';
+import Footer from '../../components/ui/Footer';
 import DateSelector from '../../components/booking/DateSelector';
 import TimeSlotsSelector from '../../components/booking/TimeSlotsSelector';
 import { createBooking, getAvailableSlots } from '../../api/booking';
-import '../../style/booking/TimeSlotsPage.css';
+import '../../styles/booking/TimeSlotsPage.css';
 
 const TimeSlotsPage = () => {
   const { providerId } = useParams();
@@ -31,20 +31,35 @@ const TimeSlotsPage = () => {
 
   const loadAvailableSlots = async (date) => {
     try {
-      // Форматируем дату в YYYY-MM-DD
-      const dateStr = new Date(date + 'T00:00:00').toISOString().split('T')[0];
-      
+      const dateStr = date;
+
       const params = {
         master_id: type === 'master' ? parseInt(providerId) : 1,
         date: dateStr
       };
-      
+
       if (serviceId) {
         params.service_id = parseInt(serviceId);
       }
 
+      console.log('Загрузка слотов для мастера', params.master_id, 'дата:', dateStr, 'услуга:', serviceId);
+
       const response = await getAvailableSlots(params);
-      setAvailableSlots(response.data || []);
+
+      let slots = response.data || [];
+      console.log('Загруженные слоты:', slots);
+
+      if (serviceId) {
+        slots = slots.filter(slot =>
+          slot.service_id === parseInt(serviceId) || slot.service_id === null
+        );
+        console.log('Отфильтрованные слоты для услуги', serviceId, ':', slots);
+      } else {
+        // Если serviceId не указан, показываем все слоты
+        console.log('serviceId не указан, показываем все слоты:', slots.length);
+      }
+
+      setAvailableSlots(slots);
       setSelectedSlot(null);
     } catch (error) {
       console.error('Ошибка загрузки слотов:', error);
@@ -56,6 +71,7 @@ const TimeSlotsPage = () => {
   };
 
   const handleDateSelect = (date) => {
+    console.log('handleDateSelect: выбрана дата', date, 'type:', typeof date);
     setSelectedDate(date);
   };
 
@@ -77,17 +93,23 @@ const TimeSlotsPage = () => {
       return;
     }
 
+    if (!serviceId) {
+      alert('Услуга не выбрана');
+      return;
+    }
+
     try {
       const bookingData = {
         master_id: type === 'master' ? parseInt(providerId) : 1,
-        master_service_id: serviceId ? parseInt(serviceId) : 1,
-        start_time: new Date(`${selectedDate}T${selectedSlot.start_time}`).toISOString(),
-        end_time: new Date(`${selectedDate}T${selectedSlot.end_time}`).toISOString(),
+        master_service_id: parseInt(serviceId),
+        time_slot_id: selectedSlot.id,
+        start_time: selectedSlot.start_time,
+        end_time: selectedSlot.end_time,
         comment: bookingComment
       };
 
       await createBooking(bookingData);
-      
+
       alert('Запись успешно создана!');
       setBookingModalOpen(false);
       navigate('/profile');
@@ -114,6 +136,8 @@ const TimeSlotsPage = () => {
             <DateSelector
               selectedDate={selectedDate}
               onDateSelect={handleDateSelect}
+              masterId={type === 'master' ? parseInt(providerId) : 1}
+              serviceId={serviceId ? parseInt(serviceId) : null}
             />
 
             {selectedDate && (
@@ -132,12 +156,7 @@ const TimeSlotsPage = () => {
                   <div className="summary-item">
                     <span className="material-symbols-outlined">calendar_today</span>
                     <span>
-                      {new Date(selectedDate + 'T00:00:00').toLocaleDateString('ru-RU', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
+                      {formatSelectedDate(selectedDate)}
                     </span>
                   </div>
                   <div className="summary-item">
@@ -165,19 +184,14 @@ const TimeSlotsPage = () => {
             <button className="modal-close" onClick={() => setBookingModalOpen(false)}>
               <span className="material-symbols-outlined">close</span>
             </button>
-            
+
             <h2 className="modal-title">Подтверждение записи</h2>
-            
+
             <div className="modal-details">
               <div className="detail-row">
                 <span className="detail-label">Дата:</span>
                 <span className="detail-value">
-                  {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('ru-RU', {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric'
-                  }) : '-'}
+                  {selectedDate ? formatSelectedDate(selectedDate) : '-'}
                 </span>
               </div>
               <div className="detail-row">
@@ -218,10 +232,22 @@ const TimeSlotsPage = () => {
 
 const formatTime = (timeString) => {
   if (!timeString) return '';
-  const time = timeString.includes('T') 
+  const time = timeString.includes('T')
     ? timeString.split('T')[1].substring(0, 5)
     : timeString;
   return time;
+};
+
+const formatSelectedDate = (dateString) => {
+  // Парсим дату как локальную
+  const [year, month, day] = dateString.split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  return date.toLocaleDateString('ru-RU', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
 };
 
 const generateMockSlots = () => {

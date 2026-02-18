@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "../validation/zodResolver";
-import { changePasswordSchema } from "../../validation";
+import { zodResolver } from "../../validations/zodResolver";
+import { changePasswordSchema } from "../../validations";
 import auth from "../../api/auth";
 
 const ChangePasswordForm = () => {

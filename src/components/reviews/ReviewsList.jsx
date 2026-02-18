@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getMasterReviews, getSalonReviews, createReview } from '../../api/reviews';
 import { useAuth } from '../../context/AuthContext';
-import '../../style/ReviewsList.css';
+import '../../styles/ReviewsList.css';
 
 /**
  * Компонент списка отзывов

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Header from '../../components/UI/Header';
-import Footer from '../../components/UI/Footer';
+import Header from '../../components/ui/Header';
+import Footer from '../../components/ui/Footer';
 import ReviewsList from '../../components/reviews/ReviewsList';
 import { useAuth } from '../../context/AuthContext';
 import { toggleFavorite, checkFavorite } from '../../api/favorites';
-import '../../style/ProviderProfile.css';
+import '../../styles/ProviderProfile.css';
 
 const ProviderProfile = () => {
   const { providerId, type = 'master' } = useParams();

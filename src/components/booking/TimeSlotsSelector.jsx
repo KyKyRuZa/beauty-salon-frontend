@@ -1,15 +1,25 @@
 import React from 'react';
-import '../../style/booking/TimeSlotsSelector.css';
+import '../../styles/booking/TimeSlotsSelector.css';
 
-const TimeSlotsSelector = ({ 
-  availableSlots = [], 
-  selectedSlot, 
+const TimeSlotsSelector = ({
+  availableSlots = [],
+  selectedSlot,
   onSlotSelect,
-  selectedDate 
+  selectedDate
 }) => {
+  const formatSelectedDate = (dateString) => {
+    // Парсим дату как локальную
+    const [year, month, day] = dateString.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long'
+    });
+  };
+
   const formatTime = (timeString) => {
     if (!timeString) return '';
-    const time = timeString.includes('T') 
+    const time = timeString.includes('T')
       ? timeString.split('T')[1].substring(0, 5)
       : timeString;
     return time;
@@ -30,10 +40,7 @@ const TimeSlotsSelector = ({
     return (
       <div className="time-slots-selector">
         <h3 className="time-slots-title">
-          Доступное время на {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('ru-RU', {
-            day: 'numeric',
-            month: 'long'
-          }) : 'выбранную дату'}
+          Доступное время на {selectedDate ? formatSelectedDate(selectedDate) : 'выбранную дату'}
         </h3>
         <div className="no-slots">
           <span className="material-symbols-outlined">event_busy</span>
@@ -47,10 +54,7 @@ const TimeSlotsSelector = ({
   return (
     <div className="time-slots-selector">
       <h3 className="time-slots-title">
-        Доступное время на {selectedDate ? new Date(selectedDate + 'T00:00:00').toLocaleDateString('ru-RU', {
-          day: 'numeric',
-          month: 'long'
-        }) : 'выбранную дату'}
+        Доступное время на {selectedDate ? formatSelectedDate(selectedDate) : 'выбранную дату'}
       </h3>
       
       <div className="time-slots-grid">

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import ClientProfile from "./Client/ClientProfile";
-import MasterProfile from "./Master/MasterProfile";
-import SalonProfile from "./Salon/SalonProfile";
-import Header from "../../components/UI/Header";
-import '../../style/Profile.css';
+import ClientProfile from "./client/ClientProfile";
+import MasterProfile from "./master/MasterProfile";
+import SalonProfile from "./salon/SalonProfile";
+import Header from "../../components/ui/Header";
+import '../../styles/Profile.css';
 
 const Profile = () => {
   const { user, loading: authLoading, logout } = useAuth();

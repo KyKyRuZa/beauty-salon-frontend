@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getMyBookings, cancelBooking } from '../../api/booking';
-import '../../style/booking/BookingHistory.css';
+import '../../styles/booking/BookingHistory.css';
 
 const BookingHistory = () => {
   const [bookings, setBookings] = useState([]);

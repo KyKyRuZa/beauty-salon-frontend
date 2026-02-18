@@ -1,6 +1,6 @@
 import api from './api';
 import { z } from 'zod';
-import { createCategorySchema, updateCategorySchema, adminUpdateSchema } from '../validation';
+import { createCategorySchema, updateCategorySchema, adminUpdateSchema } from '../validations';
 
 // API для административных функций
 

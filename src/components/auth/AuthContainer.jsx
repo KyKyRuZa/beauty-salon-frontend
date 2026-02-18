@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Header from '../UI/Header';
+import Header from '../ui/Header';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
-import "../../style/auth/AuthContainer.css"
+import "../../styles/auth/AuthContainer.css"
 
 const AuthContainer = () => {
   const navigate = useNavigate();

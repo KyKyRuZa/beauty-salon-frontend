@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCatalogServiceById, getServiceVariations } from '../../api/catalog';
 import ServiceVariation from '../../components/catalog/ServiceVariation';
-import '../../style/catalog/ServiceDetailPage.css';
+import '../../styles/catalog/ServiceDetailPage.css';
 
 const ServiceDetailPage = () => {
   const { id } = useParams();

@@ -1,10 +1,11 @@
 import React from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { appointmentSchema } from '../../validation';
+import { appointmentSchema } from '../../validations';
 import InputMask from "react-input-mask";
 import { useSearchParams } from 'react-router-dom';
-import '../../style/booking/BookingForm.css'
+import { createBooking } from '../../api/booking';
+import '../../styles/booking/BookingForm.css'
 
 const formatAppointmentDate = (dateString, timeString) => {
   const date = new Date(dateString);
@@ -55,7 +56,9 @@ const BookingForm = () => {
   const type = searchParams.get('type');
   const date = searchParams.get('date');
   const time = searchParams.get('time');
-  
+  const masterId = searchParams.get('master_id');
+  const serviceId = searchParams.get('service_id');
+
   const {
     register,
     handleSubmit,
@@ -80,8 +83,23 @@ const BookingForm = () => {
   try {
     console.log("Отправляемые данные:", data);
 
-    const response = await sendAppointmentToBot(data);
-    console.log("Ответ сервера:", response);
+    // Если есть masterId и serviceId, создаём бронирование через новую систему
+    if (masterId && serviceId) {
+      const bookingData = {
+        master_id: parseInt(masterId),
+        master_service_id: parseInt(serviceId),
+        start_time: new Date(`${data.date}T${data.time}`).toISOString(),
+        end_time: new Date(`${data.date}T${data.time}`).toISOString(), // Будет рассчитано на сервере
+        comment: `Клиент: ${data.name}, Телефон: ${data.phone}`
+      };
+      
+      const response = await createBooking(bookingData);
+      console.log("Ответ сервера:", response);
+    } else {
+      // Старая логика - отправка в бот
+      const response = await sendAppointmentToBot(data);
+      console.log("Ответ сервера:", response);
+    }
 
     alert("Заявка отправлена успешно! Ожидайте подтверждения записи.");
     reset({

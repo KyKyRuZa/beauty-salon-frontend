@@ -1,6 +1,6 @@
 import api from './api';
 import { z } from 'zod';
-import { createCategorySchema, updateCategorySchema, createServiceSchema, updateServiceSchema, createMasterServiceSchema, updateMasterServiceSchema } from '../validation';
+import { createCategorySchema, updateCategorySchema, createServiceSchema, updateServiceSchema, createMasterServiceSchema, updateMasterServiceSchema } from '../validations';
 
 // API для работы с каталогом услуг
 

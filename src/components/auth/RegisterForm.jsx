@@ -2,9 +2,9 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import auth from "../../api/auth";
 import { useNavigate } from "react-router-dom";
-import { zodResolver } from "../validation/zodResolver";
-import { getRegisterSchema } from "../../validation"; // Используем центральный экспорт
-import "../../style/auth/AuthForms.css"
+import { zodResolver } from "../../validations/zodResolver";
+import { getRegisterSchema } from "../../validations"; // Используем центральный экспорт
+import "../../styles/auth/AuthForms.css"
 
 const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
   const navigate = useNavigate();

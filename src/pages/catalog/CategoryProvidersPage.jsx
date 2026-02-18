@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useCatalog } from '../../context/CatalogContext';
 import { useAuth } from '../../context/AuthContext';
 import { toggleFavorite } from '../../api/favorites';
-import Header from '../../components/UI/Header';
-import Footer from '../../components/UI/Footer';
-import '../../style/catalog/CategoryProvidersPage.css';
+import Header from '../../components/ui/Header';
+import Footer from '../../components/ui/Footer';
+import '../../styles/catalog/CategoryProvidersPage.css';
 
 const CategoryProvidersPage = () => {
   const { categoryId } = useParams();

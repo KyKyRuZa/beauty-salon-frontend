@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { toggleFavorite, checkFavorite } from '../../api/favorites';
-import '../../style/RecomendedCard.css';
+import '../../styles/RecomendedCard.css';
 
 const RecomendedCard = ({
   education = false,
