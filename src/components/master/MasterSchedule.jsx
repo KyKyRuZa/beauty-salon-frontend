@@ -1,21 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   getMasterSlots,
   createTimeSlot,
   updateTimeSlot,
   deleteTimeSlot,
-  createSchedule,
-  setAvailability,
-  getAvailabilityWithSlots,
-  updateAvailability,
-  deleteAvailability
+  getAvailabilityWithSlots
 } from '../../api/timeslots';
 import '../../style/master/MasterSchedule.css';
 
 const MasterSchedule = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [slots, setSlots] = useState([]);
-  const [availability, setAvailability] = useState(null); // Расписание на дату
+  const [availabilityData, setAvailabilityData] = useState(null); // Расписание на дату
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -49,11 +45,11 @@ const MasterSchedule = () => {
       console.log('Ответ getAvailabilityWithSlots:', response);
 
       if (response.data) {
-        setAvailability(response.data);
+        setAvailabilityData(response.data);
         setSlots(response.data.slots || []);
         console.log('Установлены слоты из расписания:', response.data.slots?.length);
       } else {
-        setAvailability(null);
+        setAvailabilityData(null);
         setSlots([]);
         console.log('Расписание не найдено');
       }
@@ -66,7 +62,7 @@ const MasterSchedule = () => {
         const slotsResponse = await getMasterSlots({ date });
         console.log('Ответ getMasterSlots:', slotsResponse);
         setSlots(slotsResponse.data || []);
-        setAvailability(null);
+        setAvailabilityData(null);
         console.log('Установлены слоты напрямую:', slotsResponse.data?.length);
       } catch (slotsErr) {
         console.error('Ошибка getMasterSlots:', slotsErr.response?.data);
@@ -158,8 +154,8 @@ const MasterSchedule = () => {
     console.log('Подготовленные данные:', { startTime, endTime, slotDuration });
     
     try {
-      console.log('Вызов setAvailability...');
-      const response = await setAvailability({
+      console.log('Вызов setAvailabilityData...');
+      const response = await setAvailabilityData({
         date: selectedDate,
         start_time: startTime,
         end_time: endTime,
@@ -211,22 +207,22 @@ const MasterSchedule = () => {
       <div className="schedule-creator">
         <div className="creator-header">
           <h4 className="creator-title">Быстрое создание расписания</h4>
-          {availability && availability.start_time && availability.end_time && (
-            <div className="availability-info">
+          {availabilityData && availabilityData.start_time && availabilityData.end_time && (
+            <div className="availabilityData-info">
               <span className="material-symbols-outlined">schedule</span>
               <span>
-                {availability.start_time} - {availability.end_time} 
-                (слот по {availability.slot_duration || 60} мин)
+                {availabilityData.start_time} - {availabilityData.end_time} 
+                (слот по {availabilityData.slot_duration || 60} мин)
               </span>
               <button
                 onClick={() => {
                   setScheduleForm({
-                    start_time: availability.start_time,
-                    end_time: availability.end_time,
-                    slot_duration: availability.slot_duration || 60
+                    start_time: availabilityData.start_time,
+                    end_time: availabilityData.end_time,
+                    slot_duration: availabilityData.slot_duration || 60
                   });
                 }}
-                className="btn-load-availability"
+                className="btn-load-availabilityData"
               >
                 Загрузить
               </button>

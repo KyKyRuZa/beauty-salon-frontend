@@ -31,7 +31,9 @@ export const setAvailability = async (availabilityData) => {
   console.log('setAvailability API вызов с данными:', availabilityData);
   try {
     console.log('Отправка POST запроса на /availability...');
+    
     const response = await api.post('/availability', availabilityData);
+    
     console.log('setAvailability API ответ:', response.data);
     console.log('=== setAvailability SUCCESS ===');
     return response.data;
@@ -40,6 +42,7 @@ export const setAvailability = async (availabilityData) => {
     console.error('Ошибка:', error);
     console.error('Ответ сервера:', error.response?.data);
     console.error('Статус:', error.response?.status);
+    console.error('Заголовки:', error.response?.headers);
     throw error;
   }
 };

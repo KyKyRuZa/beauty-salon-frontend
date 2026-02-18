@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
 // Base validation schemas
-export const emailSchema = z.string().email('Invalid email address');
+export const emailSchema = z.string()
+  .transform((val) => val?.trim())
+  .pipe(z.string().email('Invalid email address'));
 export const passwordSchema = z.string()
   .min(8, 'Password must be at least 8 characters')
   .max(100, 'Password must be less than 100 characters')

@@ -6,10 +6,16 @@ export const adminRegisterSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   confirmPassword: z.string(),
-  firstName: nameSchema,
-  lastName: nameSchema,
-  phone: z.string(),
-  role: z.enum(['admin', 'superadmin']),
+  first_name: nameSchema,
+  last_name: nameSchema,
+  phone: z.string().min(10, 'Введите корректный номер телефона'),
+  termsAccepted: z.boolean().transform((val) => val === true).refine(
+    (val) => val === true,
+    { message: 'Необходимо принять условия политики конфиденциальности' }
+  ),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Пароли не совпадают',
+  path: ['confirmPassword'],
 });
 
 export const adminLoginSchema = z.object({

@@ -17,10 +17,21 @@ const AdminRegisterForm = ({ onSwitchToLogin }) => {
     formState: { errors, isSubmitting },
     reset,
     setValue,
-    setError
+    setError,
+    watch
   } = useForm({
-    resolver: zodResolver(adminRegisterSchema)
+    resolver: zodResolver(adminRegisterSchema),
+    mode: 'onSubmit',
+    defaultValues: {
+      termsAccepted: false
+    }
   });
+
+  const termsAccepted = watch("termsAccepted");
+
+  const handleTermsChange = (e) => {
+    setValue("termsAccepted", e.target.checked, { shouldValidate: true });
+  };
 
   const formatPhone = (value) => {
     const numbers = value.replace(/\D/g, '');
@@ -66,14 +77,21 @@ const AdminRegisterForm = ({ onSwitchToLogin }) => {
   const onSubmit = async (data) => {
     setRegistrationError("");
 
+    console.log("Form data:", data);
+    console.log("termsAccepted value:", data.termsAccepted);
+
     const requestData = {
-      email: data.email,
+      email: data.email?.trim(),
       phone: data.phone?.replace(/\D/g, ''),
       password: data.password,
       confirmPassword: data.confirmPassword,
       first_name: data.first_name,
-      last_name: data.last_name
+      last_name: data.last_name,
+      role: 'admin',
+      termsAccepted: data.termsAccepted === true
     };
+
+    console.log("Request data:", requestData);
 
     try {
       const result = await auth.adminRegister(requestData);
@@ -209,7 +227,8 @@ const AdminRegisterForm = ({ onSwitchToLogin }) => {
           <input
             type="checkbox"
             id="terms"
-            {...register("termsAccepted")}
+            checked={termsAccepted || false}
+            onChange={handleTermsChange}
             disabled={isSubmitting}
           />
           <label htmlFor="terms">
@@ -218,10 +237,10 @@ const AdminRegisterForm = ({ onSwitchToLogin }) => {
               политики конфиденциальности
             </a>
           </label>
+          {errors.termsAccepted && (
+            <p className="error-message">{errors.termsAccepted.message}</p>
+          )}
         </div>
-        {errors.termsAccepted && (
-          <p className="error-message">{errors.termsAccepted.message}</p>
-        )}
 
         {registrationError && (
           <div className="error-message form-error">

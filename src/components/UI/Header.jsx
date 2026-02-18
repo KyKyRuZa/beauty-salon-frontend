@@ -65,7 +65,12 @@ const Header = () => {
 
   // Действия для авторизованного пользователя
   const handleProfile = () => {
-    navigate('/profile');
+    // Админов перенаправляем в админ-панель
+    if (user?.role === 'admin' || user?.role === 'superadmin') {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/profile');
+    }
     setIsProfileOpen(false);
   };
 
@@ -100,6 +105,9 @@ const Header = () => {
         return `${profile?.firstName || user.firstName || 'Мастер'}`;
       case 'salon':
         return `${profile?.name?.split(' ')[0] || user.firstName || 'Салон'}`;
+      case 'admin':
+      case 'superadmin':
+        return `${profile?.firstName || user.firstName || 'Администратор'}`;
       default:
         return user.email?.split('@')[0] || 'Профиль';
     }
