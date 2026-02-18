@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { toggleFavorite } from '../../api/favorites';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
+import BookingModal from '../../components/booking/BookingModal';
 import '../../styles/catalog/CategoryProvidersPage.css';
 
 const CategoryProvidersPage = () => {
@@ -15,6 +16,10 @@ const CategoryProvidersPage = () => {
 
   const [favorites, setFavorites] = useState({}); // { [providerId]: boolean }
   const [loadingFavorites, setLoadingFavorites] = useState({}); // { [providerId]: boolean }
+  
+  // Состояние для модального окна записи
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState(null); // { id, type, serviceId, serviceTitle }
   
   const {
     selectedCategory,
@@ -93,14 +98,20 @@ const CategoryProvidersPage = () => {
   }, [services, getMasterImage, getSalonImage, providerImages]);
 
   const handleBook = useCallback((service) => {
-    navigate(`/catalog/provider/${service.provider.id}/timeslots?type=${service.provider.type}&service=${service.id}`);
-  }, [navigate]);
+    setSelectedProvider({
+      id: service.provider.id,
+      type: service.provider.type,
+      serviceId: service.id,
+      serviceTitle: service.name
+    });
+    setIsBookingModalOpen(true);
+  }, []);
 
   const handleProfile = useCallback((providerId, type) => {
     navigate(`/provider/${providerId}?type=${type}`);
   }, [navigate]);
 
-  const handleToggleFavorite = useCallback(async (e, providerId, providerType) => {
+  const handleToggleFavorite = useCallback(async (e, providerId) => {
     e.stopPropagation();
 
     if (!user) {
@@ -300,6 +311,16 @@ const CategoryProvidersPage = () => {
         </div>
       </div>
       <Footer />
+      
+      {/* Модальное окно записи */}
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        providerId={selectedProvider?.id}
+        providerType={selectedProvider?.type}
+        serviceId={selectedProvider?.serviceId}
+        serviceTitle={selectedProvider?.serviceTitle}
+      />
     </>
   );
 };

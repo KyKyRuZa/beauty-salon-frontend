@@ -15,7 +15,7 @@ const BookingHistory = () => {
 
       const params = {};
       if (filter !== 'all') {
-        params.status = filter === 'active' ? 'pending,confirmed' : filter;
+        params.status = filter === 'active' ? 'confirmed' : filter;
       }
 
       const response = await getMyBookings(params);
@@ -48,7 +48,7 @@ const BookingHistory = () => {
 
   const filteredBookings = bookings.filter(booking => {
     if (filter === 'all') return true;
-    if (filter === 'active') return ['pending', 'confirmed'].includes(booking.status);
+    if (filter === 'active') return booking.status === 'confirmed';
     if (filter === 'completed') return booking.status === 'completed';
     if (filter === 'cancelled') return booking.status === 'cancelled';
     return true;
@@ -114,41 +114,75 @@ const BookingHistory = () => {
   );
 };
 
-/**
- * Карточка бронирования
- */
 const BookingCard = ({ booking, onCancel }) => {
-  const startDate = new Date(booking.start_time);
-  const formattedDate = startDate.toLocaleDateString('ru-RU', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-  const formattedTime = startDate.toLocaleTimeString('ru-RU', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  // Парсим дату как локальную (не UTC), чтобы избежать сдвига часового пояса
+  // start_time приходит в формате "2026-02-18T10:00:00.000Z" или "2026-02-18 10:00:00"
+  const startTimeString = booking.start_time;
+  const endTimeString = booking.end_time;
+  
+  // Извлекаем время из строки напрямую, чтобы избежать конвертации UTC
+  const formatTimeFromIso = (isoString) => {
+    if (!isoString) return '';
+    // Если формат ISO с T и Z, извлекаем время из строки
+    if (isoString.includes('T')) {
+      const timePart = isoString.split('T')[1];
+      return timePart.substring(0, 5); // HH:MM
+    }
+    // Если формат "YYYY-MM-DD HH:MM:SS", извлекаем время после пробела
+    if (isoString.includes(' ')) {
+      const timePart = isoString.split(' ')[1];
+      return timePart.substring(0, 5); // HH:MM
+    }
+    return isoString;
+  };
+  
+  const formattedTime = formatTimeFromIso(startTimeString);
+  const formattedEndTime = formatTimeFromIso(endTimeString);
+  
+  // Для даты используем только дату без времени, чтобы избежать сдвига
+  const formatDateFromIso = (isoString) => {
+    if (!isoString) return '';
+    const datePart = isoString.split('T')[0] || isoString.split(' ')[0];
+    const [year, month, day] = datePart.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    return date.toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+  
+  const formattedDate = formatDateFromIso(startTimeString);
 
   const statusLabels = {
-    pending: 'Ожидает подтверждения',
     confirmed: 'Подтверждено',
     cancelled: 'Отменено',
     completed: 'Завершено'
   };
 
   const statusClasses = {
-    pending: 'status-pending',
     confirmed: 'status-confirmed',
     cancelled: 'status-cancelled',
     completed: 'status-completed'
   };
 
-  const canCancel = ['pending', 'confirmed'].includes(booking.status);
+  const canCancel = ['confirmed'].includes(booking.status);
 
-  // Получаем данные из вложенных объектов
-  const serviceName = booking.service?.name || 'Услуга';
-  const masterName = booking.master?.first_name 
-    ? `${booking.master.first_name} ${booking.master.last_name || ''}`
+  const serviceName = booking.service?.name
+    || booking.service?.title
+    || booking.master_service?.name
+    || 'Услуга';
+
+  // Пытаемся получить имя мастера из разных источников
+  // 1. Из booking.master (прямая ассоциация)
+  // 2. Из booking.service.master_provider (через услугу)
+  const master = booking.master || booking.service?.master_provider;
+  
+  const masterFirstName = master?.first_name || master?.firstName;
+  const masterLastName = master?.last_name || master?.lastName;
+  
+  const masterName = masterFirstName
+    ? `${masterFirstName} ${masterLastName || ''}`.trim()
     : 'Мастер';
 
   return (
@@ -173,7 +207,7 @@ const BookingCard = ({ booking, onCancel }) => {
         </div>
         <div className="detail-item">
           <span className="material-symbols-outlined icon">schedule</span>
-          <span>{formattedTime}</span>
+          <span>{formattedTime} - {formattedEndTime}</span>
         </div>
         {booking.price && (
           <div className="detail-item">

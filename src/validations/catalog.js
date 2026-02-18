@@ -29,7 +29,7 @@ export const bookingSchema = z.object({
   bookingDate: dateSchema,
   startTime: stringSchema, // время в формате HH:mm
   endTime: stringSchema,   // время в формате HH:mm
-  status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']),
+  status: z.enum(['confirmed', 'cancelled', 'completed']),
   notes: optionalStringSchema,
 });
 

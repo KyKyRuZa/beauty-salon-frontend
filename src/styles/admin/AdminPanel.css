@@ -386,11 +386,6 @@ table tbody tr:hover {
   color: #721c24;
 }
 
-.status-pending {
-  background: #fff3cd;
-  color: #856404;
-}
-
 /* Alerts */
 .alert {
   padding: 15px;

@@ -81,10 +81,6 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
-.booking-card.status-pending {
-  border-left-color: #ffb400;
-}
-
 .booking-card.status-confirmed {
   border-left-color: #4caf50;
 }
@@ -133,11 +129,6 @@
   font-size: 0.85rem;
   font-weight: 500;
   white-space: nowrap;
-}
-
-.booking-status.status-pending {
-  background: #fff3cd;
-  color: #856404;
 }
 
 .booking-status.status-confirmed {

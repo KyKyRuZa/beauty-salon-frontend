@@ -36,6 +36,18 @@ const TimeSlotsSelector = ({
     return selectedSlot.start_time === slot.start_time;
   };
 
+  const isBooked = (slot) => {
+    return slot.status === 'booked';
+  };
+
+  const isBlocked = (slot) => {
+    return slot.status === 'blocked';
+  };
+
+  const isAvailable = (slot) => {
+    return slot.status === 'free' || slot.status === undefined;
+  };
+
   if (!availableSlots || availableSlots.length === 0) {
     return (
       <div className="time-slots-selector">
@@ -58,17 +70,32 @@ const TimeSlotsSelector = ({
       </h3>
       
       <div className="time-slots-grid">
-        {availableSlots.map((slot, index) => (
-          <button
-            key={index}
-            className={`time-slot-item ${isSelected(slot) ? 'selected' : ''}`}
-            onClick={() => onSlotSelect(slot)}
-          >
-            <span className="time-range">
-              {formatDuration(slot.start_time, slot.end_time)}
-            </span>
-          </button>
-        ))}
+        {availableSlots.map((slot, index) => {
+          const uniqueKey = slot.id || `${slot.start_time}-${slot.end_time}-${index}`;
+          const booked = isBooked(slot);
+          const blocked = isBlocked(slot);
+          const selected = isSelected(slot);
+          
+          let slotClass = 'time-slot-item';
+          if (booked) slotClass += ' booked';
+          else if (blocked) slotClass += ' blocked';
+          else if (selected) slotClass += ' selected';
+          
+          return (
+            <button
+              key={uniqueKey}
+              className={slotClass}
+              onClick={() => !booked && !blocked && onSlotSelect(slot)}
+              disabled={booked || blocked}
+            >
+              <span className="time-range">
+                {formatDuration(slot.start_time, slot.end_time)}
+              </span>
+              {booked && <span className="slot-badge">Занято</span>}
+              {blocked && <span className="slot-badge">Недоступно</span>}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

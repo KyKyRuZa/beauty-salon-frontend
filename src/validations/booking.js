@@ -11,7 +11,7 @@ export const bookingSchema = z.object({
   bookingDate: dateSchema,
   startTime: z.string(),
   endTime: z.string(),
-  status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']),
+  status: z.enum(['confirmed', 'cancelled', 'completed']),
   totalAmount: z.number().nonnegative(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
@@ -29,7 +29,7 @@ export const createBookingSchema = z.object({
 });
 
 export const updateBookingSchema = z.object({
-  status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
+  status: z.enum(['confirmed', 'cancelled', 'completed']).optional(),
   comment: z.string().max(500).optional(),
 });
 
@@ -38,7 +38,7 @@ export const bookingFilterSchema = z.object({
   serviceId: optionalIdSchema,
   masterId: optionalIdSchema,
   masterServiceId: optionalIdSchema,
-  status: z.enum(['pending', 'confirmed', 'cancelled', 'completed']).optional(),
+  status: z.enum(['confirmed', 'cancelled', 'completed']).optional(),
   startDate: dateSchema.optional(),
   endDate: dateSchema.optional(),
 });
