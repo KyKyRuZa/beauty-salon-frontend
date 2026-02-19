@@ -61,7 +61,7 @@ const TimeSlotsSelector = ({
         </div>
       </div>
     );
-  }
+  } 
 
   return (
     <div className="time-slots-selector">

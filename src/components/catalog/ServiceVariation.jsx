@@ -3,10 +3,8 @@ import PropTypes from 'prop-types';
 import '../../styles/catalog/ServiceVariation.css';
 
 const ServiceVariation = ({ variation, onSelect }) => {
-  // Форматирование времени для отображения
   const formatTime = (timeString) => {
     if (!timeString) return '';
-    // Преобразуем время из формата HH:mm:ss в HH:mm
     return timeString.substring(0, 5);
   };
 

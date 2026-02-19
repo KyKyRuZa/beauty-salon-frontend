@@ -3,13 +3,6 @@ import { getMasterReviews, getSalonReviews, createReview } from '../../api/revie
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/ReviewsList.css';
 
-/**
- * Компонент списка отзывов
- * @param {number} masterId - ID мастера (если отзывы мастера)
- * @param {number} salonId - ID салона (если отзывы салона)
- * @param {boolean} showForm - Показывать форму создания отзыва
- * @param {function} onReviewCreated - Callback после создания отзыва
- */
 const ReviewsList = ({ masterId, salonId, showForm = false, onReviewCreated }) => {
   const { user } = useAuth();
   const [reviews, setReviews] = useState([]);

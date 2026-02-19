@@ -1,6 +1,5 @@
-// components/ContactForm/index.jsx
 import React, { useState } from "react";
-import '../styles/ContactForm.css';
+import '../../styles/ContactForm.css';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({

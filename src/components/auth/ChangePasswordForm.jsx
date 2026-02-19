@@ -15,8 +15,7 @@ const ChangePasswordForm = () => {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
-    setError
+    reset
   } = useForm({
     resolver: zodResolver(changePasswordSchema)
   });

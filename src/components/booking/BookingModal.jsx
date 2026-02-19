@@ -5,7 +5,7 @@ import { getMasterSlots } from '../../api/timeslots';
 import { createBooking } from '../../api/booking';
 import '../../styles/booking/BookingModal.css';
 
-const BookingModal = ({ isOpen, onClose, providerId, providerType, serviceId, serviceTitle }) => {
+const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);

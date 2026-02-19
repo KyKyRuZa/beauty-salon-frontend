@@ -18,8 +18,7 @@ const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    setValue,
-    setError
+    setValue
   } = useForm({
     resolver: zodResolver(getRegisterSchema(type))
   });

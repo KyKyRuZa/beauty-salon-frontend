@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { getCatalogCategories, getServicesByCategory, getCategoryById } from '../api/catalog';
 import UserService from '../api/user';
 

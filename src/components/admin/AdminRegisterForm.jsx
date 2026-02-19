@@ -17,7 +17,6 @@ const AdminRegisterForm = ({ onSwitchToLogin }) => {
     formState: { errors, isSubmitting },
     reset,
     setValue,
-    setError,
     watch
   } = useForm({
     resolver: zodResolver(adminRegisterSchema),

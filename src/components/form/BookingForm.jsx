@@ -53,7 +53,6 @@ const sendAppointmentToBot = async (data) => {
 const BookingForm = () => {
   const [searchParams] = useSearchParams();
   const provider = searchParams.get('provider');
-  const type = searchParams.get('type');
   const date = searchParams.get('date');
   const time = searchParams.get('time');
   const masterId = searchParams.get('master_id');

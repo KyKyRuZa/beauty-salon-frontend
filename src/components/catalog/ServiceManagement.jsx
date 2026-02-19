@@ -11,7 +11,6 @@ import {
   deleteSalonService,
   getCatalogCategories
 } from '../../api/catalog';
-import api from '../../api/api';
 import '../../styles/catalog/ServiceManagement.css';
 
 const ServiceManagement = () => {
