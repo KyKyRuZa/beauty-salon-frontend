@@ -1,26 +1,21 @@
 .service-category {
   position: relative;
-  height: 300px;
-  width: 320px;
+  height: 240px;
+  width: 100%;
   border-radius: 12px;
   overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s ease;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.service-category:hover {
-  transform: translateY(-5px);
-}
-
 .category-content {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  height: 100%;
+  box-sizing: border-box;
   background-color: transparent;
 }
 
@@ -28,27 +23,26 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 12px;
 }
 
 .category-title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 600;
-  color: #000000;
-}
-
-.category-arrow {
-  color: #000000;
   font-size: 24px;
-  font-weight: 300;
+  font-weight: 400;
+  color: #000000;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .category-description {
   margin: 0;
-  font-size: 16px;
+  font-size: 20px;
   color: #000000;
   line-height: 1.6;
-  max-width: 80%;
+  flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .btn-select {
@@ -63,6 +57,7 @@
   cursor: pointer;
   transition: background-color 0.2s;
   align-self: flex-start;
+  margin-top: auto;
 }
 
 .btn-select:hover {

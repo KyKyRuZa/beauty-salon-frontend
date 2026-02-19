@@ -3,8 +3,13 @@ import PropTypes from 'prop-types';
 import '../../styles/catalog/ServiceCategory.css';
 
 const ServiceCategory = ({ category, onClick }) => {
+  const handleButtonClick = (e) => {
+    e.stopPropagation();
+    onClick(category);
+  };
+
   return (
-    <div className="service-category" onClick={() => onClick(category)}>
+    <div className="service-category">
       {category.image_url && (
         <div
           className="category-image"
@@ -14,12 +19,11 @@ const ServiceCategory = ({ category, onClick }) => {
       <div className="category-content">
         <div className="category-header">
           <h3 className="category-title">{category.name}</h3>
-          <span className="category-arrow">›</span>
         </div>
         <p className="category-description">
           {category.description || 'Описание отсутствует'}
         </p>
-        <button className="btn-select" onClick={(e) => e.stopPropagation()}>
+        <button className="btn-select" onClick={handleButtonClick}>
           ВЫБРАТЬ САЛОН / МАСТЕРА
         </button>
       </div>

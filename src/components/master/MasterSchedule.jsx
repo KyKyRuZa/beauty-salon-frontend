@@ -100,7 +100,7 @@ const MasterSchedule = () => {
       }
       
       // Получаем расписание со слотами
-      const response = await getAvailabilityWithSlots(date, masterId);
+      const response = await getAvailabilityWithSlots(date, masterId, selectedService ? parseInt(selectedService) : null);
       console.log('Ответ getAvailabilityWithSlots:', response);
 
       if (response.data) {

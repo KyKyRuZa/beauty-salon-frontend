@@ -13,13 +13,20 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
 
   const loadTimeSlots = useCallback(async () => {
     if (!selectedDate || !providerId) return;
-    
+
     try {
       setLoadingSlots(true);
-      const response = await getMasterSlots({
+      const params = {
         master_id: providerId,
         date: selectedDate
-      });
+      };
+      
+      // Передаем service_id на сервер для фильтрации
+      if (serviceId) {
+        params.service_id = serviceId;
+      }
+      
+      const response = await getMasterSlots(params);
       console.log('Полученные слоты:', response);
 
       let slots = [];
@@ -31,7 +38,7 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
 
       // Фильтруем слоты по выбранной услуге (если serviceId передан)
       if (serviceId && slots.length > 0) {
-        slots = slots.filter(slot => slot.service_id === serviceId);
+        slots = slots.filter(slot => slot.service_id === serviceId || slot.service_id === null);
       }
 
       console.log('Отфильтрованные слоты:', slots);
