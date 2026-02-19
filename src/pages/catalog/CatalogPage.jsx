@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { getCatalogCategories } from '../../api/catalog';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { getCatalogCategories, searchCategories } from '../../api/catalog';
 import { useNavigate } from 'react-router-dom';
 import ServiceCategory from '../../components/catalog/ServiceCategory';
 import Header from '../../components/ui/Header';
@@ -12,6 +12,9 @@ const CatalogPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
     fetchCategories();
@@ -24,6 +27,7 @@ const CatalogPage = () => {
       // Загружаем категории
       const categoriesResponse = await getCatalogCategories();
       setCategories(categoriesResponse.data.data);
+      setFilteredCategories(categoriesResponse.data.data);
 
       setError(null);
     } catch (err) {
@@ -34,20 +38,50 @@ const CatalogPage = () => {
     }
   };
 
-  const handleCategoryClick = (category) => {
-    // Переходим на страницу салонов/мастеров для выбранной категории
-    navigate(`/catalog/category/${category.id}/providers`);
-  };
+  // Поиск с дебаунсом 300мс
+  const performSearch = useCallback(async (query) => {
+    if (!query || query.length < 2) {
+      // Если запрос короче 2 символов, показываем все категории
+      setFilteredCategories(categories);
+      setIsSearching(false);
+      return;
+    }
 
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
+    setIsSearching(true);
+    try {
+      const response = await searchCategories(query);
+      setFilteredCategories(response.data || []);
+    } catch (err) {
+      console.error('Ошибка поиска категорий:', err);
+      setFilteredCategories([]);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [categories]);
 
-  // Фильтрация категорий по поиску
-  const filteredCategories = categories.filter(category =>
-    category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (category.description && category.description.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const handleSearch = useCallback((e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    // Очищаем предыдущий таймер
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Устанавливаем новый таймер с дебаунсом 300мс
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(query);
+    }, 300);
+  }, [performSearch]);
+
+  // Очистка таймера при размонтировании
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (loading && categories.length === 0) {
     return <div className="loading">Загрузка каталога услуг...</div>;
@@ -56,6 +90,11 @@ const CatalogPage = () => {
   if (error && !loading) {
     return <div className="error">{error}</div>;
   }
+
+  const handleCategoryClick = (category) => {
+    // Переходим на страницу салонов/мастеров для выбранной категории
+    navigate(`/catalog/category/${category.id}/providers`);
+  };
 
   return (
     <>
@@ -86,7 +125,12 @@ const CatalogPage = () => {
         <div className="catalog-content">
           <div className="categories-section">
             <div className="categories-grid">
-              {filteredCategories.length > 0 ? (
+              {isSearching ? (
+                <div className="no-results">
+                  <span className="material-symbols-outlined" style={{ fontSize: '3rem', marginBottom: '10px' }}>searching</span>
+                  <p>Поиск...</p>
+                </div>
+              ) : filteredCategories.length > 0 ? (
                 filteredCategories.map((category) => (
                   <ServiceCategory
                     key={category.id}
@@ -94,9 +138,17 @@ const CatalogPage = () => {
                     onClick={handleCategoryClick}
                   />
                 ))
+              ) : searchQuery.length >= 2 ? (
+                <div className="no-results">
+                  <span className="material-symbols-outlined" style={{ fontSize: '3rem', marginBottom: '10px' }}>search_off</span>
+                  <p>Категории не найдены</p>
+                  <p style={{ fontSize: '0.9rem', color: '#999', marginTop: '10px' }}>
+                    Попробуйте изменить поисковый запрос
+                  </p>
+                </div>
               ) : (
                 <div className="no-results">
-                  <p>Категории не найдены</p>
+                  <p>Начните вводить название категории для поиска</p>
                 </div>
               )}
             </div>

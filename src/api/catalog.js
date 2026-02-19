@@ -253,3 +253,34 @@ export const deleteSalonService = async (id) => {
 export const getMastersByService = async (serviceId, params = {}) => {
   return await api.get(`/catalog/service/${serviceId}/masters`, { params });
 };
+
+// ============================================
+// Поиск с использованием триграмм (GIN-индекс)
+// ============================================
+
+/**
+ * Поиск категорий с использованием триграмм
+ * @param {string} query - Поисковый запрос
+ */
+export const searchCategories = async (query) => {
+  const response = await api.get('/catalog/search/categories', { params: { q: query } });
+  return response.data;
+};
+
+/**
+ * Поиск услуг мастеров с использованием триграмм
+ * @param {string} query - Поисковый запрос
+ */
+export const searchMasterServices = async (query) => {
+  const response = await api.get('/catalog/search/services', { params: { q: query } });
+  return response.data;
+};
+
+/**
+ * Поиск мастеров с использованием триграмм
+ * @param {string} query - Поисковый запрос
+ */
+export const searchMasters = async (query) => {
+  const response = await api.get('/catalog/search/masters', { params: { q: query } });
+  return response.data;
+};
