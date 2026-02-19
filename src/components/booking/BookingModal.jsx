@@ -58,7 +58,7 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
     if (selectedDate && providerId) {
       loadTimeSlots();
     }
-  }, [selectedDate, loadTimeSlots]);
+  }, [selectedDate, providerId, loadTimeSlots]);
 
   const handleDateSelect = (date) => {
     setSelectedDate(date);

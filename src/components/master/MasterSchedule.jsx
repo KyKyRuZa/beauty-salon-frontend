@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   getMasterSlots,
   createTimeSlot,
@@ -37,12 +37,7 @@ const MasterSchedule = () => {
     slot_duration: 60
   });
 
-  // Загрузка услуг мастера
-  useEffect(() => {
-    loadMasterServices();
-  }, []);
-
-  const loadMasterServices = async () => {
+  const loadMasterServices = useCallback(async () => {
     try {
       setLoadingServices(true);
       const response = await getMasterServices();
@@ -70,14 +65,14 @@ const MasterSchedule = () => {
     } finally {
       setLoadingServices(false);
     }
-  };
+  }, []);
 
-  // Загрузка слотов при изменении даты и выбранной услуги
+  // Загрузка услуг мастера
   useEffect(() => {
-    loadScheduleAndSlots(selectedDate);
-  }, [selectedDate, selectedService]);
+    loadMasterServices();
+  }, [loadMasterServices]);
 
-  const loadScheduleAndSlots = async (date) => {
+  const loadScheduleAndSlots = useCallback(async (date) => {
     setLoading(true);
     setError(null);
     try {
@@ -151,7 +146,11 @@ const MasterSchedule = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedService, profile]);
+
+  useEffect(() => {
+    loadScheduleAndSlots(selectedDate);
+  }, [selectedDate, selectedService, loadScheduleAndSlots]);
 
   const handleOpenCreateModal = () => {
     setEditingSlot(null);

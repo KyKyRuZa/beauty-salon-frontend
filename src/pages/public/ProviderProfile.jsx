@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
@@ -17,12 +17,7 @@ const ProviderProfile = () => {
   const [activePortfolioTab, setActivePortfolioTab] = useState('all');
   const [providerType, setProviderType] = useState(type);
 
-  useEffect(() => {
-    loadProviderData();
-    checkFavoriteStatus();
-  }, [providerId]);
-
-  const loadProviderData = async () => {
+  const loadProviderData = useCallback(async () => {
     setLoading(true);
     try {
       const endpoint = providerType === 'master' ? 'master' : 'salon';
@@ -55,9 +50,9 @@ const ProviderProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [providerId, providerType]);
 
-  const checkFavoriteStatus = async () => {
+  const checkFavoriteStatus = useCallback(async () => {
     if (!user || providerType !== 'master') return;
     try {
       const response = await checkFavorite(providerId);
@@ -65,7 +60,12 @@ const ProviderProfile = () => {
     } catch (error) {
       console.error('Ошибка проверки избранного:', error);
     }
-  };
+  }, [providerId, user, providerType]);
+
+  useEffect(() => {
+    loadProviderData();
+    checkFavoriteStatus();
+  }, [providerId, loadProviderData, checkFavoriteStatus]);
 
   const handleToggleFavorite = async () => {
     if (!user) {

@@ -1,24 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getAvailableDates } from '../../api/timeslots';
 import '../../styles/booking/DateSelector.css';
 
-const DateSelector = ({ availableDates = [], selectedDate, onDateSelect, masterId, serviceId }) => {
+const DateSelector = ({ selectedDate, onDateSelect, masterId, serviceId }) => {
   const [dates, setDates] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Загружаем доступные даты с сервера если передан masterId
-  useEffect(() => {
-    if (masterId) {
-      loadAvailableDates();
-    } else if (availableDates.length > 0) {
-      setDates(availableDates);
-    } else {
-      // Fallback: генерируем следующие 7 дней
-      setDates(generateNextDays(7));
-    }
-  }, [masterId, serviceId]);
-
-  const loadAvailableDates = async () => {
+  const loadAvailableDates = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAvailableDates(masterId, serviceId);
@@ -35,7 +23,17 @@ const DateSelector = ({ availableDates = [], selectedDate, onDateSelect, masterI
     } finally {
       setLoading(false);
     }
-  };
+  }, [masterId, serviceId]);
+
+  // Загружаем доступные даты с сервера если передан masterId
+  useEffect(() => {
+    if (masterId) {
+      loadAvailableDates();
+    } else {
+      // Fallback: генерируем следующие 7 дней
+      setDates(generateNextDays(7));
+    }
+  }, [masterId, loadAvailableDates]);
 
   const formatDate = (dateString) => {
     // Парсим дату как локальную, а не UTC

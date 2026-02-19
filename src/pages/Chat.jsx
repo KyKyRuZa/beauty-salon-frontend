@@ -17,13 +17,13 @@ const Chat = () => {
 
   const API_URL = import.meta.env.VITE_WS_BASE_URL || 'http://localhost:3000';
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   // Функция для добавления сообщения с проверкой на дубликаты
   const addMessage = useCallback((newMessage) => {
@@ -149,7 +149,7 @@ const Chat = () => {
       }
       isInitializedRef.current = false;
     };
-  }, [addMessage]);
+  }, [addMessage, API_URL]);
 
   const sendMessage = async () => {
     const currentSocket = socketRef.current;

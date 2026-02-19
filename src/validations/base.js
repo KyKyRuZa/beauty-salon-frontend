@@ -7,15 +7,15 @@ export const emailSchema = z.string()
 export const passwordSchema = z.string()
   .min(8, 'Password must be at least 8 characters')
   .max(100, 'Password must be less than 100 characters')
-  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain at least one uppercase letter, one lowercase letter, and one number');
+  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])/, 'Password must contain at least one uppercase letter, one lowercase letter, and one number');
 
 export const phoneSchema = z.string()
-  .regex(/^[\+]?[1-9][\d]{0,15}$/, 'Invalid phone number format');
+  .regex(/^[+]?[1-9][0-9]{0,15}$/, 'Invalid phone number format');
 
 export const nameSchema = z.string()
   .min(2, 'Name must be at least 2 characters')
   .max(100, 'Name must be less than 100 characters')
-  .regex(/^[a-zA-Zа-яА-ЯёЁ\s\-\(\)\,\.]+$/, 'Name contains invalid characters');
+  .regex(/^[a-zA-Zа-яА-ЯёЁ\s\-(),.]+$/, 'Name contains invalid characters');
 
 export const idSchema = z.number().int().positive();
 export const optionalIdSchema = z.number().int().positive().optional();

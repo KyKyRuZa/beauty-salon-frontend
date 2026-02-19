@@ -44,10 +44,6 @@ const TimeSlotsSelector = ({
     return slot.status === 'blocked';
   };
 
-  const isAvailable = (slot) => {
-    return slot.status === 'free' || slot.status === undefined;
-  };
-
   if (!availableSlots || availableSlots.length === 0) {
     return (
       <div className="time-slots-selector">

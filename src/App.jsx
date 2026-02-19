@@ -4,7 +4,7 @@ import { CatalogProvider } from './context/CatalogContext';
 import Home from './pages/public/Home';
 import BookingForm from './components/form/BookingForm';
 import AuthContainer from './components/auth/AuthContainer';
-import Chat from './components/Chat';
+import Chat from './pages/Chat';
 import Profile from "./pages/private/Profile";
 import EditProfile from './pages/private/client/EditProfile';
 import NotFound from './pages/public/NotFound';

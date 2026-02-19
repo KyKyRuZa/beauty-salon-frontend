@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCatalogServiceById, getServiceVariations } from '../../api/catalog';
 import ServiceVariation from '../../components/catalog/ServiceVariation';
@@ -12,22 +12,18 @@ const ServiceDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchServiceDetails();
-  }, [id]);
-
-  const fetchServiceDetails = async () => {
+  const fetchServiceDetails = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getCatalogServiceById(id);
       setService(response.data.data);
-      
+
       // Загрузим варианты услуги
       if (response.data.data.catalog_id) {
         const variationsResponse = await getServiceVariations(id);
         setVariations(variationsResponse.data.data);
       }
-      
+
       setError(null);
     } catch (err) {
       setError('Ошибка загрузки деталей услуги');
@@ -35,7 +31,11 @@ const ServiceDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchServiceDetails();
+  }, [id, fetchServiceDetails]);
 
   const handleVariationSelect = (variation) => {
     // TODO: Реализовать логику выбора варианта услуги

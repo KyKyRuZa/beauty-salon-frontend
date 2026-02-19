@@ -6,7 +6,7 @@ import Recomended from "../../components/Recomended";
 import Features from "../../components/Features";
 import ServiceCategories from "../../components/ServiceCategories";
 import TransformationCTA from "../../components/TransformationCTA";
-import ContactForm from "../../components/ContactForm";
+import ContactForm from "../../components/form/ContactForm";
 
 import '../../styles/global.css';
 

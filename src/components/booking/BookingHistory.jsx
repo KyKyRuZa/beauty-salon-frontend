@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getMyBookings, cancelBooking } from '../../api/booking';
 import '../../styles/booking/BookingHistory.css';
 
@@ -8,7 +8,7 @@ const BookingHistory = () => {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState('all'); // all, active, completed, cancelled
 
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -26,11 +26,11 @@ const BookingHistory = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
 
   useEffect(() => {
     loadBookings();
-  }, [filter]);
+  }, [filter, loadBookings]);
 
   const handleCancelBooking = async (bookingId) => {
     if (!window.confirm('Вы уверены, что хотите отменить запись?')) {

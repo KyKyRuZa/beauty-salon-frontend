@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getAllUsers } from '../../../api/admin';
 
 const UsersManagement = () => {
@@ -8,11 +8,7 @@ const UsersManagement = () => {
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
   const [search, setSearch] = useState('');
 
-  useEffect(() => {
-    fetchUsers();
-  }, [pagination.page, search]);
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAllUsers({
@@ -29,7 +25,11 @@ const UsersManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, search]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [pagination.page, search, fetchUsers]);
 
   const handleSearch = (e) => {
     e.preventDefault();

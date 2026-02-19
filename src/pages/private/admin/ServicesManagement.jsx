@@ -57,14 +57,14 @@ const ServicesManagement = () => {
     try {
       const response = await getAllCategories({ limit: 100 }); // Получаем все категории
       setCategories(response.data.data);
-      
+
       // Также получаем подкатегории для каждой категории
-      const allSubcategories = [];
-      for (const category of response.data.data) {
-        // Здесь в реальности нужно будет получить подкатегории для каждой категории
-        // const subcatResp = await getSubcategoriesByCategory(category.id);
-        // allSubcategories.push(...subcatResp.data.data);
-      }
+      // const allSubcategories = [];
+      // for (const category of response.data.data) {
+      //   // Здесь в реальности нужно будет получить подкатегории для каждой категории
+      //   // const subcatResp = await getSubcategoriesByCategory(category.id);
+      //   // allSubcategories.push(...subcatResp.data.data);
+      // }
       // Временно используем заглушку для подкатегорий
       setSubcategories([
         { id: 1, name: 'Маникюр', category_id: 1 },

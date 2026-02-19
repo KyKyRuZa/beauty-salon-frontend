@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCatalogServiceById } from '../../api/catalog';
 import ServiceCatalogCard from '../../components/catalog/ServiceCatalogCard';
@@ -13,11 +13,7 @@ const ServiceMastersPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchService();
-  }, [serviceId]);
-
-  const fetchService = async () => {
+  const fetchService = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -32,7 +28,11 @@ const ServiceMastersPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [serviceId]);
+
+  useEffect(() => {
+    fetchService();
+  }, [serviceId, fetchService]);
 
   const handleBackToCatalog = () => {
     navigate('/catalog');

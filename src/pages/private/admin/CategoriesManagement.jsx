@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { getAllCategories, createCategory, updateCategory, deleteCategory } from '../../../api/admin';
 
 const CategoriesManagement = () => {
@@ -16,11 +16,7 @@ const CategoriesManagement = () => {
     is_popular: false
   });
 
-  useEffect(() => {
-    fetchCategories();
-  }, [pagination.page, search]);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAllCategories({
@@ -37,7 +33,11 @@ const CategoriesManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, search]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [pagination.page, search, fetchCategories]);
 
   const handleSearch = (e) => {
     e.preventDefault();

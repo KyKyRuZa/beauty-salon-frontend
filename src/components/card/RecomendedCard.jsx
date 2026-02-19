@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { toggleFavorite, checkFavorite } from '../../api/favorites';
 import '../../styles/RecomendedCard.css';
@@ -22,21 +22,21 @@ const RecomendedCard = ({
   const [isFavorite, setIsFavorite] = useState(parentIsFavorite || false);
   const roleLabel = role === 'salon' ? 'Салон красоты' : 'Бьюти-мастер';
 
-  // Проверка статуса избранного при загрузке
-  useEffect(() => {
-    if (user && masterId && parentIsFavorite === undefined) {
-      checkFavoriteStatus();
-    }
-  }, [masterId, user]);
-
-  const checkFavoriteStatus = async () => {
+  const checkFavoriteStatus = useCallback(async () => {
     try {
       const response = await checkFavorite(masterId);
       setIsFavorite(response.data.isFavorite);
     } catch (error) {
       console.error('Ошибка проверки статуса избранного:', error);
     }
-  };
+  }, [masterId]);
+
+  // Проверка статуса избранного при загрузке
+  useEffect(() => {
+    if (user && masterId && parentIsFavorite === undefined) {
+      checkFavoriteStatus();
+    }
+  }, [masterId, user, parentIsFavorite, checkFavoriteStatus]);
 
   const handleToggleFavorite = async (e) => {
     e.stopPropagation();

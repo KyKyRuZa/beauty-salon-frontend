@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getMasterReviews, getSalonReviews, createReview } from '../../api/reviews';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/ReviewsList.css';
@@ -16,7 +16,7 @@ const ReviewsList = ({ masterId, salonId, showForm = false, onReviewCreated }) =
     comment: ''
   });
 
-  const loadReviews = async () => {
+  const loadReviews = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -35,11 +35,11 @@ const ReviewsList = ({ masterId, salonId, showForm = false, onReviewCreated }) =
     } finally {
       setLoading(false);
     }
-  };
+  }, [masterId, salonId]);
 
   useEffect(() => {
     loadReviews();
-  }, [masterId, salonId]);
+  }, [masterId, salonId, loadReviews]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

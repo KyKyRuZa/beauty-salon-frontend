@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/ui/Header';
@@ -23,13 +23,7 @@ const TimeSlotsPage = () => {
   const serviceId = searchParams.get('service');
   const type = searchParams.get('type') || 'master';
 
-  useEffect(() => {
-    if (selectedDate) {
-      loadAvailableSlots(selectedDate);
-    }
-  }, [selectedDate]);
-
-  const loadAvailableSlots = async (date) => {
+  const loadAvailableSlots = useCallback(async (date) => {
     try {
       const dateStr = date;
 
@@ -68,7 +62,13 @@ const TimeSlotsPage = () => {
       setAvailableSlots(mockSlots);
       setSelectedSlot(null);
     }
-  };
+  }, [providerId, serviceId, type]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      loadAvailableSlots(selectedDate);
+    }
+  }, [selectedDate, loadAvailableSlots]);
 
   const handleDateSelect = (date) => {
     console.log('handleDateSelect: выбрана дата', date, 'type:', typeof date);

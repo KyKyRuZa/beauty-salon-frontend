@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getAllAdmins, createAdmin } from '../../../api/admin';
 
 const AdminsManagement = () => {
   const [admins, setAdmins] = useState([]);
-  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
@@ -17,14 +16,7 @@ const AdminsManagement = () => {
     last_name: ''
   });
 
-  // Загружаем администраторов и пользователей
-  useEffect(() => {
-    fetchAdmins();
-    // Здесь в реальности нужно будет получить список пользователей для выбора
-    // fetchUsers();
-  }, [pagination.page, search]);
-
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async () => {
     try {
       setLoading(true);
       const response = await getAllAdmins({
@@ -41,23 +33,31 @@ const AdminsManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, search]);
 
-  const fetchUsers = async () => {
-    try {
-      // В реальности здесь будет вызов API для получения списка пользователей
-      // const response = await getAllUsers({ limit: 100 });
-      // setUsers(response.data.data);
-      
-      // Заглушка данных
-      setUsers([
-        { id: 1, email: 'admin@example.com', first_name: 'Админ', last_name: 'Главный' },
-        { id: 2, email: 'moderator@example.com', first_name: 'Модератор', last_name: 'Проверяющий' }
-      ]);
-    } catch (err) {
-      console.error('Ошибка загрузки пользователей:', err);
-    }
-  };
+  // Заглушка для будущих пользователей
+  // const fetchUsers = async () => {
+  //   try {
+  //     // В реальности здесь будет вызов API для получения списка пользователей
+  //     // const response = await getAllUsers({ limit: 100 });
+  //     // setUsers(response.data.data);
+
+  //     // Заглушка данных
+  //     setUsers([
+  //       { id: 1, email: 'admin@example.com', first_name: 'Админ', last_name: 'Главный' },
+  //       { id: 2, email: 'moderator@example.com', first_name: 'Модератор', last_name: 'Проверяющий' }
+  //     ]);
+  //   } catch (err) {
+  //     console.error('Ошибка загрузки пользователей:', err);
+  //   }
+  // };
+
+  // Загружаем администраторов и пользователей
+  useEffect(() => {
+    fetchAdmins();
+    // Здесь в реальности нужно будет получить список пользователей для выбора
+    // fetchUsers();
+  }, [pagination.page, search, fetchAdmins]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -139,11 +139,11 @@ const AdminsManagement = () => {
                 required
               >
                 <option value="">Выберите пользователя</option>
-                {users.map(user => (
+                {/* users.map(user => (
                   <option key={user.id} value={user.id}>
                     {user.email} ({user.first_name} {user.last_name})
                   </option>
-                ))}
+                )) */}
               </select>
             </div>
 

@@ -4,6 +4,7 @@ import UserService from '../api/user';
 
 const CatalogContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCatalog = () => {
   const context = useContext(CatalogContext);
   if (!context) {
