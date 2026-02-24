@@ -1,0 +1,33 @@
+# robots.txt для Бьюти Окна
+# https://beauty-vite.ru/robots.txt
+
+User-agent: *
+Allow: /
+
+# Разрешить основные страницы
+Allow: /
+Allow: /catalog
+Allow: /auth
+Allow: /profile
+
+# Запретить админ-панель для индексации
+Disallow: /admin/
+Disallow: /admin/*
+
+# Запретить технические пути
+Disallow: /api/
+Disallow: /api/*
+Disallow: /assets/
+Disallow: /src/
+Disallow: /components/
+Disallow: /pages/
+
+# Запретить параметры поиска
+Disallow: /*?*
+Disallow: /*&*
+
+# Sitemap
+Sitemap: https://beauty-vite.ru/sitemap.xml
+
+# Crawl-delay для снижения нагрузки
+Crawl-delay: 1

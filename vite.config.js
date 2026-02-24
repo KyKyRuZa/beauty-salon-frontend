@@ -1,18 +1,36 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { copyFileSync, mkdirSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, resolve } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export default defineConfig({
   plugins: [
-    react()
+    react(),
+    {
+      name: 'copy-seo-files',
+      closeBundle() {
+        const distDir = resolve(__dirname, 'dist')
+        try {
+          mkdirSync(distDir, { recursive: true })
+          copyFileSync(resolve(__dirname, 'public/robots.txt'), resolve(distDir, 'robots.txt'))
+          copyFileSync(resolve(__dirname, 'public/sitemap.xml'), resolve(distDir, 'sitemap.xml'))
+          console.log('✅ SEO файлы скопированы в dist (robots.txt, sitemap.xml)')
+        } catch (error) {
+          console.error('❌ Ошибка копирования SEO файлов:', error.message)
+        }
+      }
+    }
   ],
 
-  // Оптимизация для разработки
   server: {
     host: true,
     open: true,
     port: 5173,
     proxy: {
-      // Прокси для API запросов во время разработки
       '/api': {
         target: 'http://localhost:5000',
         changeOrigin: true,
@@ -21,7 +39,6 @@ export default defineConfig({
     }
   },
 
-  // Оптимизация для сборки
   build: {
     rollupOptions: {
       output: {
@@ -34,14 +51,11 @@ export default defineConfig({
           } else if (/css/i.test(extType)) {
             extType = 'css'
           }
-          // Все остальные файлы (включая JS) будут в misc, но JS файлы обрабатываются отдельно
-          // через chunkFileNames и entryFileNames
           return `assets/${extType || 'misc'}/[name]-[hash][extname]`
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
 
-        // Разделение бандлов для лучшей кешируемости
         manualChunks(id) {
           if (id.includes('node_modules/react/') && !id.includes('react-dom')) {
             return 'react-vendor';
@@ -78,7 +92,6 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
-        // Дополнительные оптимизации
         passes: 2,
         unsafe_comps: true,
         unsafe_math: true,
@@ -86,42 +99,36 @@ export default defineConfig({
         unsafe_regexp: true,
         pure_getters: true,
         keep_fargs: false
-        // unsafe_undefined убран для безопасности
       },
       format: {
-        comments: false // Удаление комментариев
+        comments: false 
       },
       mangle: {
         properties: {
-          regex: /^__/ // Mangle только свойства, начинающиеся с __
+          regex: /^__/
         }
       }
     },
-    // Увеличиваем порог для кода вне основного бандла
     cssCodeSplit: true,
-    sourcemap: false, // Отключаем sourcemaps для продакшена
-    target: 'es2015' // Устанавливаем целевую версию ES
-
-    // brotliSize и reportCompressedSize по умолчанию true, не указываем явно
+    sourcemap: false,
+    target: 'es2015'
   },
   
-  // Оптимизация загрузки зависимостей
   optimizeDeps: {
     include: [
       'react',
       'react-dom',
       'react-router-dom',
       'axios',
-      'zod', // Только Zod, без Yup
+      'zod',
       'react-hook-form',
-      '@hookform/resolvers', // Поддерживает Zod
+      '@hookform/resolvers',
       'socket.io-client',
       'date-fns',
       'react-input-mask',
       'react-datepicker',
       'prop-types'
     ],
-    // Исключаем из оптимизации большие библиотеки, которые редко меняются
     exclude: []
   }
 })
