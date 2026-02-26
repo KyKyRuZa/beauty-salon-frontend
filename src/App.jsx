@@ -4,7 +4,7 @@ import { CatalogProvider } from './context/CatalogContext';
 import Home from './pages/public/Home';
 import BookingForm from './components/form/BookingForm';
 import AuthContainer from './components/auth/AuthContainer';
-import Chat from './pages/Chat';
+// import Chat from './pages/Chat';
 import Profile from "./pages/private/Profile";
 import EditProfile from './pages/private/client/EditProfile';
 import NotFound from './pages/public/NotFound';
@@ -41,7 +41,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/edit" element={<EditProfile />} />
               <Route path='/booking' element={<BookingForm/>}/>
-              <Route path='/chat' element={<Chat/>} />
+              {/* <Route path='/chat' element={<Chat/>} /> */}
 
               {/* Защищенные маршруты админ-панели */}
               <Route path="/admin/*" element={

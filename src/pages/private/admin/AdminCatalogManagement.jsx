@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import {
   getCatalogCategories,
   createCatalogCategory,
@@ -7,20 +7,52 @@ import {
 } from '../../../api/catalog';
 import '../../../styles/admin/AdminCatalogManagement.css';
 
-const AdminCatalogManagement = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [formData, setFormData] = useState({
+const initialState = {
+  categories: [],
+  loading: true,
+  error: null,
+  showForm: false,
+  editingCategory: null,
+  formData: {
     name: '',
     description: '',
     category: '',
     subcategory: '',
     is_popular: false,
     image_url: ''
-  });
+  }
+};
+
+function adminCatalogReducer(state, action) {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.value };
+    case 'SET_CATEGORIES':
+      return { ...state, categories: action.value, error: null };
+    case 'SET_ERROR':
+      return { ...state, error: action.value };
+    case 'SET_SHOW_FORM':
+      return { ...state, showForm: action.value };
+    case 'SET_EDITING_CATEGORY':
+      return { ...state, editingCategory: action.value };
+    case 'SET_FORM_DATA':
+      return { ...state, formData: action.value };
+    case 'UPDATE_FORM_DATA':
+      return { ...state, formData: { ...state.formData, ...action.value } };
+    case 'RESET_FORM':
+      return {
+        ...state,
+        formData: initialState.formData,
+        editingCategory: null,
+        showForm: false
+      };
+    default:
+      return state;
+  }
+}
+
+const AdminCatalogManagement = () => {
+  const [state, dispatch] = useReducer(adminCatalogReducer, initialState);
 
   useEffect(() => {
     fetchCategories();
@@ -28,53 +60,49 @@ const AdminCatalogManagement = () => {
 
   const fetchCategories = async () => {
     try {
-      setLoading(true);
+      dispatch({ type: 'SET_LOADING', value: true });
       const response = await getCatalogCategories();
-      setCategories(response.data.data);
-      setError(null);
+      dispatch({ type: 'SET_CATEGORIES', value: response.data.data });
     } catch (err) {
-      setError('Ошибка загрузки категорий');
+      dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки категорий' });
       console.error('Ошибка загрузки категорий:', err);
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    dispatch({ type: 'UPDATE_FORM_DATA', value: { [name]: type === 'checkbox' ? checked : value } });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (editingCategory) {
-        await updateCatalogCategory(editingCategory.id, formData);
+      if (state.editingCategory) {
+        await updateCatalogCategory(state.editingCategory.id, state.formData);
       } else {
-        await createCatalogCategory(formData);
+        await createCatalogCategory(state.formData);
       }
-      resetForm();
+      dispatch({ type: 'RESET_FORM' });
       fetchCategories();
     } catch (err) {
-      setError('Ошибка сохранения категории');
+      dispatch({ type: 'SET_ERROR', value: 'Ошибка сохранения категории' });
       console.error('Ошибка сохранения категории:', err);
     }
   };
 
   const handleEdit = (category) => {
-    setFormData({
+    dispatch({ type: 'SET_FORM_DATA', value: {
       name: category.name,
       description: category.description || '',
       category: category.category || '',
       subcategory: category.subcategory || '',
       is_popular: category.is_popular || false,
       image_url: category.image_url || ''
-    });
-    setEditingCategory(category);
-    setShowForm(true);
+    }});
+    dispatch({ type: 'SET_EDITING_CATEGORY', value: category });
+    dispatch({ type: 'SET_SHOW_FORM', value: true });
   };
 
   const handleDelete = async (id) => {
@@ -83,121 +111,112 @@ const AdminCatalogManagement = () => {
         await deleteCatalogCategory(id);
         fetchCategories();
       } catch (err) {
-        setError('Ошибка удаления категории');
+        dispatch({ type: 'SET_ERROR', value: 'Ошибка удаления категории' });
         console.error('Ошибка удаления категории:', err);
       }
     }
   };
 
   const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      category: '',
-      subcategory: '',
-      is_popular: false,
-      image_url: ''
-    });
-    setEditingCategory(null);
-    setShowForm(false);
+    dispatch({ type: 'RESET_FORM' });
   };
 
-  if (loading && categories.length === 0) {
+  if (state.loading && state.categories.length === 0) {
     return <div className="loading">Загрузка категорий...</div>;
   }
 
   return (
     <div className="admin-catalog-management">
       <h2>Управление каталогом услуг</h2>
-      
-      {error && <div className="error-message">{error}</div>}
-      
+
+      {state.error && <div className="error-message">{state.error}</div>}
+
       <div className="admin-actions">
-        <button 
-          className="add-category-btn" 
+        <button
+          className="add-category-btn"
           onClick={() => {
             resetForm();
-            setShowForm(true);
+            dispatch({ type: 'SET_SHOW_FORM', value: true });
           }}
         >
           Добавить категорию
         </button>
       </div>
 
-      {showForm && (
+      {state.showForm && (
         <form onSubmit={handleSubmit} className="category-form">
-          <h3>{editingCategory ? 'Редактировать категорию' : 'Добавить категорию'}</h3>
-          
+          <h3>{state.editingCategory ? 'Редактировать категорию' : 'Добавить категорию'}</h3>
+
           <div className="form-group">
             <label htmlFor="name">Название *</label>
             <input
               type="text"
               id="name"
               name="name"
-              value={formData.name}
+              value={state.formData.name}
               onChange={handleInputChange}
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="description">Описание</label>
             <textarea
               id="description"
               name="description"
-              value={formData.description}
+              value={state.formData.description}
               onChange={handleInputChange}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="category">Основная категория</label>
             <input
               type="text"
               id="category"
               name="category"
-              value={formData.category}
+              value={state.formData.category}
               onChange={handleInputChange}
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="subcategory">Подкатегория</label>
             <input
               type="text"
               id="subcategory"
               name="subcategory"
-              value={formData.subcategory}
+              value={state.formData.subcategory}
               onChange={handleInputChange}
             />
           </div>
-          
+
           <div className="form-group checkbox-group">
             <label>
               <input
                 type="checkbox"
                 name="is_popular"
-                checked={formData.is_popular}
+                checked={state.formData.is_popular}
                 onChange={handleInputChange}
               />
               Популярная категория
             </label>
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="image_url">URL изображения</label>
             <input
               type="url"
               id="image_url"
               name="image_url"
-              value={formData.image_url}
+              value={state.formData.image_url}
               onChange={handleInputChange}
             />
           </div>
-          
+
           <div className="form-actions">
             <button type="submit" className="save-btn">
-              {editingCategory ? 'Сохранить' : 'Создать'}
+              {state.editingCategory ? 'Сохранить' : 'Создать'}
             </button>
             <button type="button" className="cancel-btn" onClick={resetForm}>
               Отмена
@@ -208,7 +227,7 @@ const AdminCatalogManagement = () => {
 
       <div className="categories-list">
         <h3>Существующие категории</h3>
-        {categories.length === 0 ? (
+        {state.categories.length === 0 ? (
           <p>Категории отсутствуют</p>
         ) : (
           <table className="categories-table">
@@ -222,7 +241,7 @@ const AdminCatalogManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {categories.map(category => (
+              {state.categories.map(category => (
                 <tr key={category.id}>
                   <td>{category.id}</td>
                   <td>{category.name}</td>

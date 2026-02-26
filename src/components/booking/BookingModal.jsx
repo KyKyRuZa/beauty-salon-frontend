@@ -1,31 +1,51 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useReducer, useCallback, useEffect } from 'react';
 import DateSelector from './DateSelector';
 import TimeSlotsSelector from './TimeSlotsSelector';
 import { getMasterSlots } from '../../api/timeslots';
 import { createBooking } from '../../api/booking';
 import '../../styles/booking/BookingModal.css';
 
+const initialState = {
+  selectedDate: null,
+  selectedSlot: null,
+  availableSlots: [],
+  loadingSlots: false
+};
+
+function bookingModalReducer(state, action) {
+  switch (action.type) {
+    case 'SET_SELECTED_DATE':
+      return { ...state, selectedDate: action.value, selectedSlot: null };
+    case 'SET_SELECTED_SLOT':
+      return { ...state, selectedSlot: action.value };
+    case 'SET_AVAILABLE_SLOTS':
+      return { ...state, availableSlots: action.value };
+    case 'SET_LOADING_SLOTS':
+      return { ...state, loadingSlots: action.value };
+    case 'RESET':
+      return { ...initialState };
+    default:
+      return state;
+  }
+}
+
 const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) => {
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [availableSlots, setAvailableSlots] = useState([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [state, dispatch] = useReducer(bookingModalReducer, initialState);
 
   const loadTimeSlots = useCallback(async () => {
-    if (!selectedDate || !providerId) return;
+    if (!state.selectedDate || !providerId) return;
 
     try {
-      setLoadingSlots(true);
+      dispatch({ type: 'SET_LOADING_SLOTS', value: true });
       const params = {
         master_id: providerId,
-        date: selectedDate
+        date: state.selectedDate
       };
-      
-      // Передаем service_id на сервер для фильтрации
+
       if (serviceId) {
         params.service_id = serviceId;
       }
-      
+
       const response = await getMasterSlots(params);
       console.log('Полученные слоты:', response);
 
@@ -36,61 +56,54 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
         slots = response;
       }
 
-      // Фильтруем слоты по выбранной услуге (если serviceId передан)
       if (serviceId && slots.length > 0) {
         slots = slots.filter(slot => slot.service_id === serviceId || slot.service_id === null);
       }
 
       console.log('Отфильтрованные слоты:', slots);
-      setAvailableSlots(slots);
+      dispatch({ type: 'SET_AVAILABLE_SLOTS', value: slots });
     } catch (error) {
       console.error('Ошибка загрузки временных слотов:', error);
-      setAvailableSlots([]);
+      dispatch({ type: 'SET_AVAILABLE_SLOTS', value: [] });
     } finally {
-      setLoadingSlots(false);
+      dispatch({ type: 'SET_LOADING_SLOTS', value: false });
     }
-  }, [providerId, selectedDate, serviceId]);
+  }, [providerId, state.selectedDate, serviceId]);
 
   // Сбрасываем состояние при открытии модального окна
+  // Это синхронизация состояния с props, а не эмуляция обработчика событий
   useEffect(() => {
     if (isOpen) {
-      setSelectedDate(null);
-      setSelectedSlot(null);
-      setAvailableSlots([]);
+      dispatch({ type: 'RESET' });
     }
   }, [isOpen]);
 
-  // Загружаем слоты при выборе даты
-  useEffect(() => {
-    if (selectedDate && providerId) {
+  const handleDateSelect = (date) => {
+    dispatch({ type: 'SET_SELECTED_DATE', value: date });
+    // Загружаем слоты сразу при выборе даты
+    if (date && providerId) {
       loadTimeSlots();
     }
-  }, [selectedDate, providerId, loadTimeSlots]);
-
-  const handleDateSelect = (date) => {
-    setSelectedDate(date);
-    setSelectedSlot(null); // Сбрасываем выбранный слот при смене даты
   };
 
   const handleSlotSelect = (slot) => {
-    setSelectedSlot(slot);
+    dispatch({ type: 'SET_SELECTED_SLOT', value: slot });
   };
 
   const handleConfirmBooking = async () => {
-    if (!selectedDate || !selectedSlot) {
+    if (!state.selectedDate || !state.selectedSlot) {
       alert('Пожалуйста, выберите дату и время');
       return;
     }
 
     try {
-      // Формируем данные для бронирования
       const bookingData = {
         master_id: providerId,
         master_service_id: serviceId,
-        start_time: selectedSlot.start_time,
-        end_time: selectedSlot.end_time,
-        time_slot_id: selectedSlot.id,
-        comment: '' // Можно добавить поле для комментария
+        start_time: state.selectedSlot.start_time,
+        end_time: state.selectedSlot.end_time,
+        time_slot_id: state.selectedSlot.id,
+        comment: ''
       };
 
       console.log('Создание бронирования:', bookingData);
@@ -98,7 +111,7 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
       const response = await createBooking(bookingData);
 
       if (response.success) {
-        alert(`✅ Запись успешно создана!\n\nДата: ${selectedDate}\nВремя: ${selectedSlot.start_time.split('T')[1]?.substring(0, 5)} - ${selectedSlot.end_time.split('T')[1]?.substring(0, 5)}\nУслуга: ${serviceTitle}`);
+        alert(`✅ Запись успешно создана!\n\nДата: ${state.selectedDate}\nВремя: ${state.selectedSlot.start_time.split('T')[1]?.substring(0, 5)} - ${state.selectedSlot.end_time.split('T')[1]?.substring(0, 5)}\nУслуга: ${serviceTitle}`);
         onClose();
       } else {
         alert(`Ошибка при создании записи: ${response.message || 'Неизвестная ошибка'}`);
@@ -113,9 +126,9 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
   if (!isOpen) return null;
 
   return (
-    <div className="booking-modal-overlay" onClick={onClose}>
-      <div className="booking-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="booking-modal-close" onClick={onClose}>
+    <div className="booking-modal-overlay" role="presentation" onClick={onClose} onKeyDown={(e) => e.key === 'Escape' && onClose()}>
+      <div className="booking-modal" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.key === 'Escape' && onClose()}>
+        <button className="booking-modal-close" onClick={onClose} onKeyDown={(e) => e.key === 'Enter' && onClose()}>
           <span className="material-symbols-outlined">close</span>
         </button>
 
@@ -125,22 +138,20 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
         </div>
 
         <div className="booking-modal-body">
-          {/* Шаг 1: Выбор даты */}
           <DateSelector
             masterId={providerId}
             serviceId={serviceId}
-            selectedDate={selectedDate}
+            selectedDate={state.selectedDate}
             onDateSelect={handleDateSelect}
           />
 
-          {/* Шаг 2: Выбор времени */}
-          {loadingSlots ? (
+          {state.loadingSlots ? (
             <div className="slots-loading">Загрузка доступного времени...</div>
           ) : (
             <TimeSlotsSelector
-              availableSlots={availableSlots}
-              selectedDate={selectedDate}
-              selectedSlot={selectedSlot}
+              availableSlots={state.availableSlots}
+              selectedDate={state.selectedDate}
+              selectedSlot={state.selectedSlot}
               onSlotSelect={handleSlotSelect}
             />
           )}
@@ -153,7 +164,7 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
           <button
             className="btn-confirm"
             onClick={handleConfirmBooking}
-            disabled={!selectedDate || !selectedSlot}
+            disabled={!state.selectedDate || !state.selectedSlot}
           >
             Подтвердить запись
           </button>

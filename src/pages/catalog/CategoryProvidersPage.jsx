@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useCallback, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useCallback, useReducer } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCatalog } from '../../context/CatalogContext';
 import { useAuth } from '../../context/AuthContext';
@@ -8,18 +8,38 @@ import Footer from '../../components/ui/Footer';
 import BookingModal from '../../components/booking/BookingModal';
 import '../../styles/catalog/CategoryProvidersPage.css';
 
+const initialState = {
+  favorites: {},
+  loadingFavorites: {},
+  isBookingModalOpen: false,
+  selectedProvider: null,
+  providerImages: {}
+};
+
+function categoryProvidersReducer(state, action) {
+  switch (action.type) {
+    case 'SET_FAVORITES':
+      return { ...state, favorites: action.value };
+    case 'SET_LOADING_FAVORITES':
+      return { ...state, loadingFavorites: { ...state.loadingFavorites, [action.providerId]: action.value } };
+    case 'TOGGLE_FAVORITE':
+      return { ...state, favorites: { ...state.favorites, [action.providerId]: !state.favorites[action.providerId] } };
+    case 'SET_BOOKING_MODAL':
+      return { ...state, isBookingModalOpen: action.value };
+    case 'SET_SELECTED_PROVIDER':
+      return { ...state, selectedProvider: action.value };
+    case 'SET_PROVIDER_IMAGES':
+      return { ...state, providerImages: action.value };
+    default:
+      return state;
+  }
+}
+
 const CategoryProvidersPage = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const hasLoaded = useRef(false); // Для отслеживания, были ли данные уже загружены
-
-  const [favorites, setFavorites] = useState({}); // { [providerId]: boolean }
-  const [loadingFavorites, setLoadingFavorites] = useState({}); // { [providerId]: boolean }
-  
-  // Состояние для модального окна записи
-  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [selectedProvider, setSelectedProvider] = useState(null); // { id, type, serviceId, serviceTitle }
+  const [state, dispatch] = useReducer(categoryProvidersReducer, initialState);
   
   const {
     selectedCategory,
@@ -32,21 +52,14 @@ const CategoryProvidersPage = () => {
     getSalonImage,
     clearServices
   } = useCatalog();
-  
-  // Состояние для хранения изображений
-  const [providerImages, setProviderImages] = useState({});
 
   useEffect(() => {
     // Загружаем данные категории и услуг при монтировании компонента
     const fetchData = async () => {
-      // Проверяем, не загружались ли уже данные
-      if (!hasLoaded.current) {
-        hasLoaded.current = true;
-        await Promise.all([
-          loadCategoryById(categoryId),
-          loadServicesByCategory(categoryId)
-        ]);
-      }
+      await Promise.all([
+        loadCategoryById(categoryId),
+        loadServicesByCategory(categoryId)
+      ]);
     };
 
     fetchData();
@@ -54,57 +67,59 @@ const CategoryProvidersPage = () => {
     // Очищаем услуги при размонтировании компонента
     return () => {
       clearServices();
-      hasLoaded.current = false; // Сбрасываем флаг при размонтировании
     };
-  }, [categoryId, loadCategoryById, loadServicesByCategory, clearServices]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryId]);
 
   // Загружаем изображения для мастеров и салонов
   useEffect(() => {
     const loadProviderImages = async () => {
-      const newImages = { ...providerImages };
+      const newImages = { ...state.providerImages };
+      let hasChanges = false;
 
       for (const service of services) {
-        // Загружаем изображение для мастера, если оно не существует
         if (service.master && service.master_id) {
           const masterId = service.master_id;
           if (!newImages[`master_${masterId}`]) {
             const imageUrl = await getMasterImage(masterId);
             if (imageUrl) {
               newImages[`master_${masterId}`] = imageUrl;
+              hasChanges = true;
             }
           }
         }
 
-        // Загружаем изображение для салона, если оно не существует
         if (service.salon && service.salon_id) {
           const salonId = service.salon_id;
           if (!newImages[`salon_${salonId}`]) {
             const imageUrl = await getSalonImage(salonId);
             if (imageUrl) {
               newImages[`salon_${salonId}`] = imageUrl;
+              hasChanges = true;
             }
           }
         }
       }
 
-      if (Object.keys(newImages).length > Object.keys(providerImages).length) {
-        setProviderImages(newImages);
+      if (hasChanges) {
+        dispatch({ type: 'SET_PROVIDER_IMAGES', value: newImages });
       }
     };
 
     if (services.length > 0) {
       loadProviderImages();
     }
-  }, [services, getMasterImage, getSalonImage, providerImages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [services]);
 
   const handleBook = useCallback((service) => {
-    setSelectedProvider({
+    dispatch({ type: 'SET_SELECTED_PROVIDER', value: {
       id: service.provider.id,
       type: service.provider.type,
       serviceId: service.id,
       serviceTitle: service.name
-    });
-    setIsBookingModalOpen(true);
+    }});
+    dispatch({ type: 'SET_BOOKING_MODAL', value: true });
   }, []);
 
   const handleProfile = useCallback((providerId, type) => {
@@ -120,24 +135,18 @@ const CategoryProvidersPage = () => {
     }
 
     // Оптимистичное обновление UI
-    setFavorites(prev => ({
-      ...prev,
-      [providerId]: !prev[providerId]
-    }));
+    dispatch({ type: 'TOGGLE_FAVORITE', providerId });
 
     try {
-      setLoadingFavorites(prev => ({ ...prev, [providerId]: true }));
+      dispatch({ type: 'SET_LOADING_FAVORITES', providerId, value: true });
       await toggleFavorite(providerId);
     } catch (error) {
       console.error('Ошибка переключения избранного:', error);
       alert(error.response?.data?.message || 'Ошибка при изменении избранного');
       // Откат изменения при ошибке
-      setFavorites(prev => ({
-        ...prev,
-        [providerId]: !prev[providerId]
-      }));
+      dispatch({ type: 'TOGGLE_FAVORITE', providerId });
     } finally {
-      setLoadingFavorites(prev => ({ ...prev, [providerId]: false }));
+      dispatch({ type: 'SET_LOADING_FAVORITES', providerId, value: false });
     }
   }, [user]);
 
@@ -147,16 +156,14 @@ const CategoryProvidersPage = () => {
       const serviceItems = [];
 
       if (service.master) {
-        // Проверяем различные возможные поля для изображения мастера
-        // Если изображение не найдено в основном ответе, используем изображение из providerImages
-        const masterImage = service.master.avatar_url || 
-                           service.master.image_url || 
-                           service.master.photo_url || 
-                           service.master.avatar || 
-                           service.master.image || 
-                           providerImages[`master_${service.master_id}`] ||
+        const masterImage = service.master.avatar_url ||
+                           service.master.image_url ||
+                           service.master.photo_url ||
+                           service.master.avatar ||
+                           service.master.image ||
+                           state.providerImages[`master_${service.master_id}`] ||
                            'https://via.placeholder.com/100';
-                           
+
         serviceItems.push({
           ...service,
           provider: {
@@ -164,25 +171,23 @@ const CategoryProvidersPage = () => {
             type: 'master',
             typeName: 'Бьюти-мастер',
             name: `${service.master.first_name} ${service.master.last_name}`,
-            image: masterImage, // Используем найденное изображение
+            image: masterImage,
             rating: service.master.rating || 4.8,
             address: service.master.address || 'Адрес не указан',
-            hasTraining: false, // Mock data based on image logic
+            hasTraining: false,
           }
         });
       }
 
       if (service.salon) {
-        // Проверяем различные возможные поля для изображения салона
-        // Если изображение не найдено в основном ответе, используем изображение из providerImages
-        const salonImage = service.salon.logo_url || 
-                          service.salon.image_url || 
-                          service.salon.photo_url || 
-                          service.salon.logo || 
-                          service.salon.image || 
-                          providerImages[`salon_${service.salon_id}`] ||
+        const salonImage = service.salon.logo_url ||
+                          service.salon.image_url ||
+                          service.salon.photo_url ||
+                          service.salon.logo ||
+                          service.salon.image ||
+                          state.providerImages[`salon_${service.salon_id}`] ||
                           'https://via.placeholder.com/100';
-                          
+
         serviceItems.push({
           ...service,
           provider: {
@@ -200,7 +205,7 @@ const CategoryProvidersPage = () => {
 
       return serviceItems;
     });
-  }, [services, providerImages]);
+  }, [services, state.providerImages]);
 
   if (loading.category || loading.services) return <div className="loading-container">Загрузка...</div>;
   if (error) return <div className="error-container">{error}</div>;
@@ -287,13 +292,13 @@ const CategoryProvidersPage = () => {
                     >
                       ЗАПИСАТЬСЯ
                     </button>
-                    <button 
-                      className={`btn-favorite ${favorites[item.provider.id] ? 'active' : ''}`}
+                    <button
+                      className={`btn-favorite ${state.favorites[item.provider.id] ? 'active' : ''}`}
                       onClick={(e) => handleToggleFavorite(e, item.provider.id, item.provider.type)}
-                      disabled={loadingFavorites[item.provider.id]}
+                      disabled={state.loadingFavorites[item.provider.id]}
                     >
                       <span className="material-symbols-outlined">
-                        {favorites[item.provider.id] ? 'favorite' : 'favorite_border'}
+                        {state.favorites[item.provider.id] ? 'favorite' : 'favorite_border'}
                       </span>
                     </button>
                   </div>
@@ -314,16 +319,15 @@ const CategoryProvidersPage = () => {
       
       {/* Модальное окно записи */}
       <BookingModal
-        isOpen={isBookingModalOpen}
-        onClose={() => setIsBookingModalOpen(false)}
-        providerId={selectedProvider?.id}
-        providerType={selectedProvider?.type}
-        serviceId={selectedProvider?.serviceId}
-        serviceTitle={selectedProvider?.serviceTitle}
+        isOpen={state.isBookingModalOpen}
+        onClose={() => dispatch({ type: 'SET_BOOKING_MODAL', value: false })}
+        providerId={state.selectedProvider?.id}
+        providerType={state.selectedProvider?.type}
+        serviceId={state.selectedProvider?.serviceId}
+        serviceTitle={state.selectedProvider?.serviceTitle}
       />
     </>
   );
 };
 
-// Экспортируем компонент с memo для предотвращения лишних перерендеров
-export default React.memo(CategoryProvidersPage);
+export default CategoryProvidersPage;

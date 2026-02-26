@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { getCatalogCategories, getServicesByCategory, getCategoryById } from '../api/catalog';
 import UserService from '../api/user';
 
@@ -13,141 +13,164 @@ export const useCatalog = () => {
   return context;
 };
 
-export const CatalogProvider = ({ children }) => {
-  const [categories, setCategories] = useState([]);
-  const [services, setServices] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [loading, setLoading] = useState({
+const initialState = {
+  categories: [],
+  services: [],
+  selectedCategory: null,
+  loading: {
     categories: false,
     services: false,
     category: false
-  });
-  const [error, setError] = useState(null);
-  
-  // Состояния для хранения изображений мастеров и салонов
-  const [masterImages, setMasterImages] = useState({});
-  const [salonImages, setSalonImages] = useState({});
+  },
+  error: null,
+  masterImages: {},
+  salonImages: {}
+};
+
+function catalogReducer(state, action) {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return {
+        ...state,
+        loading: {
+          ...state.loading,
+          [action.key]: action.value
+        }
+      };
+    case 'SET_CATEGORIES':
+      return { ...state, categories: action.data };
+    case 'SET_SERVICES':
+      return { ...state, services: action.data };
+    case 'SET_SELECTED_CATEGORY':
+      return { ...state, selectedCategory: action.data };
+    case 'SET_ERROR':
+      return { ...state, error: action.error };
+    case 'SET_MASTER_IMAGE':
+      return {
+        ...state,
+        masterImages: {
+          ...state.masterImages,
+          [action.masterId]: action.imageUrl
+        }
+      };
+    case 'SET_SALON_IMAGE':
+      return {
+        ...state,
+        salonImages: {
+          ...state.salonImages,
+          [action.salonId]: action.imageUrl
+        }
+      };
+    case 'CLEAR_SERVICES':
+      return { ...state, services: [] };
+    case 'CLEAR_SELECTED_CATEGORY':
+      return { ...state, selectedCategory: null };
+    default:
+      return state;
+  }
+}
+
+export const CatalogProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(catalogReducer, initialState);
 
   // Загрузка всех категорий
   const loadCategories = useCallback(async () => {
-    setLoading(prev => {
-      if (prev.categories) return prev; // Предотвращаем повторную загрузку
-      return { ...prev, categories: true };
-    });
+    if (state.loading.categories) return;
 
-    setError(null);
+    dispatch({ type: 'SET_ERROR', error: null });
+    dispatch({ type: 'SET_LOADING', key: 'categories', value: true });
 
     try {
       const response = await getCatalogCategories();
-      setCategories(response.data.data || []);
+      dispatch({ type: 'SET_CATEGORIES', data: response.data.data || [] });
     } catch (err) {
-      setError(err.message || 'Ошибка загрузки категорий');
+      dispatch({ type: 'SET_ERROR', error: err.message || 'Ошибка загрузки категорий' });
       console.error('Ошибка загрузки категорий:', err);
     } finally {
-      setLoading(prev => ({ ...prev, categories: false }));
+      dispatch({ type: 'SET_LOADING', key: 'categories', value: false });
     }
-  }, []);
+  }, [state.loading.categories]);
 
   // Загрузка услуг по категории
   const loadServicesByCategory = useCallback(async (categoryId) => {
-    setLoading(prev => {
-      if (prev.services) return prev; // Предотвращаем повторную загрузку
-      return { ...prev, services: true };
-    });
-
-    setError(null);
+    dispatch({ type: 'SET_ERROR', error: null });
+    dispatch({ type: 'SET_LOADING', key: 'services', value: true });
 
     try {
       const response = await getServicesByCategory(categoryId);
-      setServices(response.data.data || []);
+      dispatch({ type: 'SET_SERVICES', data: response.data.data || [] });
     } catch (err) {
-      setError(err.message || 'Ошибка загрузки услуг');
+      dispatch({ type: 'SET_ERROR', error: err.message || 'Ошибка загрузки услуг' });
       console.error('Ошибка загрузки услуг:', err);
     } finally {
-      setLoading(prev => ({ ...prev, services: false }));
+      dispatch({ type: 'SET_LOADING', key: 'services', value: false });
     }
   }, []);
 
   // Загрузка конкретной категории
   const loadCategoryById = useCallback(async (categoryId) => {
-    setLoading(prev => {
-      if (prev.category) return prev; // Предотвращаем повторную загрузку
-      return { ...prev, category: true };
-    });
-
-    setError(null);
+    dispatch({ type: 'SET_ERROR', error: null });
+    dispatch({ type: 'SET_LOADING', key: 'category', value: true });
 
     try {
       const response = await getCategoryById(categoryId);
-      setSelectedCategory(response.data.data);
+      dispatch({ type: 'SET_SELECTED_CATEGORY', data: response.data.data });
     } catch (err) {
-      setError(err.message || 'Ошибка загрузки категории');
+      dispatch({ type: 'SET_ERROR', error: err.message || 'Ошибка загрузки категории' });
       console.error('Ошибка загрузки категории:', err);
     } finally {
-      setLoading(prev => ({ ...prev, category: false }));
+      dispatch({ type: 'SET_LOADING', key: 'category', value: false });
     }
   }, []);
 
   // Функция для получения изображения мастера по ID
   const getMasterImage = useCallback(async (masterId) => {
-    if (masterImages[masterId]) {
-      return masterImages[masterId];
-    }
-
     try {
       const response = await UserService.getMasterById(masterId);
       const imageUrl = response.data?.image_url;
-      
-      setMasterImages(prev => ({
-        ...prev,
-        [masterId]: imageUrl
-      }));
+
+      dispatch({ type: 'SET_MASTER_IMAGE', masterId, imageUrl });
 
       return imageUrl;
     } catch (error) {
       console.error(`Ошибка при получении данных мастера ${masterId}:`, error);
       return null;
     }
-  }, [masterImages]);
+  }, []);
 
   // Функция для получения изображения салона по ID
   const getSalonImage = useCallback(async (salonId) => {
-    if (salonImages[salonId]) {
-      return salonImages[salonId];
-    }
-
     try {
       const response = await UserService.getSalonById(salonId);
       const imageUrl = response.data?.image_url;
-      
-      setSalonImages(prev => ({
-        ...prev,
-        [salonId]: imageUrl
-      }));
+
+      dispatch({ type: 'SET_SALON_IMAGE', salonId, imageUrl });
 
       return imageUrl;
     } catch (error) {
       console.error(`Ошибка при получении данных салона ${salonId}:`, error);
       return null;
     }
-  }, [salonImages]);
+  }, []);
 
   // Очистка услуг
   const clearServices = useCallback(() => {
-    setServices([]);
-  }, []); // Empty dependency array
+    dispatch({ type: 'CLEAR_SERVICES' });
+  }, []);
 
   // Очистка выбранной категории
   const clearSelectedCategory = useCallback(() => {
-    setSelectedCategory(null);
-  }, []); // Empty dependency array
+    dispatch({ type: 'CLEAR_SELECTED_CATEGORY' });
+  }, []);
 
   const value = React.useMemo(() => ({
-    categories,
-    services,
-    selectedCategory,
-    loading,
-    error,
+    categories: state.categories,
+    services: state.services,
+    selectedCategory: state.selectedCategory,
+    loading: state.loading,
+    error: state.error,
+    masterImages: state.masterImages,
+    salonImages: state.salonImages,
     loadCategories,
     loadServicesByCategory,
     loadCategoryById,
@@ -156,11 +179,13 @@ export const CatalogProvider = ({ children }) => {
     clearServices,
     clearSelectedCategory
   }), [
-    categories,
-    services,
-    selectedCategory,
-    loading,
-    error,
+    state.categories,
+    state.services,
+    state.selectedCategory,
+    state.loading,
+    state.error,
+    state.masterImages,
+    state.salonImages,
     loadCategories,
     loadServicesByCategory,
     loadCategoryById,
@@ -177,4 +202,3 @@ export const CatalogProvider = ({ children }) => {
   );
 };
 
-export default CatalogProvider;

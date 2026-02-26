@@ -8,6 +8,113 @@ import { ServiceManagement } from "../../../components/catalog";
 import ReviewsList from "../../../components/reviews/ReviewsList";
 import MasterSchedule from "../../../components/master/MasterSchedule";
 
+const ScheduleSection = () => (
+  <section className="section">
+    <h2 className="section-title">МОЁ РАСПИСАНИЕ</h2>
+    <MasterSchedule />
+  </section>
+);
+
+const ServicesSection = () => (
+  <section className="section">
+    <h2 className="section-title">МОИ УСЛУГИ</h2>
+    <ServiceManagement />
+  </section>
+);
+
+const ReviewsSection = ({ masterId }) => (
+  <section className="section">
+    <h2 className="section-title">ОТЗЫВЫ КЛИЕНТОВ</h2>
+    <ReviewsList masterId={masterId} showForm={false} />
+  </section>
+);
+
+const StatsSection = () => (
+  <section className="section">
+    <h2 className="section-title">СТАТИСТИКА</h2>
+    <div className="stats-grid">
+      <p>В разработке</p>
+    </div>
+  </section>
+);
+
+const DefaultSection = () => (
+  <section className="section">
+    <h2 className="section-title">РАСПИСАНИЕ</h2>
+    <p>Выберите раздел для управления вашим профилем</p>
+  </section>
+);
+
+const SettingsContent = ({ settings, setSettings, navigate }) => {
+  return (
+    <section className="section">
+      <h2 className="section-title">НАСТРОЙКИ ПРОФИЛЯ</h2>
+      <div className="settings-list">
+        <div className="setting-item">
+          <span>Уведомления</span>
+          <label className="switch" aria-label="Уведомления">
+            <input
+              type="checkbox"
+              checked={settings.notifications}
+              onChange={(e) => setSettings({...settings, notifications: e.target.checked})}
+            />
+            <span className="slider"></span>
+          </label>
+        </div>
+
+        <div className="setting-item">
+          <span>Конфиденциальность профиля</span>
+          <select
+            value={settings.profileVisibility}
+            onChange={(e) => setSettings({...settings, profileVisibility: e.target.value})}
+            className="select-input"
+          >
+            <option value="all">Видно всем</option>
+            <option value="clients">Только клиентам</option>
+            <option value="none">Скрыто</option>
+          </select>
+        </div>
+
+        <div className="setting-item">
+          <span>Уведомления по Email</span>
+          <label className="switch" aria-label="Уведомления по Email">
+            <input
+              type="checkbox"
+              checked={settings.emailNotifications}
+              onChange={(e) => setSettings({...settings, emailNotifications: e.target.checked})}
+            />
+            <span className="slider"></span>
+          </label>
+        </div>
+
+        <div className="setting-item">
+          <span>Уведомления по SMS</span>
+          <label className="switch" aria-label="Уведомления по SMS">
+            <input
+              type="checkbox"
+              checked={settings.smsNotifications}
+              onChange={(e) => setSettings({...settings, smsNotifications: e.target.checked})}
+            />
+            <span className="slider"></span>
+          </label>
+        </div>
+
+        <div className="setting-item">
+          <span>Редактировать профиль</span>
+          <button
+            className="link-btn"
+            onClick={() => navigate('/profile/edit')}
+          >
+            Изменить данные
+          </button>
+        </div>
+      </div>
+
+      <button className="btn-primary full-width">Сохранить изменения</button>
+    </section>
+  );
+};
+
 const MasterProfile = ({ handleLogout }) => {
   const { user, profile, updateProfile: updateProfileInternal } = useAuth();
   const navigate = useNavigate();
@@ -23,8 +130,6 @@ const MasterProfile = ({ handleLogout }) => {
 
 
   const loadSettings = async () => {
-    // В реальном приложении здесь будет загрузка настроек с сервера
-    // Пока что просто устанавливаем значения по умолчанию
     setSettings({
       notifications: true,
       privacy: 'public',
@@ -32,124 +137,6 @@ const MasterProfile = ({ handleLogout }) => {
       emailNotifications: true,
       smsNotifications: false
     });
-  };
-
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'schedule':
-        return (
-          <section className="section">
-            <h2 className="section-title">МОЁ РАСПИСАНИЕ</h2>
-            <MasterSchedule />
-          </section>
-        );
-
-      case 'services':
-        return (
-          <section className="section">
-            <h2 className="section-title">МОИ УСЛУГИ</h2>
-            <ServiceManagement />
-          </section>
-        );
-
-      case 'reviews':
-        return (
-          <section className="section">
-            <h2 className="section-title">ОТЗЫВЫ КЛИЕНТОВ</h2>
-            <ReviewsList
-              masterId={profile?.id}
-              showForm={false}
-            />
-          </section>
-        );
-      
-      case 'stats':
-        return (
-          <section className="section">
-            <h2 className="section-title">СТАТИСТИКА</h2>
-            <div className="stats-grid">
-              <p>В разработке</p>
-            </div>
-          </section>
-        );
-
-      case 'settings':
-        return (
-          <section className="section">
-            <h2 className="section-title">НАСТРОЙКИ ПРОФИЛЯ</h2>
-            <div className="settings-list">
-              <div className="setting-item">
-                <span>Уведомления</span>
-                <label className="switch">
-                  <input 
-                    type="checkbox" 
-                    checked={settings.notifications} 
-                    onChange={(e) => setSettings({...settings, notifications: e.target.checked})}
-                  />
-                  <span className="slider"></span>
-                </label>
-              </div>
-              
-              <div className="setting-item">
-                <span>Конфиденциальность профиля</span>
-                <select 
-                  value={settings.profileVisibility} 
-                  onChange={(e) => setSettings({...settings, profileVisibility: e.target.value})}
-                  className="select-input"
-                >
-                  <option value="all">Видно всем</option>
-                  <option value="clients">Только клиентам</option>
-                  <option value="none">Скрыто</option>
-                </select>
-              </div>
-              
-              <div className="setting-item">
-                <span>Уведомления по Email</span>
-                <label className="switch">
-                  <input 
-                    type="checkbox" 
-                    checked={settings.emailNotifications} 
-                    onChange={(e) => setSettings({...settings, emailNotifications: e.target.checked})}
-                  />
-                  <span className="slider"></span>
-                </label>
-              </div>
-              
-              <div className="setting-item">
-                <span>Уведомления по SMS</span>
-                <label className="switch">
-                  <input 
-                    type="checkbox" 
-                    checked={settings.smsNotifications} 
-                    onChange={(e) => setSettings({...settings, smsNotifications: e.target.checked})}
-                  />
-                  <span className="slider"></span>
-                </label>
-              </div>
-              
-              <div className="setting-item">
-                <span>Редактировать профиль</span>
-                <button
-                  className="link-btn"
-                  onClick={() => navigate('/profile/edit')}
-                >
-                  Изменить данные
-                </button>
-              </div>
-            </div>
-
-            <button className="btn-primary full-width">Сохранить изменения</button>
-          </section>
-        );
-      
-      default:
-        return (
-          <section className="section">
-            <h2 className="section-title">РАСПИСАНИЕ</h2>
-            <p>Выберите раздел для управления вашим профилем</p>
-          </section>
-        );
-    }
   };
 
   // Получаем имя и фамилию из профиля, если они существуют, иначе из основного объекта пользователя
@@ -299,7 +286,11 @@ const MasterProfile = ({ handleLogout }) => {
           </aside>
 
           <section className="content">
-            {renderContent()}
+            {activeSection === 'schedule' && <ScheduleSection />}
+            {activeSection === 'services' && <ServicesSection />}
+            {activeSection === 'reviews' && <ReviewsSection masterId={profile?.id} />}
+            {activeSection === 'stats' && <StatsSection />}
+            {activeSection === 'settings' && <SettingsContent settings={settings} setSettings={setSettings} navigate={navigate} />}
           </section>
         </div>
       </div>

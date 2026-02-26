@@ -1,0 +1,40 @@
+# syntax=docker/dockerfile:1
+
+# =============================================================================
+# Frontend Dockerfile (Development)
+# =============================================================================
+# Dev-образ для локальной разработки с hot-reload
+# Использует Vite dev-server для мгновенной пересборки
+# =============================================================================
+
+FROM node:24-alpine
+
+# Метки для идентификации образа
+LABEL maintainer="Beauty Vite Team"
+LABEL description="Frontend development server for Beauty Vite application"
+LABEL version="1.0"
+
+# Установка рабочей директории
+WORKDIR /app
+
+# Копирование package файлов
+COPY package*.json ./
+
+# Установка всех зависимостей (включая devDependencies)
+RUN npm ci
+
+# Копирование исходного кода
+# При запуске через docker-compose этот слой будет переопределён volume
+COPY . .
+
+# Экспорт порта Vite dev-server
+EXPOSE 5173
+
+# Переменные окружения для dev-режима
+ENV NODE_ENV=development
+ENV CHOKIDAR_USEPOLLING=true
+ENV CHOKIDAR_INTERVAL=100
+
+# Запуск Vite dev-server
+# Hot-reload работает через volume mounts из docker-compose
+CMD ["npm", "run", "dev"]

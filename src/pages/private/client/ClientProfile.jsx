@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useReducer, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import '../../../styles/Profile.css';
@@ -8,165 +8,70 @@ import { getCatalogServices as CatalogService } from "../../../api/catalog";
 import BookingHistory from "../../../components/booking/BookingHistory";
 import { getFavorites } from "../../../api/favorites";
 
+const initialState = {
+  activeSection: 'recommendations',
+  recommendations: [],
+  loadingRecommendations: false,
+  favorites: [],
+  loadingFavorites: false
+};
+
+function clientReducer(state, action) {
+  switch (action.type) {
+    case 'SET_ACTIVE_SECTION':
+      return { ...state, activeSection: action.value };
+    case 'SET_RECOMMENDATIONS':
+      return { ...state, recommendations: action.value };
+    case 'SET_LOADING_RECOMMENDATIONS':
+      return { ...state, loadingRecommendations: action.value };
+    case 'SET_FAVORITES':
+      return { ...state, favorites: action.value };
+    case 'SET_LOADING_FAVORITES':
+      return { ...state, loadingFavorites: action.value };
+    default:
+      return state;
+  }
+}
+
 const ClientProfile = ({ handleLogout }) => {
   const { user, profile, updateProfile: updateProfileInternal } = useAuth();
   const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState('recommendations');
-  const [recommendations, setRecommendations] = useState([]);
-  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const [favorites, setFavorites] = useState([]);
-  const [loadingFavorites, setLoadingFavorites] = useState(false);
+  const [state, dispatch] = useReducer(clientReducer, initialState);
 
 
   // Загрузка рекомендаций при активации секции
   useEffect(() => {
-    if (activeSection === 'recommendations') {
+    if (state.activeSection === 'recommendations') {
       loadRecommendations();
-    } else if (activeSection === 'favorites') {
+    } else if (state.activeSection === 'favorites') {
       loadFavorites();
     }
-  }, [activeSection]);
+  }, [state.activeSection]);
 
   const loadRecommendations = async () => {
-    setLoadingRecommendations(true);
+    dispatch({ type: 'SET_LOADING_RECOMMENDATIONS', value: true });
     try {
       const response = await CatalogService();
       const services = response.data.data || [];
-      setRecommendations(services.slice(0, 3));
+      dispatch({ type: 'SET_RECOMMENDATIONS', value: services.slice(0, 3) });
     } catch (error) {
       console.error('Ошибка при загрузке рекомендаций:', error);
-      setRecommendations([]);
+      dispatch({ type: 'SET_RECOMMENDATIONS', value: [] });
     } finally {
-      setLoadingRecommendations(false);
+      dispatch({ type: 'SET_LOADING_RECOMMENDATIONS', value: false });
     }
   };
 
   const loadFavorites = async () => {
-    setLoadingFavorites(true);
+    dispatch({ type: 'SET_LOADING_FAVORITES', value: true });
     try {
       const response = await getFavorites();
-      setFavorites(response.data || []);
+      dispatch({ type: 'SET_FAVORITES', value: response.data || [] });
     } catch (error) {
       console.error('Ошибка загрузки избранных:', error);
-      setFavorites([]);
+      dispatch({ type: 'SET_FAVORITES', value: [] });
     } finally {
-      setLoadingFavorites(false);
-    }
-  };
-
-
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'orders':
-        return (
-          <section className="section">
-            <BookingHistory />
-          </section>
-        );
-
-      case 'settings':
-        return (
-          <section className="section">
-            <h2 className="section-title">НАСТРОЙКИ</h2>
-            <div className="settings-list">
-              <div className="setting-item">
-                <span>Уведомления</span>
-                <label className="switch">
-                  <input type="checkbox" defaultChecked />
-                  <span className="slider"></span>
-                </label>
-              </div>
-              <div className="setting-item">
-                <span>Редактировать профиль</span>
-                <button
-                  className="link-btn"
-                  onClick={() => navigate('/profile/edit')}
-                >
-                  Изменить данные
-                </button>
-              </div>
-            </div>
-          </section>
-        );
-
-      case 'feedback':
-        return (
-          <section className="section">
-            <h2 className="section-title">МОИ ОТЗЫВЫ</h2>
-            <div className="orders-list">
-                <p>В разработке</p>
-            </div>
-            <button className="btn-primary full-width">Показать все отзывы</button>
-          </section>
-        );
-
-      case 'favorites':
-        return (
-          <section className="section">
-            <h2 className="section-title">ИЗБРАННЫЕ МАСТЕРА</h2>
-            {loadingFavorites ? (
-              <p>Загрузка...</p>
-            ) : favorites.length > 0 ? (
-              <div className="favorites-grid">
-                {favorites.map(master => (
-                  <div key={master.id} className="favorite-card">
-                    <img 
-                      src={master.image_url || photo} 
-                      alt={`${master.first_name} ${master.last_name}`}
-                      className="favorite-avatar"
-                    />
-                    <h3>{master.first_name} {master.last_name}</h3>
-                    <p className="favorite-specialty">{master.specialization || 'Специализация не указана'}</p>
-                    <div className="favorite-info">
-                      <span className="material-symbols-outlined icon">star</span>
-                      <span>{master.rating || 'N/A'}</span>
-                    </div>
-                    <button 
-                      className="btn-primary"
-                      onClick={() => navigate(`/provider/${master.id}?type=master`)}
-                    >
-                      Перейти в профиль
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="no-favorites">
-                <p>У вас пока нет избранных мастеров</p>
-                <button 
-                  className="btn-primary"
-                  onClick={() => navigate('/catalog')}
-                >
-                  Найти мастеров
-                </button>
-              </div>
-            )}
-          </section>
-        );
-
-      case 'recommendations':
-      default:
-        return (
-          <section className="section">
-            <h2 className="section-title">РЕКОМЕНДАЦИИ ДЛЯ ВАС</h2>
-            <div className="recommendations-grid">
-              {loadingRecommendations ? (
-                <p>Загрузка рекомендаций...</p>
-              ) : recommendations.length > 0 ? (
-                recommendations.map((service, index) => (
-                  <div key={service.id || index} className="recommendation-card">
-                    <img src={photo} alt={service.name || "Рекомендация"} />
-                    <h3>{service.name || 'Услуга'}</h3>
-                    <p>От {service.minPrice || 'цена не указана'} ₽</p>
-                    <button className="btn-sm">Записаться</button>
-                  </div>
-                ))
-              ) : (
-                <p>У вас пока нет рекомендаций</p>
-              )}
-            </div>
-          </section>
-        );
+      dispatch({ type: 'SET_LOADING_FAVORITES', value: false });
     }
   };
 
@@ -222,8 +127,6 @@ const ClientProfile = ({ handleLogout }) => {
                     if (file) {
                       const formData = new FormData();
                       formData.append('avatar', file);
-
-                      // Вызываем обновление профиля
                       updateProfileInternal(formData);
                     }
                   }}
@@ -244,40 +147,40 @@ const ClientProfile = ({ handleLogout }) => {
             </div>
 
             <button
-              className={`sidebar-btn ${activeSection === 'recommendations' ? 'active' : ''}`}
-              onClick={() => setActiveSection('recommendations')}
+              className={`sidebar-btn ${state.activeSection === 'recommendations' ? 'active' : ''}`}
+              onClick={() => dispatch({ type: 'SET_ACTIVE_SECTION', value: 'recommendations' })}
             >
               <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>recommend</span>
               Рекомендации
             </button>
 
             <button
-              className={`sidebar-btn ${activeSection === 'orders' ? 'active' : ''}`}
-              onClick={() => setActiveSection('orders')}
+              className={`sidebar-btn ${state.activeSection === 'orders' ? 'active' : ''}`}
+              onClick={() => dispatch({ type: 'SET_ACTIVE_SECTION', value: 'orders' })}
             >
               <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>shopping_bag</span>
               Мои заказы
             </button>
 
             <button
-              className={`sidebar-btn ${activeSection === 'favorites' ? 'active' : ''}`}
-              onClick={() => setActiveSection('favorites')}
+              className={`sidebar-btn ${state.activeSection === 'favorites' ? 'active' : ''}`}
+              onClick={() => dispatch({ type: 'SET_ACTIVE_SECTION', value: 'favorites' })}
             >
               <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>favorite</span>
               Избранное
             </button>
 
             <button
-              className={`sidebar-btn ${activeSection === 'feedback' ? 'active' : ''}`}
-              onClick={() => setActiveSection('feedback')}
+              className={`sidebar-btn ${state.activeSection === 'feedback' ? 'active' : ''}`}
+              onClick={() => dispatch({ type: 'SET_ACTIVE_SECTION', value: 'feedback' })}
             >
               <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>rate_review</span>
               Мои отзывы
             </button>
 
             <button
-              className={`sidebar-btn ${activeSection === 'settings' ? 'active' : ''}`}
-              onClick={() => setActiveSection('settings')}
+              className={`sidebar-btn ${state.activeSection === 'settings' ? 'active' : ''}`}
+              onClick={() => dispatch({ type: 'SET_ACTIVE_SECTION', value: 'settings' })}
             >
               <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>settings</span>
               Настройки
@@ -289,11 +192,115 @@ const ClientProfile = ({ handleLogout }) => {
           </aside>
 
           <section className="content">
-            {renderContent()}
+            {state.activeSection === 'orders' && <BookingHistory />}
+            {state.activeSection === 'settings' && (
+              <section className="section">
+                <h2 className="section-title">НАСТРОЙКИ</h2>
+                <div className="settings-list">
+                  <div className="setting-item">
+                    <span>Уведомления</span>
+                    <label className="switch" aria-label="Уведомления">
+                      <input type="checkbox" defaultChecked />
+                      <span className="slider"></span>
+                    </label>
+                  </div>
+                  <div className="setting-item">
+                    <span>Редактировать профиль</span>
+                    <button className="link-btn" onClick={() => navigate('/profile/edit')}>
+                      Изменить данные
+                    </button>
+                  </div>
+                </div>
+              </section>
+            )}
+            {state.activeSection === 'feedback' && (
+              <section className="section">
+                <h2 className="section-title">МОИ ОТЗЫВЫ</h2>
+                <div className="orders-list">
+                  <p>В разработке</p>
+                </div>
+                <button className="btn-primary full-width">Показать все отзывы</button>
+              </section>
+            )}
+            {state.activeSection === 'favorites' && (
+              <FavoritesContent favorites={state.favorites} loadingFavorites={state.loadingFavorites} navigate={navigate} />
+            )}
+            {state.activeSection === 'recommendations' && (
+              <RecommendationsContent recommendations={state.recommendations} loadingRecommendations={state.loadingRecommendations} />
+            )}
           </section>
         </div>
       </div>
     </div>
+  );
+};
+
+const RecommendationsContent = ({ recommendations, loadingRecommendations }) => {
+  return (
+    <section className="section">
+      <h2 className="section-title">РЕКОМЕНДАЦИИ ДЛЯ ВАС</h2>
+      <div className="recommendations-grid">
+        {loadingRecommendations ? (
+          <p>Загрузка рекомендаций...</p>
+        ) : recommendations.length > 0 ? (
+          recommendations.map((service, index) => (
+            <div key={service.id || index} className="recommendation-card">
+              <img src={photo} alt={service.name || "Рекомендация"} />
+              <h3>{service.name || 'Услуга'}</h3>
+              <p>От {service.minPrice || 'цена не указана'} ₽</p>
+              <button className="btn-sm">Записаться</button>
+            </div>
+          ))
+        ) : (
+          <p>У вас пока нет рекомендаций</p>
+        )}
+      </div>
+    </section>
+  );
+};
+
+const FavoritesContent = ({ favorites, loadingFavorites, navigate }) => {
+  return (
+    <section className="section">
+      <h2 className="section-title">ИЗБРАННЫЕ МАСТЕРА</h2>
+      {loadingFavorites ? (
+        <p>Загрузка...</p>
+      ) : favorites.length > 0 ? (
+        <div className="favorites-grid">
+          {favorites.map(master => (
+            <div key={master.id} className="favorite-card">
+              <img
+                src={master.image_url || photo}
+                alt={`${master.first_name} ${master.last_name}`}
+                className="favorite-avatar"
+              />
+              <h3>{master.first_name} {master.last_name}</h3>
+              <p className="favorite-specialty">{master.specialization || 'Специализация не указана'}</p>
+              <div className="favorite-info">
+                <span className="material-symbols-outlined icon">star</span>
+                <span>{master.rating || 'N/A'}</span>
+              </div>
+              <button
+                className="btn-primary"
+                onClick={() => navigate(`/provider/${master.id}?type=master`)}
+              >
+                Перейти в профиль
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="no-favorites">
+          <p>У вас пока нет избранных мастеров</p>
+          <button
+            className="btn-primary"
+            onClick={() => navigate('/catalog')}
+          >
+            Найти мастеров
+          </button>
+        </div>
+      )}
+    </section>
   );
 };
 

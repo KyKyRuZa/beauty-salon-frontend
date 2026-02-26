@@ -9,7 +9,13 @@ const ServiceVariation = ({ variation, onSelect }) => {
   };
 
   return (
-    <div className="service-variation" onClick={() => onSelect(variation)}>
+    <div
+      className="service-variation"
+      onClick={() => onSelect(variation)}
+      onKeyDown={(e) => e.key === 'Enter' && onSelect(variation)}
+      role="button"
+      tabIndex={0}
+    >
       <div className="variation-header">
         <h4 className="variation-title">{variation.name}</h4>
         {variation.is_popular && (

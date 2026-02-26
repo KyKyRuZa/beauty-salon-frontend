@@ -1,35 +1,57 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback } from 'react';
 import { getAllUsers } from '../../../api/admin';
 
+const initialState = {
+  users: [],
+  loading: true,
+  error: null,
+  pagination: { page: 1, limit: 10, total: 0, pages: 0 },
+  search: ''
+};
+
+function usersManagementReducer(state, action) {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.value };
+    case 'SET_USERS':
+      return { ...state, users: action.value, error: null };
+    case 'SET_ERROR':
+      return { ...state, error: action.value };
+    case 'SET_PAGINATION':
+      return { ...state, pagination: { ...state.pagination, ...action.value } };
+    case 'SET_SEARCH':
+      return { ...state, search: action.value };
+    case 'SET_PAGE':
+      return { ...state, pagination: { ...state.pagination, page: action.value } };
+    default:
+      return state;
+  }
+}
+
 const UsersManagement = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
-  const [search, setSearch] = useState('');
+  const [state, dispatch] = useReducer(usersManagementReducer, initialState);
 
   const fetchUsers = useCallback(async () => {
     try {
-      setLoading(true);
+      dispatch({ type: 'SET_LOADING', value: true });
       const response = await getAllUsers({
-        page: pagination.page,
-        limit: pagination.limit,
-        search: search
+        page: state.pagination.page,
+        limit: state.pagination.limit,
+        search: state.search
       });
-      setUsers(response.data.data);
-      setPagination(response.data.pagination);
-      setError(null);
+      dispatch({ type: 'SET_USERS', value: response.data.data });
+      dispatch({ type: 'SET_PAGINATION', value: response.data.pagination });
     } catch (err) {
       console.error('Ошибка загрузки пользователей:', err);
-      setError('Ошибка загрузки пользователей');
+      dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки пользователей' });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
-  }, [pagination.page, pagination.limit, search]);
+  }, [state.pagination.page, state.pagination.limit, state.search]);
 
   useEffect(() => {
     fetchUsers();
-  }, [pagination.page, search, fetchUsers]);
+  }, [state.pagination.page, state.search, fetchUsers]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -37,17 +59,17 @@ const UsersManagement = () => {
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.pages) {
-      setPagination(prev => ({ ...prev, page: newPage }));
+    if (newPage >= 1 && newPage <= state.pagination.pages) {
+      dispatch({ type: 'SET_PAGE', value: newPage });
     }
   };
 
-  if (loading) {
+  if (state.loading) {
     return <div className="card"><h2>Загрузка пользователей...</h2></div>;
   }
 
-  if (error) {
-    return <div className="card"><h2>Ошибка: {error}</h2></div>;
+  if (state.error) {
+    return <div className="card"><h2>Ошибка: {state.error}</h2></div>;
   }
 
   return (
@@ -59,8 +81,8 @@ const UsersManagement = () => {
           <input
             type="text"
             placeholder="Поиск пользователей..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={state.search}
+            onChange={(e) => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
           />
           <button type="submit" className="btn btn-primary">Поиск</button>
         </form>
@@ -82,7 +104,7 @@ const UsersManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map(user => (
+              {state.users.map(user => (
                 <tr key={user.id}>
                   <td>{user.id}</td>
                   <td>{user.email}</td>
@@ -103,15 +125,15 @@ const UsersManagement = () => {
 
         <div className="pagination">
           <button
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={pagination.page === 1}
+            onClick={() => handlePageChange(state.pagination.page - 1)}
+            disabled={state.pagination.page === 1}
           >
             Назад
           </button>
-          <span>Страница {pagination.page} из {pagination.pages}</span>
+          <span>Страница {state.pagination.page} из {state.pagination.pages}</span>
           <button
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={pagination.page === pagination.pages}
+            onClick={() => handlePageChange(state.pagination.page + 1)}
+            disabled={state.pagination.page === state.pagination.pages}
           >
             Вперед
           </button>

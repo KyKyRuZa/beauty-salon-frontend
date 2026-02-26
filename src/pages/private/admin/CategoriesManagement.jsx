@@ -1,43 +1,80 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useReducer, useCallback, useEffect } from 'react';
 import { getAllCategories, createCategory, updateCategory, deleteCategory } from '../../../api/admin';
 
-const CategoriesManagement = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
-  const [search, setSearch] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [formData, setFormData] = useState({
+const initialState = {
+  categories: [],
+  loading: true,
+  error: null,
+  pagination: { page: 1, limit: 10, total: 0, pages: 0 },
+  search: '',
+  showForm: false,
+  editingCategory: null,
+  formData: {
     name: '',
     description: '',
     is_active: true,
     is_popular: false
-  });
+  }
+};
+
+function categoriesManagementReducer(state, action) {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.value };
+    case 'SET_CATEGORIES':
+      return { ...state, categories: action.value, error: null };
+    case 'SET_ERROR':
+      return { ...state, error: action.value };
+    case 'SET_PAGINATION':
+      return { ...state, pagination: { ...state.pagination, ...action.value } };
+    case 'SET_SEARCH':
+      return { ...state, search: action.value };
+    case 'SET_PAGE':
+      return { ...state, pagination: { ...state.pagination, page: action.value } };
+    case 'SET_SHOW_FORM':
+      return { ...state, showForm: action.value };
+    case 'SET_EDITING_CATEGORY':
+      return { ...state, editingCategory: action.value };
+    case 'SET_FORM_DATA':
+      return { ...state, formData: action.value };
+    case 'UPDATE_FORM_DATA':
+      return { ...state, formData: { ...state.formData, [action.key]: action.value } };
+    case 'RESET_FORM':
+      return {
+        ...state,
+        formData: initialState.formData,
+        editingCategory: null,
+        showForm: false
+      };
+    default:
+      return state;
+  }
+}
+
+const CategoriesManagement = () => {
+  const [state, dispatch] = useReducer(categoriesManagementReducer, initialState);
 
   const fetchCategories = useCallback(async () => {
     try {
-      setLoading(true);
+      dispatch({ type: 'SET_LOADING', value: true });
       const response = await getAllCategories({
-        page: pagination.page,
-        limit: pagination.limit,
-        search: search
+        page: state.pagination.page,
+        limit: state.pagination.limit,
+        search: state.search
       });
-      setCategories(response.data.data);
-      setPagination(response.data.pagination);
-      setError(null);
+      dispatch({ type: 'SET_CATEGORIES', value: response.data.data });
+      dispatch({ type: 'SET_PAGINATION', value: response.data.pagination });
     } catch (err) {
       console.error('Ошибка загрузки категорий:', err);
-      setError('Ошибка загрузки категорий');
+      dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки категорий' });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
-  }, [pagination.page, pagination.limit, search]);
+  }, [state.pagination.page, state.pagination.limit, state.search]);
 
   useEffect(() => {
     fetchCategories();
-  }, [pagination.page, search, fetchCategories]);
+  }, [state.pagination.page, state.search, fetchCategories]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -45,53 +82,49 @@ const CategoriesManagement = () => {
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.pages) {
-      setPagination(prev => ({ ...prev, page: newPage }));
+    if (newPage >= 1 && newPage <= state.pagination.pages) {
+      dispatch({ type: 'SET_PAGE', value: newPage });
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    dispatch({ type: 'UPDATE_FORM_DATA', key: name, value: type === 'checkbox' ? checked : value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Преобразуем данные формы к формату, ожидаемому схемой валидации
+
     const transformedData = {
-      name: formData.name,
-      description: formData.description,
-      isActive: formData.is_active,
-      isPopular: formData.is_popular,
+      name: state.formData.name,
+      description: state.formData.description,
+      isActive: state.formData.is_active,
+      isPopular: state.formData.is_popular,
     };
-    
+
     try {
-      if (editingCategory) {
-        await updateCategory(editingCategory.id, transformedData);
+      if (state.editingCategory) {
+        await updateCategory(state.editingCategory.id, transformedData);
       } else {
         await createCategory(transformedData);
       }
-      resetForm();
+      dispatch({ type: 'RESET_FORM' });
       fetchCategories();
     } catch (err) {
-      setError('Ошибка сохранения категории');
+      dispatch({ type: 'SET_ERROR', value: 'Ошибка сохранения категории' });
       console.error('Ошибка сохранения категории:', err);
     }
   };
 
   const handleEdit = (category) => {
-    setFormData({
+    dispatch({ type: 'SET_FORM_DATA', value: {
       name: category.name,
       description: category.description || '',
       is_active: category.is_active,
       is_popular: category.is_popular
-    });
-    setEditingCategory(category);
-    setShowForm(true);
+    }});
+    dispatch({ type: 'SET_EDITING_CATEGORY', value: category });
+    dispatch({ type: 'SET_SHOW_FORM', value: true });
   };
 
   const handleDelete = async (id) => {
@@ -100,29 +133,22 @@ const CategoriesManagement = () => {
         await deleteCategory(id);
         fetchCategories();
       } catch (err) {
-        setError('Ошибка удаления категории');
+        dispatch({ type: 'SET_ERROR', value: 'Ошибка удаления категории' });
         console.error('Ошибка удаления категории:', err);
       }
     }
   };
 
   const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      is_active: true,
-      is_popular: false
-    });
-    setEditingCategory(null);
-    setShowForm(false);
+    dispatch({ type: 'RESET_FORM' });
   };
 
-  if (loading) {
+  if (state.loading) {
     return <div className="card"><h2>Загрузка категорий...</h2></div>;
   }
 
-  if (error) {
-    return <div className="card"><h2>Ошибка: {error}</h2></div>;
+  if (state.error) {
+    return <div className="card"><h2>Ошибка: {state.error}</h2></div>;
   }
 
   return (
@@ -134,16 +160,16 @@ const CategoriesManagement = () => {
           className="btn btn-success"
           onClick={() => {
             resetForm();
-            setShowForm(true);
+            dispatch({ type: 'SET_SHOW_FORM', value: true });
           }}
         >
           Добавить категорию
         </button>
       </div>
 
-      {showForm && (
+      {state.showForm && (
         <div className="card">
-          <h3>{editingCategory ? 'Редактировать категорию' : 'Добавить категорию'}</h3>
+          <h3>{state.editingCategory ? 'Редактировать категорию' : 'Добавить категорию'}</h3>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="name">Название *</label>
@@ -151,7 +177,7 @@ const CategoriesManagement = () => {
                 type="text"
                 id="name"
                 name="name"
-                value={formData.name}
+                value={state.formData.name}
                 onChange={handleInputChange}
                 required
               />
@@ -162,7 +188,7 @@ const CategoriesManagement = () => {
               <textarea
                 id="description"
                 name="description"
-                value={formData.description}
+                value={state.formData.description}
                 onChange={handleInputChange}
               />
             </div>
@@ -172,7 +198,7 @@ const CategoriesManagement = () => {
                 <input
                   type="checkbox"
                   name="is_active"
-                  checked={formData.is_active}
+                  checked={state.formData.is_active}
                   onChange={handleInputChange}
                 />
                 Активна
@@ -184,7 +210,7 @@ const CategoriesManagement = () => {
                 <input
                   type="checkbox"
                   name="is_popular"
-                  checked={formData.is_popular}
+                  checked={state.formData.is_popular}
                   onChange={handleInputChange}
                 />
                 Популярная
@@ -193,7 +219,7 @@ const CategoriesManagement = () => {
 
             <div className="form-actions">
               <button type="submit" className="btn btn-primary">
-                {editingCategory ? 'Обновить' : 'Создать'}
+                {state.editingCategory ? 'Обновить' : 'Создать'}
               </button>
               <button type="button" className="btn btn-warning" onClick={resetForm}>
                 Отмена
@@ -208,8 +234,8 @@ const CategoriesManagement = () => {
           <input
             type="text"
             placeholder="Поиск категорий..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={state.search}
+            onChange={(e) => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
           />
           <button type="submit" className="btn btn-primary">Поиск</button>
         </form>
@@ -230,7 +256,7 @@ const CategoriesManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {categories.map(category => (
+              {state.categories.map(category => (
                 <tr key={category.id}>
                   <td>{category.id}</td>
                   <td>{category.name}</td>
@@ -260,15 +286,15 @@ const CategoriesManagement = () => {
 
         <div className="pagination">
           <button
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={pagination.page === 1}
+            onClick={() => handlePageChange(state.pagination.page - 1)}
+            disabled={state.pagination.page === 1}
           >
             Назад
           </button>
-          <span>Страница {pagination.page} из {pagination.pages}</span>
+          <span>Страница {state.pagination.page} из {state.pagination.pages}</span>
           <button
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={pagination.page === pagination.pages}
+            onClick={() => handlePageChange(state.pagination.page + 1)}
+            disabled={state.pagination.page === state.pagination.pages}
           >
             Вперед
           </button>

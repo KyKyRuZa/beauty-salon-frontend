@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useReducer, useEffect, useCallback, useRef } from 'react';
 import { getCatalogCategories, searchCategories } from '../../api/catalog';
 import { useNavigate } from 'react-router-dom';
 import ServiceCategory from '../../components/catalog/ServiceCategory';
@@ -6,14 +6,37 @@ import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
 import '../../styles/catalog/CatalogPage.css';
 
+const initialState = {
+  categories: [],
+  loading: true,
+  error: null,
+  searchQuery: '',
+  filteredCategories: [],
+  isSearching: false
+};
+
+function catalogPageReducer(state, action) {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.value };
+    case 'SET_CATEGORIES':
+      return { ...state, categories: action.value, filteredCategories: action.value, error: null };
+    case 'SET_ERROR':
+      return { ...state, error: action.value };
+    case 'SET_SEARCH_QUERY':
+      return { ...state, searchQuery: action.value };
+    case 'SET_FILTERED_CATEGORIES':
+      return { ...state, filteredCategories: action.value };
+    case 'SET_IS_SEARCHING':
+      return { ...state, isSearching: action.value };
+    default:
+      return state;
+  }
+}
+
 const CatalogPage = () => {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredCategories, setFilteredCategories] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [state, dispatch] = useReducer(catalogPageReducer, initialState);
   const searchTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -22,53 +45,47 @@ const CatalogPage = () => {
 
   const fetchCategories = async () => {
     try {
-      setLoading(true);
+      dispatch({ type: 'SET_LOADING', value: true });
 
-      // Загружаем категории
       const categoriesResponse = await getCatalogCategories();
-      setCategories(categoriesResponse.data.data);
-      setFilteredCategories(categoriesResponse.data.data);
-
-      setError(null);
+      dispatch({ type: 'SET_CATEGORIES', value: categoriesResponse.data.data });
+      dispatch({ type: 'SET_ERROR', value: null });
     } catch (err) {
-      setError('Ошибка загрузки категорий услуг');
+      dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки категорий услуг' });
       console.error('Ошибка загрузки категорий:', err);
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
   };
 
   // Поиск с дебаунсом 300мс
   const performSearch = useCallback(async (query) => {
     if (!query || query.length < 2) {
-      // Если запрос короче 2 символов, показываем все категории
-      setFilteredCategories(categories);
-      setIsSearching(false);
+      dispatch({ type: 'SET_FILTERED_CATEGORIES', value: state.categories });
+      dispatch({ type: 'SET_IS_SEARCHING', value: false });
       return;
     }
 
-    setIsSearching(true);
+    dispatch({ type: 'SET_IS_SEARCHING', value: true });
     try {
       const response = await searchCategories(query);
-      setFilteredCategories(response.data || []);
+      dispatch({ type: 'SET_FILTERED_CATEGORIES', value: response.data || [] });
     } catch (err) {
       console.error('Ошибка поиска категорий:', err);
-      setFilteredCategories([]);
+      dispatch({ type: 'SET_FILTERED_CATEGORIES', value: [] });
     } finally {
-      setIsSearching(false);
+      dispatch({ type: 'SET_IS_SEARCHING', value: false });
     }
-  }, [categories]);
+  }, [state.categories]);
 
   const handleSearch = useCallback((e) => {
     const query = e.target.value;
-    setSearchQuery(query);
+    dispatch({ type: 'SET_SEARCH_QUERY', value: query });
 
-    // Очищаем предыдущий таймер
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
-    // Устанавливаем новый таймер с дебаунсом 300мс
     searchTimeoutRef.current = setTimeout(() => {
       performSearch(query);
     }, 300);
@@ -83,12 +100,12 @@ const CatalogPage = () => {
     };
   }, []);
 
-  if (loading && categories.length === 0) {
+  if (state.loading && state.categories.length === 0) {
     return <div className="loading">Загрузка каталога услуг...</div>;
   }
 
-  if (error && !loading) {
-    return <div className="error">{error}</div>;
+  if (state.error && !state.loading) {
+    return <div className="error">{state.error}</div>;
   }
 
   const handleCategoryClick = (category) => {
@@ -106,39 +123,39 @@ const CatalogPage = () => {
 
         <div className="catalog-header">
           <h1>КАТЕГОРИИ</h1>
-          <form onSubmit={(e) => e.preventDefault()} className="search-form catalog-search-form">
+          <div className="search-form catalog-search-form">
             <div className="search-container">
               <input
                 type="text"
                 placeholder="Поиск категорий..."
-                value={searchQuery}
+                value={state.searchQuery}
                 onChange={handleSearch}
                 className="search-input"
               />
-              <button type="submit" className="search-button">
+              <button type="button" className="search-button">
                 <span className="material-symbols-outlined search-icon">search</span>
               </button>
             </div>
-          </form>
+          </div>
         </div>
 
         <div className="catalog-content">
           <div className="categories-section">
             <div className="categories-grid">
-              {isSearching ? (
+              {state.isSearching ? (
                 <div className="no-results">
                   <span className="material-symbols-outlined" style={{ fontSize: '3rem', marginBottom: '10px' }}>searching</span>
                   <p>Поиск...</p>
                 </div>
-              ) : filteredCategories.length > 0 ? (
-                filteredCategories.map((category) => (
+              ) : state.filteredCategories.length > 0 ? (
+                state.filteredCategories.map((category) => (
                   <ServiceCategory
                     key={category.id}
                     category={category}
                     onClick={handleCategoryClick}
                   />
                 ))
-              ) : searchQuery.length >= 2 ? (
+              ) : state.searchQuery.length >= 2 ? (
                 <div className="no-results">
                   <span className="material-symbols-outlined" style={{ fontSize: '3rem', marginBottom: '10px' }}>search_off</span>
                   <p>Категории не найдены</p>

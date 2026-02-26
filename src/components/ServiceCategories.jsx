@@ -28,9 +28,9 @@ const ServiceCategories = () => {
     <section className="categories-section">
       <div className="categories-container">
         <div className="categories">
-          {categories.map((category, index) => (
+          {categories.map((category) => (
             <div
-              key={index}
+              key={category.title}
               className="category-card"
               style={{ backgroundImage: `url(${category.image})` }}
             >

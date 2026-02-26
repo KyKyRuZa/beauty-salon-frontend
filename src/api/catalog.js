@@ -1,6 +1,6 @@
 import api from './api';
 import { z } from 'zod';
-import { createCategorySchema, updateCategorySchema, createServiceSchema, updateServiceSchema, createMasterServiceSchema, updateMasterServiceSchema } from '../validations';
+import { createCategorySchema, updateCategorySchema, createMasterServiceSchema, updateMasterServiceSchema } from '../validations';
 
 // API для работы с каталогом услуг
 
@@ -10,9 +10,7 @@ export const getCatalogCategories = async (params = {}) => {
 };
 
 // Получить популярные категории услуг
-export const getPopularCategories = async (params = {}) => {
-  return await api.get('/catalog/categories/popular', { params });
-};
+// Удалено как неиспользуемое
 
 // Получить категорию услуг по ID
 export const getCategoryById = async (id) => {
@@ -75,39 +73,13 @@ export const getCatalogServiceById = async (id) => {
 };
 
 // Создать новый вариант услуги (требуется аутентификация)
-export const createCatalogService = async (serviceData) => {
-  try {
-    // Валидация данных с помощью Zod
-    const validatedData = createServiceSchema.parse(serviceData);
-
-    return await api.post('/catalog', validatedData);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
-    }
-    throw error;
-  }
-};
+// Удалено как неиспользуемое
 
 // Обновить вариант услуги (требуется аутентификация)
-export const updateCatalogService = async (id, serviceData) => {
-  try {
-    // Валидация данных с помощью Zod
-    const validatedData = updateServiceSchema.parse(serviceData);
-
-    return await api.put(`/catalog/${id}`, validatedData);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
-    }
-    throw error;
-  }
-};
+// Удалено как неиспользуемое
 
 // Удалить вариант услуги (требуется аутентификация)
-export const deleteCatalogService = async (id) => {
-  return await api.delete(`/catalog/${id}`);
-};
+// Удалено как неиспользуемое
 
 // Создать вариант услуги для мастера (требуется аутентификация как мастер)
 export const createMasterService = async (serviceData) => {
@@ -250,9 +222,7 @@ export const deleteSalonService = async (id) => {
 };
 
 // Получить мастеров, предоставляющих определенную услугу
-export const getMastersByService = async (serviceId, params = {}) => {
-  return await api.get(`/catalog/service/${serviceId}/masters`, { params });
-};
+// Удалено как неиспользуемое
 
 // ============================================
 // Поиск с использованием триграмм (GIN-индекс)
@@ -271,16 +241,10 @@ export const searchCategories = async (query) => {
  * Поиск услуг мастеров с использованием триграмм
  * @param {string} query - Поисковый запрос
  */
-export const searchMasterServices = async (query) => {
-  const response = await api.get('/catalog/search/services', { params: { q: query } });
-  return response.data;
-};
+// Удалено как неиспользуемое
 
 /**
  * Поиск мастеров с использованием триграмм
  * @param {string} query - Поисковый запрос
  */
-export const searchMasters = async (query) => {
-  const response = await api.get('/catalog/search/masters', { params: { q: query } });
-  return response.data;
-};
+// Удалено как неиспользуемое

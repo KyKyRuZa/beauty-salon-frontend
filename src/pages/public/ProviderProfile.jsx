@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useReducer, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
@@ -7,60 +7,89 @@ import { useAuth } from '../../context/AuthContext';
 import { toggleFavorite, checkFavorite } from '../../api/favorites';
 import '../../styles/ProviderProfile.css';
 
+const initialState = {
+  provider: null,
+  loading: true,
+  isFavorite: false,
+  activePortfolioTab: 'all',
+  providerType: 'master'
+};
+
+function providerReducer(state, action) {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.value };
+    case 'SET_PROVIDER':
+      return { ...state, provider: action.data };
+    case 'SET_IS_FAVORITE':
+      return { ...state, isFavorite: action.value };
+    case 'SET_ACTIVE_TAB':
+      return { ...state, activePortfolioTab: action.value };
+    case 'SET_PROVIDER_TYPE':
+      return { ...state, providerType: action.value };
+    case 'TOGGLE_FAVORITE':
+      return { ...state, isFavorite: !state.isFavorite };
+    default:
+      return state;
+  }
+}
+
 const ProviderProfile = () => {
   const { providerId, type = 'master' } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [provider, setProvider] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [activePortfolioTab, setActivePortfolioTab] = useState('all');
-  const [providerType, setProviderType] = useState(type);
+  const [state, dispatch] = useReducer(providerReducer, {
+    ...initialState,
+    providerType: type
+  });
 
   const loadProviderData = useCallback(async () => {
-    setLoading(true);
+    dispatch({ type: 'SET_LOADING', value: true });
     try {
-      const endpoint = providerType === 'master' ? 'master' : 'salon';
+      const endpoint = state.providerType === 'master' ? 'master' : 'salon';
       const response = await fetch(`/api/providers/${endpoint}/${providerId}`);
       if (response.ok) {
         const data = await response.json();
-        setProvider({
-          ...data.data,
-          has_training: true,
-          skills: {
-            hair: ['Укладка и причёски', 'Ламинирование и ботокс волос', 'Лечение волос и кожи головы'],
-            nails: ['Маникюр без покрытия', 'Маникюр с покрытием', 'Педикюр пальчики без покрытия', 'Дизайн ногтей', 'Ремонт одного ногтя', 'SPA-уход для рук и ног']
-          },
-          specialization: providerType === 'master' ? [
-            'стрижки разных уровней сложности',
-            'сухой метод стрижки кудрявых волос',
-            'коктейльные укладки',
-            'простые окрашивания',
-            'смена образа'
-          ] : ['Парикмахерские услуги', 'Маникюр и педикюр', 'Косметология'],
-          education: providerType === 'master' ? [
-            'Международная академия Долорес',
-            'Участие в программах «Модный приговор»',
-            'Постоянно повышает свою квалификацию'
-          ] : ['Работаем с 2010 года', 'Все мастера сертифицированы']
+        dispatch({
+          type: 'SET_PROVIDER',
+          data: {
+            ...data.data,
+            has_training: true,
+            skills: {
+              hair: ['Укладка и причёски', 'Ламинирование и ботокс волос', 'Лечение волос и кожи головы'],
+              nails: ['Маникюр без покрытия', 'Маникюр с покрытием', 'Педикюр пальчики без покрытия', 'Дизайн ногтей', 'Ремонт одного ногтя', 'SPA-уход для рук и ног']
+            },
+            specialization: state.providerType === 'master' ? [
+              'стрижки разных уровней сложности',
+              'сухой метод стрижки кудрявых волос',
+              'коктейльные укладки',
+              'простые окрашивания',
+              'смена образа'
+            ] : ['Работаем с 2010 года', 'Маникюр и педикюр', 'Косметология'],
+            education: state.providerType === 'master' ? [
+              'Международная академия Долорес',
+              'Участие в программах «Модный приговор»',
+              'Постоянно повышает свою квалификацию'
+            ] : ['Работаем с 2010 года', 'Все мастера сертифицированы']
+          }
         });
       }
     } catch (error) {
       console.error('Ошибка загрузки профиля:', error);
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
-  }, [providerId, providerType]);
+  }, [providerId, state.providerType]);
 
   const checkFavoriteStatus = useCallback(async () => {
-    if (!user || providerType !== 'master') return;
+    if (!user || state.providerType !== 'master') return;
     try {
       const response = await checkFavorite(providerId);
-      setIsFavorite(response.data.isFavorite);
+      dispatch({ type: 'SET_IS_FAVORITE', value: response.data.isFavorite });
     } catch (error) {
       console.error('Ошибка проверки избранного:', error);
     }
-  }, [providerId, user, providerType]);
+  }, [providerId, user, state.providerType]);
 
   useEffect(() => {
     loadProviderData();
@@ -72,14 +101,14 @@ const ProviderProfile = () => {
       alert('Для добавления в избранное необходимо войти в систему');
       return;
     }
-    if (providerType !== 'master') {
+    if (state.providerType !== 'master') {
       alert('В избранное можно добавлять только мастеров');
       return;
     }
 
     try {
       await toggleFavorite(providerId);
-      setIsFavorite(!isFavorite);
+      dispatch({ type: 'TOGGLE_FAVORITE' });
     } catch (error) {
       console.error('Ошибка переключения избранного:', error);
       alert(error.response?.data?.message || 'Ошибка при изменении избранного');
@@ -87,21 +116,21 @@ const ProviderProfile = () => {
   };
 
   const handleBook = (serviceId) => {
-    const url = `/catalog/provider/${providerId}/timeslots?type=${providerType}${serviceId ? `&service=${serviceId}` : ''}`;
+    const url = `/catalog/provider/${providerId}/timeslots?type=${state.providerType}${serviceId ? `&service=${serviceId}` : ''}`;
     navigate(url);
   };
 
   const handleWriteReview = () => {
-    navigate(`/reviews/write?provider=${providerId}&type=${providerType}`);
+    navigate(`/reviews/write?provider=${providerId}&type=${state.providerType}`);
   };
 
   const handleTypeChange = (e) => {
     const newType = e.target.value;
-    setProviderType(newType);
+    dispatch({ type: 'SET_PROVIDER_TYPE', value: newType });
     navigate(`/provider/${providerId}?type=${newType}`);
   };
 
-  if (loading) {
+  if (state.loading) {
     return (
       <>
         <Header />
@@ -111,7 +140,7 @@ const ProviderProfile = () => {
     );
   }
 
-  if (!provider) {
+  if (!state.provider) {
     return (
       <>
         <Header />
@@ -131,33 +160,33 @@ const ProviderProfile = () => {
             <aside className="profile-sidebar">
               <div className="profile-card">
                 <div className="profile-type-selector">
-                  <select value={providerType} onChange={handleTypeChange}>
+                  <select value={state.providerType} onChange={handleTypeChange}>
                     <option value="master">Бьюти-мастер</option>
                     <option value="salon">Салон красоты</option>
                   </select>
                 </div>
 
                 <img
-                  src={provider.image_url || 'https://via.placeholder.com/300'}
-                  alt={provider.first_name || provider.name}
+                  src={state.provider.image_url || 'https://via.placeholder.com/300'}
+                  alt={state.provider.first_name || state.provider.name}
                   className="profile-avatar"
                 />
 
                 <h1 className="profile-name">
-                  {providerType === 'master'
-                    ? `${provider.first_name || ''} ${provider.last_name || ''}`.trim()
-                    : provider.name || 'Салон'}
+                  {state.providerType === 'master'
+                    ? `${state.provider.first_name || ''} ${state.provider.last_name || ''}`.trim()
+                    : state.provider.name || 'Салон'}
                 </h1>
 
-                {provider.experience && (
+                {state.provider.experience && (
                   <p className="profile-experience">
-                    Стаж работы: {provider.experience} лет
+                    Стаж работы: {state.provider.experience} лет
                   </p>
                 )}
 
                 <div className="profile-location">
                   <span className="material-symbols-outlined">location_on</span>
-                  <span>{provider.address || 'Адрес не указан'}</span>
+                  <span>{state.provider.address || 'Адрес не указан'}</span>
                 </div>
 
                 <div className="profile-hours">
@@ -165,12 +194,12 @@ const ProviderProfile = () => {
                   <span>09:00 - 19:00</span>
                 </div>
 
-                {provider.has_training && (
+                {state.provider.has_training && (
                   <div className="training-badge">есть обучение</div>
                 )}
 
                 <div className="profile-rating">
-                  <span>{provider.rating || '4.8'}</span>
+                  <span>{state.provider.rating || '4.8'}</span>
                   <span className="material-symbols-outlined">star</span>
                 </div>
 
@@ -178,12 +207,12 @@ const ProviderProfile = () => {
                   <button className="btn-book" onClick={handleBook}>
                     ЗАПИСАТЬСЯ
                   </button>
-                  {providerType === 'master' && (
-                    <button 
-                      className={`btn-profile-favorite ${isFavorite ? 'active' : ''}`}
+                  {state.providerType === 'master' && (
+                    <button
+                      className={`btn-profile-favorite ${state.isFavorite ? 'active' : ''}`}
                       onClick={handleToggleFavorite}
                     >
-                      {isFavorite ? 'В ИЗБРАННОМ' : 'ДОБАВИТЬ В ИЗБРАННОЕ'}
+                      {state.isFavorite ? 'В ИЗБРАННОМ' : 'ДОБАВИТЬ В ИЗБРАННОЕ'}
                     </button>
                   )}
                   <button className="btn-review" onClick={handleWriteReview}>
@@ -198,24 +227,24 @@ const ProviderProfile = () => {
               {/* Навыки */}
               <section className="profile-section">
                 <h2 className="section-title">НАВЫКИ</h2>
-                
-                {provider.skills?.hair && (
+
+                {state.provider.skills?.hair && (
                   <div className="skills-group">
                     <h3 className="skill-category">Парикмахерские услуги и уход за волосами</h3>
                     <div className="skill-tags">
-                      {provider.skills.hair.map((skill, index) => (
-                        <span key={index} className="skill-tag">{skill}</span>
+                      {state.provider.skills.hair.map((skill) => (
+                        <span key={skill} className="skill-tag">{skill}</span>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {provider.skills?.nails && (
+                {state.provider.skills?.nails && (
                   <div className="skills-group">
                     <h3 className="skill-category">Маникюр и педикюр</h3>
                     <div className="skill-tags">
-                      {provider.skills.nails.map((skill, index) => (
-                        <span key={index} className="skill-tag">{skill}</span>
+                      {state.provider.skills.nails.map((skill) => (
+                        <span key={skill} className="skill-tag">{skill}</span>
                       ))}
                     </div>
                   </div>
@@ -225,24 +254,24 @@ const ProviderProfile = () => {
               {/* Информация */}
               <section className="profile-section">
                 <h2 className="section-title">ИНФОРМАЦИЯ</h2>
-                
-                {provider.specialization && (
+
+                {state.provider.specialization && (
                   <div className="info-block">
                     <h3 className="info-title">Специализация</h3>
                     <ul className="info-list">
-                      {provider.specialization.map((item, index) => (
-                        <li key={index}>{item}</li>
+                      {state.provider.specialization.map((item) => (
+                        <li key={item}>{item}</li>
                       ))}
                     </ul>
                   </div>
                 )}
 
-                {provider.education && (
+                {state.provider.education && (
                   <div className="info-block">
                     <h3 className="info-title">Обучение</h3>
                     <ul className="info-list">
-                      {provider.education.map((item, index) => (
-                        <li key={index}>{item}</li>
+                      {state.provider.education.map((item) => (
+                        <li key={item}>{item}</li>
                       ))}
                     </ul>
                   </div>
@@ -252,23 +281,23 @@ const ProviderProfile = () => {
               {/* Портфолио */}
               <section className="profile-section">
                 <h2 className="section-title">ПОРТФОЛИО</h2>
-                
+
                 <div className="portfolio-tabs">
-                  <button 
-                    className={`portfolio-tab ${activePortfolioTab === 'all' ? 'active' : ''}`}
-                    onClick={() => setActivePortfolioTab('all')}
+                  <button
+                    className={`portfolio-tab ${state.activePortfolioTab === 'all' ? 'active' : ''}`}
+                    onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', value: 'all' })}
                   >
                     Все рубрики
                   </button>
-                  <button 
-                    className={`portfolio-tab ${activePortfolioTab === 'hair' ? 'active' : ''}`}
-                    onClick={() => setActivePortfolioTab('hair')}
+                  <button
+                    className={`portfolio-tab ${state.activePortfolioTab === 'hair' ? 'active' : ''}`}
+                    onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', value: 'hair' })}
                   >
                     Парикмахерские услуги и уход за волосами
                   </button>
-                  <button 
-                    className={`portfolio-tab ${activePortfolioTab === 'nails' ? 'active' : ''}`}
-                    onClick={() => setActivePortfolioTab('nails')}
+                  <button
+                    className={`portfolio-tab ${state.activePortfolioTab === 'nails' ? 'active' : ''}`}
+                    onClick={() => dispatch({ type: 'SET_ACTIVE_TAB', value: 'nails' })}
                   >
                     Маникюр и педикюр
                   </button>
@@ -277,7 +306,7 @@ const ProviderProfile = () => {
                 <div className="portfolio-grid">
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
                     <div key={item} className="portfolio-item">
-                      <img 
+                      <img
                         src={`https://via.placeholder.com/300x300?text=Work+${item}`}
                         alt={`Работа ${item}`}
                         className="portfolio-image"
@@ -292,9 +321,9 @@ const ProviderProfile = () => {
               {/* Отзывы */}
               <section className="profile-section">
                 <h2 className="section-title">ОТЗЫВЫ</h2>
-                <ReviewsList 
-                  masterId={providerType === 'master' ? providerId : undefined}
-                  salonId={providerType === 'salon' ? providerId : undefined}
+                <ReviewsList
+                  masterId={state.providerType === 'master' ? providerId : undefined}
+                  salonId={state.providerType === 'salon' ? providerId : undefined}
                   showForm={false}
                 />
                 <button className="btn-show-all">ВСЕ ОТЗЫВЫ</button>

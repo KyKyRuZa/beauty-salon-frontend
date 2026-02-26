@@ -1,8 +1,10 @@
 import React from 'react';
 import '../../styles/booking/TimeSlotsSelector.css';
 
+const EMPTY_SLOTS = [];
+
 const TimeSlotsSelector = ({
-  availableSlots = [],
+  availableSlots = EMPTY_SLOTS,
   selectedSlot,
   onSlotSelect,
   selectedDate

@@ -1,63 +1,77 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback } from 'react';
 import { getAllAdmins, createAdmin } from '../../../api/admin';
 
-const AdminsManagement = () => {
-  const [admins, setAdmins] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
-  const [search, setSearch] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
+const initialState = {
+  admins: [],
+  loading: true,
+  error: null,
+  pagination: { page: 1, limit: 10, total: 0, pages: 0 },
+  search: '',
+  showForm: false,
+  formData: {
     user_id: '',
     role: 'admin',
     permissions: {},
     first_name: '',
     last_name: ''
-  });
+  }
+};
+
+function adminsManagementReducer(state, action) {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.value };
+    case 'SET_ADMINS':
+      return { ...state, admins: action.value, error: null };
+    case 'SET_ERROR':
+      return { ...state, error: action.value };
+    case 'SET_PAGINATION':
+      return { ...state, pagination: { ...state.pagination, ...action.value } };
+    case 'SET_SEARCH':
+      return { ...state, search: action.value };
+    case 'SET_PAGE':
+      return { ...state, pagination: { ...state.pagination, page: action.value } };
+    case 'SET_SHOW_FORM':
+      return { ...state, showForm: action.value };
+    case 'SET_FORM_DATA':
+      return { ...state, formData: action.value };
+    case 'UPDATE_FORM_DATA':
+      return { ...state, formData: { ...state.formData, [action.key]: action.value } };
+    case 'RESET_FORM':
+      return {
+        ...state,
+        formData: initialState.formData,
+        showForm: false
+      };
+    default:
+      return state;
+  }
+}
+
+const AdminsManagement = () => {
+  const [state, dispatch] = useReducer(adminsManagementReducer, initialState);
 
   const fetchAdmins = useCallback(async () => {
     try {
-      setLoading(true);
+      dispatch({ type: 'SET_LOADING', value: true });
       const response = await getAllAdmins({
-        page: pagination.page,
-        limit: pagination.limit,
-        search: search
+        page: state.pagination.page,
+        limit: state.pagination.limit,
+        search: state.search
       });
-      setAdmins(response.data.data);
-      setPagination(response.data.pagination);
-      setError(null);
+      dispatch({ type: 'SET_ADMINS', value: response.data.data });
+      dispatch({ type: 'SET_PAGINATION', value: response.data.pagination });
     } catch (err) {
       console.error('Ошибка загрузки администраторов:', err);
-      setError('Ошибка загрузки администраторов');
+      dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки администраторов' });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
-  }, [pagination.page, pagination.limit, search]);
+  }, [state.pagination.page, state.pagination.limit, state.search]);
 
-  // Заглушка для будущих пользователей
-  // const fetchUsers = async () => {
-  //   try {
-  //     // В реальности здесь будет вызов API для получения списка пользователей
-  //     // const response = await getAllUsers({ limit: 100 });
-  //     // setUsers(response.data.data);
-
-  //     // Заглушка данных
-  //     setUsers([
-  //       { id: 1, email: 'admin@example.com', first_name: 'Админ', last_name: 'Главный' },
-  //       { id: 2, email: 'moderator@example.com', first_name: 'Модератор', last_name: 'Проверяющий' }
-  //     ]);
-  //   } catch (err) {
-  //     console.error('Ошибка загрузки пользователей:', err);
-  //   }
-  // };
-
-  // Загружаем администраторов и пользователей
   useEffect(() => {
     fetchAdmins();
-    // Здесь в реальности нужно будет получить список пользователей для выбора
-    // fetchUsers();
-  }, [pagination.page, search, fetchAdmins]);
+  }, [state.pagination.page, state.search, fetchAdmins]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -65,48 +79,38 @@ const AdminsManagement = () => {
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.pages) {
-      setPagination(prev => ({ ...prev, page: newPage }));
+    if (newPage >= 1 && newPage <= state.pagination.pages) {
+      dispatch({ type: 'SET_PAGE', value: newPage });
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    dispatch({ type: 'UPDATE_FORM_DATA', key: name, value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createAdmin(formData);
-      resetForm();
+      await createAdmin(state.formData);
+      dispatch({ type: 'RESET_FORM' });
       fetchAdmins();
     } catch (err) {
-      setError('Ошибка создания администратора');
+      dispatch({ type: 'SET_ERROR', value: 'Ошибка создания администратора' });
       console.error('Ошибка создания администратора:', err);
     }
   };
 
   const resetForm = () => {
-    setFormData({
-      user_id: '',
-      role: 'admin',
-      permissions: {},
-      first_name: '',
-      last_name: ''
-    });
-    setShowForm(false);
+    dispatch({ type: 'RESET_FORM' });
   };
 
-  if (loading) {
+  if (state.loading) {
     return <div className="card"><h2>Загрузка администраторов...</h2></div>;
   }
 
-  if (error) {
-    return <div className="card"><h2>Ошибка: {error}</h2></div>;
+  if (state.error) {
+    return <div className="card"><h2>Ошибка: {state.error}</h2></div>;
   }
 
   return (
@@ -118,14 +122,14 @@ const AdminsManagement = () => {
           className="btn btn-success"
           onClick={() => {
             resetForm();
-            setShowForm(true);
+            dispatch({ type: 'SET_SHOW_FORM', value: true });
           }}
         >
           Назначить администратора
         </button>
       </div>
 
-      {showForm && (
+      {state.showForm && (
         <div className="card">
           <h3>Назначить нового администратора</h3>
           <form onSubmit={handleSubmit}>
@@ -134,16 +138,11 @@ const AdminsManagement = () => {
               <select
                 id="user_id"
                 name="user_id"
-                value={formData.user_id}
+                value={state.formData.user_id}
                 onChange={handleInputChange}
                 required
               >
                 <option value="">Выберите пользователя</option>
-                {/* users.map(user => (
-                  <option key={user.id} value={user.id}>
-                    {user.email} ({user.first_name} {user.last_name})
-                  </option>
-                )) */}
               </select>
             </div>
 
@@ -152,7 +151,7 @@ const AdminsManagement = () => {
               <select
                 id="role"
                 name="role"
-                value={formData.role}
+                value={state.formData.role}
                 onChange={handleInputChange}
                 required
               >
@@ -168,7 +167,7 @@ const AdminsManagement = () => {
                 type="text"
                 id="first_name"
                 name="first_name"
-                value={formData.first_name}
+                value={state.formData.first_name}
                 onChange={handleInputChange}
                 placeholder="Введите имя администратора"
               />
@@ -180,7 +179,7 @@ const AdminsManagement = () => {
                 type="text"
                 id="last_name"
                 name="last_name"
-                value={formData.last_name}
+                value={state.formData.last_name}
                 onChange={handleInputChange}
                 placeholder="Введите фамилию администратора"
               />
@@ -203,8 +202,8 @@ const AdminsManagement = () => {
           <input
             type="text"
             placeholder="Поиск администраторов..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={state.search}
+            onChange={(e) => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
           />
           <button type="submit" className="btn btn-primary">Поиск</button>
         </form>
@@ -225,7 +224,7 @@ const AdminsManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {admins.map(admin => (
+              {state.admins.map(admin => (
                 <tr key={admin.id}>
                   <td>{admin.id}</td>
                   <td>{admin.user?.email || 'N/A'}</td>
@@ -245,15 +244,15 @@ const AdminsManagement = () => {
 
         <div className="pagination">
           <button
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={pagination.page === 1}
+            onClick={() => handlePageChange(state.pagination.page - 1)}
+            disabled={state.pagination.page === 1}
           >
             Назад
           </button>
-          <span>Страница {pagination.page} из {pagination.pages}</span>
+          <span>Страница {state.pagination.page} из {state.pagination.pages}</span>
           <button
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={pagination.page === pagination.pages}
+            onClick={() => handlePageChange(state.pagination.page + 1)}
+            disabled={state.pagination.page === state.pagination.pages}
           >
             Вперед
           </button>

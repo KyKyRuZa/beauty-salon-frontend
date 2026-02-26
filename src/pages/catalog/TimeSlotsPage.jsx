@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/ui/Header';
@@ -8,17 +8,39 @@ import TimeSlotsSelector from '../../components/booking/TimeSlotsSelector';
 import { createBooking, getAvailableSlots } from '../../api/booking';
 import '../../styles/booking/TimeSlotsPage.css';
 
+const initialState = {
+  selectedDate: null,
+  selectedSlot: null,
+  availableSlots: [],
+  bookingModalOpen: false,
+  bookingComment: ''
+};
+
+function timeSlotsReducer(state, action) {
+  switch (action.type) {
+    case 'SET_SELECTED_DATE':
+      return { ...state, selectedDate: action.value };
+    case 'SET_SELECTED_SLOT':
+      return { ...state, selectedSlot: action.value };
+    case 'SET_AVAILABLE_SLOTS':
+      return { ...state, availableSlots: action.value, selectedSlot: null };
+    case 'SET_BOOKING_MODAL':
+      return { ...state, bookingModalOpen: action.value };
+    case 'SET_BOOKING_COMMENT':
+      return { ...state, bookingComment: action.value };
+    case 'RESET_BOOKING':
+      return { ...state, bookingModalOpen: false, bookingComment: '' };
+    default:
+      return state;
+  }
+}
+
 const TimeSlotsPage = () => {
   const { providerId } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-
-  const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [availableSlots, setAvailableSlots] = useState([]);
-  const [bookingModalOpen, setBookingModalOpen] = useState(false);
-  const [bookingComment, setBookingComment] = useState('');
+  const [state, dispatch] = useReducer(timeSlotsReducer, initialState);
 
   const serviceId = searchParams.get('service');
   const type = searchParams.get('type') || 'master';
@@ -49,34 +71,30 @@ const TimeSlotsPage = () => {
         );
         console.log('Отфильтрованные слоты для услуги', serviceId, ':', slots);
       } else {
-        // Если serviceId не указан, показываем все слоты
         console.log('serviceId не указан, показываем все слоты:', slots.length);
       }
 
-      setAvailableSlots(slots);
-      setSelectedSlot(null);
+      dispatch({ type: 'SET_AVAILABLE_SLOTS', value: slots });
     } catch (error) {
       console.error('Ошибка загрузки слотов:', error);
-      // Fallback на моковые данные при ошибке
       const mockSlots = generateMockSlots(date);
-      setAvailableSlots(mockSlots);
-      setSelectedSlot(null);
+      dispatch({ type: 'SET_AVAILABLE_SLOTS', value: mockSlots });
     }
   }, [providerId, serviceId, type]);
 
   useEffect(() => {
-    if (selectedDate) {
-      loadAvailableSlots(selectedDate);
+    if (state.selectedDate) {
+      loadAvailableSlots(state.selectedDate);
     }
-  }, [selectedDate, loadAvailableSlots]);
+  }, [state.selectedDate, loadAvailableSlots]);
 
   const handleDateSelect = (date) => {
     console.log('handleDateSelect: выбрана дата', date, 'type:', typeof date);
-    setSelectedDate(date);
+    dispatch({ type: 'SET_SELECTED_DATE', value: date });
   };
 
   const handleSlotSelect = (slot) => {
-    setSelectedSlot(slot);
+    dispatch({ type: 'SET_SELECTED_SLOT', value: slot });
   };
 
   const handleBookNow = () => {
@@ -84,11 +102,11 @@ const TimeSlotsPage = () => {
       alert('Для записи необходимо войти в систему');
       return;
     }
-    setBookingModalOpen(true);
+    dispatch({ type: 'SET_BOOKING_MODAL', value: true });
   };
 
   const handleConfirmBooking = async () => {
-    if (!selectedSlot || !providerId) {
+    if (!state.selectedSlot || !providerId) {
       alert('Выберите время');
       return;
     }
@@ -102,16 +120,16 @@ const TimeSlotsPage = () => {
       const bookingData = {
         master_id: type === 'master' ? parseInt(providerId) : 1,
         master_service_id: parseInt(serviceId),
-        time_slot_id: selectedSlot.id,
-        start_time: selectedSlot.start_time,
-        end_time: selectedSlot.end_time,
-        comment: bookingComment
+        time_slot_id: state.selectedSlot.id,
+        start_time: state.selectedSlot.start_time,
+        end_time: state.selectedSlot.end_time,
+        comment: state.bookingComment
       };
 
       await createBooking(bookingData);
 
       alert('Запись успешно создана!');
-      setBookingModalOpen(false);
+      dispatch({ type: 'RESET_BOOKING' });
       navigate('/profile');
     } catch (error) {
       console.error('Ошибка создания записи:', error);
@@ -134,35 +152,35 @@ const TimeSlotsPage = () => {
             </div>
 
             <DateSelector
-              selectedDate={selectedDate}
+              selectedDate={state.selectedDate}
               onDateSelect={handleDateSelect}
               masterId={type === 'master' ? parseInt(providerId) : 1}
               serviceId={serviceId ? parseInt(serviceId) : null}
             />
 
-            {selectedDate && (
+            {state.selectedDate && (
               <TimeSlotsSelector
-                availableSlots={availableSlots}
-                selectedSlot={selectedSlot}
+                availableSlots={state.availableSlots}
+                selectedSlot={state.selectedSlot}
                 onSlotSelect={handleSlotSelect}
-                selectedDate={selectedDate}
+                selectedDate={state.selectedDate}
               />
             )}
 
-            {selectedSlot && selectedDate && (
+            {state.selectedSlot && state.selectedDate && (
               <div className="booking-summary">
                 <h3 className="summary-title">Вы выбрали:</h3>
                 <div className="summary-details">
                   <div className="summary-item">
                     <span className="material-symbols-outlined">calendar_today</span>
                     <span>
-                      {formatSelectedDate(selectedDate)}
+                      {formatSelectedDate(state.selectedDate)}
                     </span>
                   </div>
                   <div className="summary-item">
                     <span className="material-symbols-outlined">schedule</span>
                     <span>
-                      {formatTime(selectedSlot.start_time)} - {formatTime(selectedSlot.end_time)}
+                      {formatTime(state.selectedSlot.start_time)} - {formatTime(state.selectedSlot.end_time)}
                     </span>
                   </div>
                 </div>
@@ -178,10 +196,27 @@ const TimeSlotsPage = () => {
         </div>
       </div>
 
-      {bookingModalOpen && (
-        <div className="modal-overlay" onClick={() => setBookingModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setBookingModalOpen(false)}>
+      {state.bookingModalOpen && (
+        <div
+          className="modal-overlay"
+          role="presentation"
+          onClick={() => dispatch({ type: 'SET_BOOKING_MODAL', value: false })}
+          onKeyDown={(e) => e.key === 'Escape' && dispatch({ type: 'SET_BOOKING_MODAL', value: false })}
+          tabIndex={-1}
+        >
+          <div
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.key === 'Escape' && dispatch({ type: 'SET_BOOKING_MODAL', value: false })}
+            tabIndex={0}
+          >
+            <button
+              className="modal-close"
+              onClick={() => dispatch({ type: 'SET_BOOKING_MODAL', value: false })}
+              onKeyDown={(e) => e.key === 'Enter' && dispatch({ type: 'SET_BOOKING_MODAL', value: false })}
+            >
               <span className="material-symbols-outlined">close</span>
             </button>
 
@@ -191,13 +226,13 @@ const TimeSlotsPage = () => {
               <div className="detail-row">
                 <span className="detail-label">Дата:</span>
                 <span className="detail-value">
-                  {selectedDate ? formatSelectedDate(selectedDate) : '-'}
+                  {state.selectedDate ? formatSelectedDate(state.selectedDate) : '-'}
                 </span>
               </div>
               <div className="detail-row">
                 <span className="detail-label">Время:</span>
                 <span className="detail-value">
-                  {selectedSlot ? `${formatTime(selectedSlot.start_time)} - ${formatTime(selectedSlot.end_time)}` : '-'}
+                  {state.selectedSlot ? `${formatTime(state.selectedSlot.start_time)} - ${formatTime(state.selectedSlot.end_time)}` : '-'}
                 </span>
               </div>
             </div>
@@ -206,15 +241,15 @@ const TimeSlotsPage = () => {
               <label htmlFor="comment">Комментарий (необязательно)</label>
               <textarea
                 id="comment"
-                value={bookingComment}
-                onChange={(e) => setBookingComment(e.target.value)}
+                value={state.bookingComment}
+                onChange={(e) => dispatch({ type: 'SET_BOOKING_COMMENT', value: e.target.value })}
                 placeholder="Ваши пожелания..."
                 rows={3}
               />
             </div>
 
             <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setBookingModalOpen(false)}>
+              <button className="btn-cancel" onClick={() => dispatch({ type: 'SET_BOOKING_MODAL', value: false })}>
                 Отмена
               </button>
               <button className="btn-confirm" onClick={handleConfirmBooking}>

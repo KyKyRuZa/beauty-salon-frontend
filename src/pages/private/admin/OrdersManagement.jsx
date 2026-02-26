@@ -1,78 +1,108 @@
-import React, { useState, useEffect } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import '../../../styles/admin/OrdersManagement.css';
 
+const initialState = {
+  orders: [],
+  loading: true,
+  error: null,
+  pagination: { page: 1, limit: 10, total: 0, pages: 0 },
+  search: '',
+  showDetails: null
+};
+
+function ordersReducer(state, action) {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.value };
+    case 'SET_ORDERS':
+      return { ...state, orders: action.value };
+    case 'SET_ERROR':
+      return { ...state, error: action.value };
+    case 'SET_PAGINATION':
+      return { ...state, pagination: action.value };
+    case 'SET_SEARCH':
+      return { ...state, search: action.value };
+    case 'SET_SHOW_DETAILS':
+      return { ...state, showDetails: action.value };
+    case 'TOGGLE_DETAILS':
+      return { ...state, showDetails: state.showDetails === action.value ? null : action.value };
+    case 'SET_PAGE':
+      return { ...state, pagination: { ...state.pagination, page: action.value } };
+    default:
+      return state;
+  }
+}
+
 const OrdersManagement = () => {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
-  const [search, setSearch] = useState('');
-  const [showDetails, setShowDetails] = useState(null);
+  const [state, dispatch] = useReducer(ordersReducer, initialState);
 
   useEffect(() => {
     fetchOrders();
-  }, [pagination.page, search]);
+  }, [state.pagination.page]);
 
   const fetchOrders = async () => {
     try {
-      setLoading(true);
+      dispatch({ type: 'SET_LOADING', value: true });
 
       // Заглушка данных с корректным временем
-      setOrders([
-        {
-          id: 1,
-          user_email: 'user@example.com',
-          total_amount: 3000,
-          status: 'confirmed',
-          created_at: new Date('2026-02-18T10:00:00'),
-          booking_time: { start: '10:00', end: '11:00' },
-          items: [
-            { service_name: 'Покрытие гель-лаком', quantity: 1, price: 1500 },
-            { service_name: 'Дизайн ногтей', quantity: 1, price: 1500 }
-          ]
-        },
-        {
-          id: 2,
-          user_email: 'another@example.com',
-          total_amount: 2000,
-          status: 'confirmed',
-          created_at: new Date('2026-02-18T14:00:00'),
-          booking_time: { start: '14:00', end: '15:30' },
-          items: [
-            { service_name: 'Обрезной маникюр', quantity: 1, price: 2000 }
-          ]
-        },
-        {
-          id: 3,
-          user_email: 'client3@example.com',
-          total_amount: 4500,
-          status: 'completed',
-          created_at: new Date('2026-02-17T12:00:00'),
-          booking_time: { start: '12:00', end: '13:30' },
-          items: [
-            { service_name: 'Педикюр', quantity: 1, price: 3000 },
-            { service_name: 'Парафинотерапия', quantity: 1, price: 1500 }
-          ]
-        },
-        {
-          id: 4,
-          user_email: 'client4@example.com',
-          total_amount: 2500,
-          status: 'cancelled',
-          created_at: new Date('2026-02-16T16:00:00'),
-          booking_time: { start: '16:00', end: '17:00' },
-          items: [
-            { service_name: 'Наращивание ногтей', quantity: 1, price: 2500 }
-          ]
-        }
-      ]);
-      setPagination({ page: 1, limit: 10, total: 4, pages: 1 });
-      setError(null);
+      dispatch({
+        type: 'SET_ORDERS',
+        value: [
+          {
+            id: 1,
+            user_email: 'user@example.com',
+            total_amount: 3000,
+            status: 'confirmed',
+            created_at: new Date('2026-02-18T10:00:00'),
+            booking_time: { start: '10:00', end: '11:00' },
+            items: [
+              { service_name: 'Покрытие гель-лаком', quantity: 1, price: 1500 },
+              { service_name: 'Дизайн ногтей', quantity: 1, price: 1500 }
+            ]
+          },
+          {
+            id: 2,
+            user_email: 'another@example.com',
+            total_amount: 2000,
+            status: 'confirmed',
+            created_at: new Date('2026-02-18T14:00:00'),
+            booking_time: { start: '14:00', end: '15:30' },
+            items: [
+              { service_name: 'Обрезной маникюр', quantity: 1, price: 2000 }
+            ]
+          },
+          {
+            id: 3,
+            user_email: 'client3@example.com',
+            total_amount: 4500,
+            status: 'completed',
+            created_at: new Date('2026-02-17T12:00:00'),
+            booking_time: { start: '12:00', end: '13:30' },
+            items: [
+              { service_name: 'Педикюр', quantity: 1, price: 3000 },
+              { service_name: 'Парафинотерапия', quantity: 1, price: 1500 }
+            ]
+          },
+          {
+            id: 4,
+            user_email: 'client4@example.com',
+            total_amount: 2500,
+            status: 'cancelled',
+            created_at: new Date('2026-02-16T16:00:00'),
+            booking_time: { start: '16:00', end: '17:00' },
+            items: [
+              { service_name: 'Наращивание ногтей', quantity: 1, price: 2500 }
+            ]
+          }
+        ]
+      });
+      dispatch({ type: 'SET_PAGINATION', value: { page: 1, limit: 10, total: 4, pages: 1 } });
+      dispatch({ type: 'SET_ERROR', value: null });
     } catch (err) {
       console.error('Ошибка загрузки заказов:', err);
-      setError('Ошибка загрузки заказов');
+      dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки заказов' });
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
   };
 
@@ -82,8 +112,8 @@ const OrdersManagement = () => {
   };
 
   const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.pages) {
-      setPagination(prev => ({ ...prev, page: newPage }));
+    if (newPage >= 1 && newPage <= state.pagination.pages) {
+      dispatch({ type: 'SET_PAGE', value: newPage });
     }
   };
 
@@ -122,12 +152,12 @@ const OrdersManagement = () => {
     return `${bookingTime.start} - ${bookingTime.end}`;
   };
 
-  if (loading) {
+  if (state.loading) {
     return <div className="orders-loading">Загрузка заказов...</div>;
   }
 
-  if (error) {
-    return <div className="orders-error">{error}</div>;
+  if (state.error) {
+    return <div className="orders-error">{state.error}</div>;
   }
 
   return (
@@ -139,8 +169,8 @@ const OrdersManagement = () => {
           <input
             type="text"
             placeholder="Поиск заказов (по email пользователя)..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={state.search}
+            onChange={(e) => dispatch({ type: 'SET_SEARCH', value: e.target.value })}
           />
           <button type="submit" className="btn-search">
             <span className="material-symbols-outlined">search</span>
@@ -163,8 +193,8 @@ const OrdersManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {orders.map(order => (
-                <tr key={order.id} className={showDetails === order.id ? 'expanded' : ''}>
+              {state.orders.map(order => (
+                <tr key={order.id} className={state.showDetails === order.id ? 'expanded' : ''}>
                   <td className="order-id">#{order.id}</td>
                   <td className="order-email">{order.user_email}</td>
                   <td className="order-datetime">
@@ -186,12 +216,12 @@ const OrdersManagement = () => {
                   <td className="order-actions">
                     <button
                       className="btn-details"
-                      onClick={() => setShowDetails(showDetails === order.id ? null : order.id)}
+                      onClick={() => dispatch({ type: 'TOGGLE_DETAILS', value: order.id })}
                     >
                       <span className="material-symbols-outlined">
-                        {showDetails === order.id ? 'expand_less' : 'expand_more'}
+                        {state.showDetails === order.id ? 'expand_less' : 'expand_more'}
                       </span>
-                      {showDetails === order.id ? 'Скрыть' : 'Детали'}
+                      {state.showDetails === order.id ? 'Скрыть' : 'Детали'}
                     </button>
                     <button className="btn-edit">
                       <span className="material-symbols-outlined">edit</span>
@@ -206,11 +236,11 @@ const OrdersManagement = () => {
           </table>
         </div>
 
-        {showDetails && (
+        {state.showDetails && (
           <div className="order-details-panel">
             <div className="details-header">
-              <h3>Детали заказа #{showDetails}</h3>
-              <button className="btn-close" onClick={() => setShowDetails(null)}>
+              <h3>Детали заказа #{state.showDetails}</h3>
+              <button className="btn-close" onClick={() => dispatch({ type: 'SET_SHOW_DETAILS', value: null })}>
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
@@ -224,8 +254,8 @@ const OrdersManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {orders.find(o => o.id === showDetails)?.items.map((item, index) => (
-                  <tr key={index}>
+                {state.orders.find(o => o.id === state.showDetails)?.items.map((item) => (
+                  <tr key={item.service_name}>
                     <td>{item.service_name}</td>
                     <td>{item.quantity}</td>
                     <td>{item.price.toLocaleString('ru-RU')} ₽</td>
@@ -237,7 +267,7 @@ const OrdersManagement = () => {
                 <tr>
                   <td colSpan="3" className="total-label">Итого:</td>
                   <td className="total-amount">
-                    {orders.find(o => o.id === showDetails)?.total_amount.toLocaleString('ru-RU')} ₽
+                    {state.orders.find(o => o.id === state.showDetails)?.total_amount.toLocaleString('ru-RU')} ₽
                   </td>
                 </tr>
               </tfoot>
@@ -247,19 +277,19 @@ const OrdersManagement = () => {
 
         <div className="pagination">
           <button
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={pagination.page === 1}
+            onClick={() => handlePageChange(state.pagination.page - 1)}
+            disabled={state.pagination.page === 1}
             className="btn-page"
           >
             <span className="material-symbols-outlined">chevron_left</span>
             Назад
           </button>
           <span className="page-info">
-            Страница {pagination.page} из {pagination.pages}
+            Страница {state.pagination.page} из {state.pagination.pages}
           </span>
           <button
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={pagination.page === pagination.pages}
+            onClick={() => handlePageChange(state.pagination.page + 1)}
+            disabled={state.pagination.page === state.pagination.pages}
             className="btn-page"
           >
             Вперед

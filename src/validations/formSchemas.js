@@ -11,12 +11,6 @@ export const appointmentSchema = z.object({
   service_id: optionalIdSchema,
 });
 
-// Схема для логина
-export const loginSchema = z.object({
-  email: z.string().email("Некорректный email"),
-  password: z.string().min(1, "Пароль обязателен"),
-});
-
 // Схема для регистрации администратора
 export const adminRegisterSchema = z.object({
   email: z.string().email("Некорректный email").min(1, "Email обязателен"),

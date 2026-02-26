@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback } from 'react';
 import {
   getMasterSlots,
   createTimeSlot,
@@ -11,118 +11,151 @@ import { getMasterServices } from '../../api/catalog';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/master/MasterSchedule.css';
 
-const MasterSchedule = () => {
-  const { profile } = useAuth();
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [slots, setSlots] = useState([]);
-  const [availabilityData, setAvailabilityData] = useState(null); // Расписание на дату
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [selectedService, setSelectedService] = useState(''); // Выбранная услуга
-  const [masterServices, setMasterServices] = useState([]); // Услуги мастера
-  const [loadingServices, setLoadingServices] = useState(true);
-
-  // Состояние для модального окна создания/редактирования
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingSlot, setEditingSlot] = useState(null);
-  const [slotForm, setSlotForm] = useState({
+const initialState = {
+  selectedDate: new Date().toISOString().split('T')[0],
+  slots: [],
+  availabilityData: null,
+  loading: false,
+  error: null,
+  selectedService: '',
+  masterServices: [],
+  loadingServices: true,
+  modalOpen: false,
+  editingSlot: null,
+  slotForm: {
     start_time: '09:00',
     end_time: '10:00'
-  });
-
-  // Состояние для пакетного создания расписания
-  const [scheduleForm, setScheduleForm] = useState({
+  },
+  scheduleForm: {
     start_time: '09:00',
     end_time: '18:00',
     slot_duration: 60
-  });
+  }
+};
+
+function masterScheduleReducer(state, action) {
+  switch (action.type) {
+    case 'SET_SELECTED_DATE':
+      return { ...state, selectedDate: action.value };
+    case 'SET_SLOTS':
+      return { ...state, slots: action.value };
+    case 'SET_AVAILABILITY_DATA':
+      return { ...state, availabilityData: action.value };
+    case 'SET_LOADING':
+      return { ...state, loading: action.value };
+    case 'SET_ERROR':
+      return { ...state, error: action.value };
+    case 'SET_SELECTED_SERVICE':
+      return { ...state, selectedService: action.value };
+    case 'SET_MASTER_SERVICES':
+      return { ...state, masterServices: action.value };
+    case 'SET_LOADING_SERVICES':
+      return { ...state, loadingServices: action.value };
+    case 'SET_MODAL_OPEN':
+      return { ...state, modalOpen: action.value };
+    case 'SET_EDITING_SLOT':
+      return { ...state, editingSlot: action.value };
+    case 'SET_SLOT_FORM':
+      return { ...state, slotForm: action.value };
+    case 'UPDATE_SLOT_FORM':
+      return { ...state, slotForm: { ...state.slotForm, ...action.value } };
+    case 'SET_SCHEDULE_FORM':
+      return { ...state, scheduleForm: action.value };
+    case 'UPDATE_SCHEDULE_FORM':
+      return { ...state, scheduleForm: { ...state.scheduleForm, ...action.value } };
+    case 'RESET_MODAL':
+      return {
+        ...state,
+        modalOpen: false,
+        editingSlot: null,
+        slotForm: { start_time: '09:00', end_time: '10:00' }
+      };
+    default:
+      return state;
+  }
+}
+
+const MasterSchedule = () => {
+  const { profile } = useAuth();
+  const [state, dispatch] = useReducer(masterScheduleReducer, initialState);
 
   const loadMasterServices = useCallback(async () => {
     try {
-      setLoadingServices(true);
+      dispatch({ type: 'SET_LOADING_SERVICES', value: true });
       const response = await getMasterServices();
       console.log('Загрузка услуг мастера, ответ:', response);
-      
-      // Получаем данные из ответа
-      // response.data.data - массив услуг, response.data.success - флаг успеха
+
       const servicesData = response?.data?.data || response?.data || response;
-      
+
       if (servicesData && Array.isArray(servicesData)) {
-        setMasterServices(servicesData);
+        dispatch({ type: 'SET_MASTER_SERVICES', value: servicesData });
         console.log('Услуги мастера загружены:', servicesData);
-        // Если есть хотя бы одна услуга, выбираем первую по умолчанию
         if (servicesData.length > 0) {
-          setSelectedService(servicesData[0].id.toString());
+          dispatch({ type: 'SET_SELECTED_SERVICE', value: servicesData[0].id.toString() });
           console.log('Выбрана услуга по умолчанию:', servicesData[0].id, servicesData[0].name);
         }
       } else {
         console.warn('Услуги мастера не получены или пустые:', servicesData);
-        setMasterServices([]);
+        dispatch({ type: 'SET_MASTER_SERVICES', value: [] });
       }
     } catch (err) {
       console.error('Ошибка загрузки услуг мастера:', err);
-      setError('Не удалось загрузить услуги мастера');
+      dispatch({ type: 'SET_ERROR', value: 'Не удалось загрузить услуги мастера' });
     } finally {
-      setLoadingServices(false);
+      dispatch({ type: 'SET_LOADING_SERVICES', value: false });
     }
   }, []);
 
-  // Загрузка услуг мастера
   useEffect(() => {
     loadMasterServices();
   }, [loadMasterServices]);
 
   const loadScheduleAndSlots = useCallback(async (date) => {
-    setLoading(true);
-    setError(null);
+    dispatch({ type: 'SET_LOADING', value: true });
+    dispatch({ type: 'SET_ERROR', value: null });
     try {
-      console.log('Загрузка расписания со слотами для даты:', date, 'услуга:', selectedService);
-      
-      // Если услуга не выбрана, не загружаем слоты
-      if (!selectedService) {
+      console.log('Загрузка расписания со слотами для даты:', date, 'услуга:', state.selectedService);
+
+      if (!state.selectedService) {
         console.log('Услуга не выбрана, пропускаем загрузку слотов');
-        setSlots([]);
-        setAvailabilityData(null);
-        setLoading(false);
+        dispatch({ type: 'SET_SLOTS', value: [] });
+        dispatch({ type: 'SET_AVAILABILITY_DATA', value: null });
+        dispatch({ type: 'SET_LOADING', value: false });
         return;
       }
-      
-      // Получаем master_id из профиля (profile.id для мастера)
+
       const masterId = profile?.id;
       console.log('MasterSchedule: masterId из profile:', masterId, 'profile:', profile);
-      
+
       if (!masterId) {
         console.error('MasterSchedule: masterId не найден');
-        setSlots([]);
-        setAvailabilityData(null);
-        setLoading(false);
+        dispatch({ type: 'SET_SLOTS', value: [] });
+        dispatch({ type: 'SET_AVAILABILITY_DATA', value: null });
+        dispatch({ type: 'SET_LOADING', value: false });
         return;
       }
-      
-      // Получаем расписание со слотами
-      const response = await getAvailabilityWithSlots(date, masterId, selectedService ? parseInt(selectedService) : null);
+
+      const response = await getAvailabilityWithSlots(date, masterId, state.selectedService ? parseInt(state.selectedService) : null);
       console.log('Ответ getAvailabilityWithSlots:', response);
 
       if (response.data) {
-        setAvailabilityData(response.data);
+        dispatch({ type: 'SET_AVAILABILITY_DATA', value: response.data });
         let loadedSlots = response.data.slots || [];
 
-        // Фильтруем слоты по выбранной услуге или null (универсальные)
         loadedSlots = loadedSlots.filter(slot =>
-          slot.service_id === parseInt(selectedService) || slot.service_id === null
+          slot.service_id === parseInt(state.selectedService) || slot.service_id === null
         );
 
-        setSlots(loadedSlots);
+        dispatch({ type: 'SET_SLOTS', value: loadedSlots });
         console.log('Установлены слоты из расписания:', loadedSlots?.length);
       } else {
-        setAvailabilityData(null);
-        setSlots([]);
+        dispatch({ type: 'SET_AVAILABILITY_DATA', value: null });
+        dispatch({ type: 'SET_SLOTS', value: [] });
         console.log('Расписание не найдено');
       }
     } catch (err) {
       console.error('Ошибка загрузки расписания:', err);
       console.error('Ошибка getAvailabilityWithSlots:', err.response?.data);
-      // Если расписания нет (404), пробуем загрузить только слоты
       try {
         console.log('Пробуем загрузить только слоты...');
         const masterId = profile?.id;
@@ -130,65 +163,57 @@ const MasterSchedule = () => {
         console.log('Ответ getMasterSlots:', slotsResponse);
 
         let loadedSlots = slotsResponse.data || [];
-        // Фильтруем слоты по выбранной услуге или null (универсальные)
         loadedSlots = loadedSlots.filter(slot =>
-          slot.service_id === parseInt(selectedService) || slot.service_id === null
+          slot.service_id === parseInt(state.selectedService) || slot.service_id === null
         );
 
-        setSlots(loadedSlots);
-        setAvailabilityData(null);
+        dispatch({ type: 'SET_SLOTS', value: loadedSlots });
+        dispatch({ type: 'SET_AVAILABILITY_DATA', value: null });
         console.log('Установлены слоты напрямую:', loadedSlots?.length);
       } catch (slotsErr) {
         console.error('Ошибка getMasterSlots:', slotsErr.response?.data);
-        setError('Не удалось загрузить расписание');
-        setSlots([]);
+        dispatch({ type: 'SET_ERROR', value: 'Не удалось загрузить расписание' });
+        dispatch({ type: 'SET_SLOTS', value: [] });
       }
     } finally {
-      setLoading(false);
+      dispatch({ type: 'SET_LOADING', value: false });
     }
-  }, [selectedService, profile]);
+  }, [state.selectedService, profile]);
 
   useEffect(() => {
-    loadScheduleAndSlots(selectedDate);
-  }, [selectedDate, selectedService, loadScheduleAndSlots]);
+    loadScheduleAndSlots(state.selectedDate);
+  }, [state.selectedDate, state.selectedService, loadScheduleAndSlots]);
 
   const handleOpenCreateModal = () => {
-    setEditingSlot(null);
-    setSlotForm({
-      start_time: '09:00',
-      end_time: '10:00'
-    });
-    setModalOpen(true);
+    dispatch({ type: 'SET_EDITING_SLOT', value: null });
+    dispatch({ type: 'SET_SLOT_FORM', value: { start_time: '09:00', end_time: '10:00' } });
+    dispatch({ type: 'SET_MODAL_OPEN', value: true });
   };
 
   const handleOpenEditModal = (slot) => {
-    setEditingSlot(slot);
-    
-    // Парсим время из строки формата YYYY-MM-DDTHH:mm:ss или ISO
+    dispatch({ type: 'SET_EDITING_SLOT', value: slot });
+
     const parseTime = (timeString) => {
       if (!timeString) return '00:00';
-      // Извлекаем время из строки
-      const timePart = timeString.includes('T') 
-        ? timeString.split('T')[1].substring(0, 5) 
+      const timePart = timeString.includes('T')
+        ? timeString.split('T')[1].substring(0, 5)
         : timeString.substring(0, 5);
       return timePart;
     };
-    
-    setSlotForm({
+
+    dispatch({ type: 'SET_SLOT_FORM', value: {
       start_time: parseTime(slot.start_time),
       end_time: parseTime(slot.end_time)
-    });
-    setModalOpen(true);
+    }});
+    dispatch({ type: 'SET_MODAL_OPEN', value: true });
   };
 
   const handleCloseModal = () => {
-    setModalOpen(false);
-    setEditingSlot(null);
+    dispatch({ type: 'RESET_MODAL' });
   };
 
   const handleSaveSlot = async () => {
     try {
-      // Создаём дату с локальным временем и конвертируем в формат YYYY-MM-DDTHH:mm:ss
       const formatLocalTime = (date) => {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -198,17 +223,17 @@ const MasterSchedule = () => {
         const seconds = String(date.getSeconds()).padStart(2, '0');
         return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
       };
-      
-      const startDateTime = new Date(`${selectedDate}T${slotForm.start_time}`);
-      const endDateTime = new Date(`${selectedDate}T${slotForm.end_time}`);
+
+      const startDateTime = new Date(`${state.selectedDate}T${state.slotForm.start_time}`);
+      const endDateTime = new Date(`${state.selectedDate}T${state.slotForm.end_time}`);
 
       if (startDateTime >= endDateTime) {
         alert('Время окончания должно быть позже времени начала');
         return;
       }
 
-      if (editingSlot) {
-        await updateTimeSlot(editingSlot.id, {
+      if (state.editingSlot) {
+        await updateTimeSlot(state.editingSlot.id, {
           start_time: formatLocalTime(startDateTime),
           end_time: formatLocalTime(endDateTime)
         });
@@ -219,7 +244,7 @@ const MasterSchedule = () => {
         });
       }
 
-      await loadScheduleAndSlots(selectedDate);
+      await loadScheduleAndSlots(state.selectedDate);
       handleCloseModal();
     } catch (err) {
       console.error('Ошибка сохранения слота:', err);
@@ -232,7 +257,7 @@ const MasterSchedule = () => {
 
     try {
       await deleteTimeSlot(slotId);
-      await loadScheduleAndSlots(selectedDate);
+      await loadScheduleAndSlots(state.selectedDate);
     } catch (err) {
       console.error('Ошибка удаления слота:', err);
       alert(err.response?.data?.message || 'Ошибка при удалении слота');
@@ -241,36 +266,34 @@ const MasterSchedule = () => {
 
   const handleCreateSchedule = async () => {
     console.log('=== handleCreateSchedule START ===');
-    console.log('scheduleForm:', scheduleForm);
-    console.log('selectedDate:', selectedDate);
-    console.log('selectedService:', selectedService);
+    console.log('scheduleForm:', state.scheduleForm);
+    console.log('selectedDate:', state.selectedDate);
+    console.log('selectedService:', state.selectedService);
 
-    // Валидация: услуга обязательна
-    if (!selectedService) {
+    if (!state.selectedService) {
       alert('Выберите услугу');
       return;
     }
 
-    // Значения по умолчанию, если форма пуста
-    const startTime = scheduleForm.start_time || '09:00';
-    const endTime = scheduleForm.end_time || '18:00';
-    const slotDuration = scheduleForm.slot_duration || 60;
+    const startTime = state.scheduleForm.start_time || '09:00';
+    const endTime = state.scheduleForm.end_time || '18:00';
+    const slotDuration = state.scheduleForm.slot_duration || 60;
 
-    console.log('Подготовленные данные:', { startTime, endTime, slotDuration, serviceId: selectedService });
+    console.log('Подготовленные данные:', { startTime, endTime, slotDuration, serviceId: state.selectedService });
 
     try {
       console.log('Вызов setAvailability...');
       const requestData = {
-        date: selectedDate,
+        date: state.selectedDate,
         start_time: startTime,
         end_time: endTime,
         slot_duration: parseInt(slotDuration),
-        service_id: parseInt(selectedService) // Обязательно передаём service_id
+        service_id: parseInt(state.selectedService)
       };
-      
+
       const response = await setAvailability(requestData);
       console.log('Расписание создано:', response);
-      await loadScheduleAndSlots(selectedDate);
+      await loadScheduleAndSlots(state.selectedDate);
       alert('Расписание успешно создано');
     } catch (err) {
       console.error('Ошибка создания расписания:', err);
@@ -316,36 +339,35 @@ const MasterSchedule = () => {
         <h3 className="schedule-title">Управление расписанием</h3>
         <input
           type="date"
-          value={selectedDate}
+          value={state.selectedDate}
           min={getMinDate()}
-          onChange={(e) => setSelectedDate(e.target.value)}
+          onChange={(e) => dispatch({ type: 'SET_SELECTED_DATE', value: e.target.value })}
           className="date-picker"
         />
       </div>
 
-      {/* Форма пакетного создания расписания */}
       <div className="schedule-creator">
         <div className="creator-header">
           <h4 className="creator-title">Быстрое создание расписания</h4>
-          {availabilityData && availabilityData.start_time && availabilityData.end_time && (
+          {state.availabilityData && state.availabilityData.start_time && state.availabilityData.end_time && (
             <div className="availabilityData-info">
               <span className="material-symbols-outlined">schedule</span>
               <span>
-                {availabilityData.start_time} - {availabilityData.end_time}
-                (слот по {availabilityData.slot_duration || 60} мин)
-                {availabilityData.service_id && (() => {
-                  const service = masterServices.find(s => s.id === availabilityData.service_id);
+                {state.availabilityData.start_time} - {state.availabilityData.end_time}
+                (слот по {state.availabilityData.slot_duration || 60} мин)
+                {state.availabilityData.service_id && (() => {
+                  const service = state.masterServices.find(s => s.id === state.availabilityData.service_id);
                   return service ? ` • ${service.name}` : '';
                 })()}
               </span>
               <button
                 onClick={() => {
-                  setScheduleForm({
-                    start_time: availabilityData.start_time,
-                    end_time: availabilityData.end_time,
-                    slot_duration: availabilityData.slot_duration || 60
-                  });
-                  setSelectedService(availabilityData.service_id?.toString() || '');
+                  dispatch({ type: 'SET_SCHEDULE_FORM', value: {
+                    start_time: state.availabilityData.start_time,
+                    end_time: state.availabilityData.end_time,
+                    slot_duration: state.availabilityData.slot_duration || 60
+                  }});
+                  dispatch({ type: 'SET_SELECTED_SERVICE', value: state.availabilityData.service_id?.toString() || '' });
                 }}
                 className="btn-load-availabilityData"
               >
@@ -354,10 +376,10 @@ const MasterSchedule = () => {
             </div>
           )}
         </div>
-        
-        {loadingServices ? (
+
+        {state.loadingServices ? (
           <div className="loading-services">Загрузка услуг...</div>
-        ) : masterServices.length === 0 ? (
+        ) : state.masterServices.length === 0 ? (
           <div className="no-services">
             <p>У вас пока нет услуг. Сначала создайте услугу в каталоге.</p>
           </div>
@@ -365,13 +387,14 @@ const MasterSchedule = () => {
           <div className="creator-form">
             <div className="form-row">
               <div className="form-group">
-                <label>Услуга *</label>
+                <label htmlFor="schedule-service">Услуга *</label>
                 <select
-                  value={selectedService}
-                  onChange={(e) => setSelectedService(e.target.value)}
+                  id="schedule-service"
+                  value={state.selectedService}
+                  onChange={(e) => dispatch({ type: 'SET_SELECTED_SERVICE', value: e.target.value })}
                   className="service-select"
                 >
-                  {masterServices.map(service => (
+                  {state.masterServices.map(service => (
                     <option key={service.id} value={service.id}>
                       {service.name} ({service.price} ₽)
                     </option>
@@ -379,36 +402,39 @@ const MasterSchedule = () => {
                 </select>
               </div>
               <div className="form-group">
-                <label>Начало работы</label>
+                <label htmlFor="schedule-start-time">Начало работы</label>
                 <input
+                  id="schedule-start-time"
                   type="time"
-                  value={scheduleForm.start_time}
-                  onChange={(e) => setScheduleForm({ ...scheduleForm, start_time: e.target.value })}
+                  value={state.scheduleForm.start_time}
+                  onChange={(e) => dispatch({ type: 'UPDATE_SCHEDULE_FORM', value: { start_time: e.target.value } })}
                   className="time-input"
                 />
               </div>
               <div className="form-group">
-                <label>Окончание работы</label>
+                <label htmlFor="schedule-end-time">Окончание работы</label>
                 <input
+                  id="schedule-end-time"
                   type="time"
-                  value={scheduleForm.end_time}
-                  onChange={(e) => setScheduleForm({ ...scheduleForm, end_time: e.target.value })}
+                  value={state.scheduleForm.end_time}
+                  onChange={(e) => dispatch({ type: 'UPDATE_SCHEDULE_FORM', value: { end_time: e.target.value } })}
                   className="time-input"
                 />
               </div>
               <div className="form-group">
-                <label>Длительность слота (мин)</label>
+                <label htmlFor="schedule-slot-duration">Длительность слота (мин)</label>
                 <input
+                  id="schedule-slot-duration"
                   type="number"
-                  value={scheduleForm.slot_duration}
-                  onChange={(e) => setScheduleForm({ ...scheduleForm, slot_duration: e.target.value })}
+                  value={state.scheduleForm.slot_duration}
+                  onChange={(e) => dispatch({ type: 'UPDATE_SCHEDULE_FORM', value: { slot_duration: e.target.value } })}
                   min="15"
                   step="15"
                   className="duration-input"
                 />
               </div>
             </div>
-            <button onClick={handleCreateSchedule} className="btn-create-schedule" disabled={!selectedService}>
+            <button onClick={handleCreateSchedule} className="btn-create-schedule" disabled={!state.selectedService}>
               Создать расписание на день
             </button>
           </div>
@@ -419,9 +445,9 @@ const MasterSchedule = () => {
       <div className="slots-section">
         <div className="slots-header">
           <h4 className="slots-title">
-            Слоты на {formatDate(selectedDate)}
-            {selectedService && (() => {
-              const service = masterServices.find(s => s.id === parseInt(selectedService));
+            Слоты на {formatDate(state.selectedDate)}
+            {state.selectedService && (() => {
+              const service = state.masterServices.find(s => s.id === parseInt(state.selectedService));
               return service ? ` • ${service.name}` : '';
             })()}
           </h4>
@@ -431,10 +457,10 @@ const MasterSchedule = () => {
           </button>
         </div>
 
-        {loading && <div className="loading">Загрузка...</div>}
-        {error && <div className="error">{error}</div>}
+        {state.loading && <div className="loading">Загрузка...</div>}
+        {state.error && <div className="error">{state.error}</div>}
 
-        {!loading && !error && slots.length === 0 && (
+        {!state.loading && !state.error && state.slots.length === 0 && (
           <div className="no-slots">
             <span className="material-symbols-outlined">event_busy</span>
             <p>Нет слотов на эту дату</p>
@@ -442,12 +468,11 @@ const MasterSchedule = () => {
           </div>
         )}
 
-        {!loading && !error && slots.length > 0 && (
+        {!state.loading && !state.error && state.slots.length > 0 && (
           <div className="slots-list">
-            {slots.map((slot) => {
-              // Находим название услуги для слота
-              const service = masterServices.find(s => s.id === slot.service_id);
-              
+            {state.slots.map((slot) => {
+              const service = state.masterServices.find(s => s.id === slot.service_id);
+
               return (
                 <div key={slot.id} className={`slot-item ${slot.status}`}>
                   <div className="slot-time">
@@ -458,7 +483,6 @@ const MasterSchedule = () => {
                   <div className="slot-info">
                     {service && (
                       <span className="service-name" title={service.name}>
-                        
                         {service.name}
                       </span>
                     )}
@@ -504,33 +528,48 @@ const MasterSchedule = () => {
       </div>
 
       {/* Модальное окно создания/редактирования */}
-      {modalOpen && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={handleCloseModal}>
+      {state.modalOpen && (
+        <div
+          className="modal-overlay"
+          role="presentation"
+          onClick={handleCloseModal}
+          onKeyDown={(e) => e.key === 'Escape' && handleCloseModal()}
+          tabIndex={-1}
+        >
+          <div
+            className="modal-content"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.key === 'Escape' && handleCloseModal()}
+            tabIndex={0}
+          >
+            <button className="modal-close" onClick={handleCloseModal} onKeyDown={(e) => e.key === 'Enter' && handleCloseModal()}>
               <span className="material-symbols-outlined">close</span>
             </button>
 
             <h4 className="modal-title">
-              {editingSlot ? 'Редактировать слот' : 'Новый слот'}
+              {state.editingSlot ? 'Редактировать слот' : 'Новый слот'}
             </h4>
 
             <div className="modal-form">
               <div className="form-group">
-                <label>Время начала</label>
+                <label htmlFor="slot-start-time">Время начала</label>
                 <input
+                  id="slot-start-time"
                   type="time"
-                  value={slotForm.start_time}
-                  onChange={(e) => setSlotForm({ ...slotForm, start_time: e.target.value })}
+                  value={state.slotForm.start_time}
+                  onChange={(e) => dispatch({ type: 'UPDATE_SLOT_FORM', value: { start_time: e.target.value } })}
                   className="time-input"
                 />
               </div>
               <div className="form-group">
-                <label>Время окончания</label>
+                <label htmlFor="slot-end-time">Время окончания</label>
                 <input
+                  id="slot-end-time"
                   type="time"
-                  value={slotForm.end_time}
-                  onChange={(e) => setSlotForm({ ...slotForm, end_time: e.target.value })}
+                  value={state.slotForm.end_time}
+                  onChange={(e) => dispatch({ type: 'UPDATE_SLOT_FORM', value: { end_time: e.target.value } })}
                   className="time-input"
                 />
               </div>
@@ -541,7 +580,7 @@ const MasterSchedule = () => {
                 Отмена
               </button>
               <button onClick={handleSaveSlot} className="btn-confirm">
-                {editingSlot ? 'Сохранить' : 'Создать'}
+                {state.editingSlot ? 'Сохранить' : 'Создать'}
               </button>
             </div>
           </div>

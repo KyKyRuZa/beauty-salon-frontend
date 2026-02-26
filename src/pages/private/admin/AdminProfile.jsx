@@ -94,12 +94,12 @@ const AdminProfile = () => {
 
         <div className="admin-profile-info">
           <div className="profile-field">
-            <label>ID Администратора:</label>
+            <span>ID Администратора:</span>
             <span>{adminInfo?.id || 'N/A'}</span>
           </div>
 
           <div className="profile-field">
-            <label>Роль:</label>
+            <span>Роль:</span>
             <span>{adminInfo?.role || 'N/A'}</span>
           </div>
 
@@ -132,29 +132,29 @@ const AdminProfile = () => {
           ) : (
             <>
               <div className="profile-field">
-                <label>Имя:</label>
+                <span>Имя:</span>
                 <span>{adminInfo?.first_name || 'Не указано'}</span>
               </div>
 
               <div className="profile-field">
-                <label>Фамилия:</label>
+                <span>Фамилия:</span>
                 <span>{adminInfo?.last_name || 'Не указано'}</span>
               </div>
             </>
           )}
 
           <div className="profile-field">
-            <label>Email:</label>
+            <span>Email:</span>
             <span>{user?.email || profile?.email || 'N/A'}</span>
           </div>
 
           <div className="profile-field">
-            <label>Дата создания:</label>
+            <span>Дата создания:</span>
             <span>{adminInfo?.created_at ? new Date(adminInfo.created_at).toLocaleDateString() : 'N/A'}</span>
           </div>
 
           <div className="profile-field">
-            <label>Статус:</label>
+            <span>Статус:</span>
             <span>{adminInfo?.is_active ? 'Активен' : 'Неактивен'}</span>
           </div>
         </div>

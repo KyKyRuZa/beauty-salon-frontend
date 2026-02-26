@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useReducer } from 'react';
 import auth from '../api/auth';
 
 const AuthContext = createContext();
@@ -12,11 +12,46 @@ export const useAuth = () => {
   return context;
 };
 
+const initialState = {
+  user: null,
+  profile: null,
+  loading: true,
+  isAuthenticated: false
+};
+
+function authReducer(state, action) {
+  switch (action.type) {
+    case 'SET_USER':
+      return { ...state, user: action.value };
+    case 'SET_PROFILE':
+      return { ...state, profile: action.value };
+    case 'SET_LOADING':
+      return { ...state, loading: action.value };
+    case 'SET_AUTHENTICATED':
+      return { ...state, isAuthenticated: action.value };
+    case 'SET_AUTH_DATA':
+      return {
+        ...state,
+        user: action.user || null,
+        profile: action.profile || null,
+        isAuthenticated: !!action.user
+      };
+    case 'CLEAR_AUTH':
+      return {
+        ...state,
+        user: null,
+        profile: null,
+        isAuthenticated: false
+      };
+    case 'SET_LOADED':
+      return { ...state, loading: false };
+    default:
+      return state;
+  }
+}
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [state, dispatch] = useReducer(authReducer, initialState);
 
   // Загружаем данные пользователя и профиля при монтировании
   useEffect(() => {
@@ -25,18 +60,19 @@ export const AuthProvider = ({ children }) => {
         try {
           const result = await auth.getProfile();
           if (result.success) {
-            setUser(result.data?.user || null);
-            setProfile(result.data?.profile || null);
-            setIsAuthenticated(true);
+            dispatch({
+              type: 'SET_AUTH_DATA',
+              user: result.data?.user,
+              profile: result.data?.profile
+            });
           } else {
-            // Если не удалось загрузить профиль, но токен есть, возможно, нужно обновить данные
             console.error('Не удалось загрузить профиль:', result.error);
           }
         } catch (error) {
           console.error('Ошибка при инициализации аутентификации:', error);
         }
       }
-      setLoading(false);
+      dispatch({ type: 'SET_LOADED' });
     };
 
     initializeAuth();
@@ -44,52 +80,47 @@ export const AuthProvider = ({ children }) => {
     // Подписываемся на события изменения аутентификации
     const handleAuthChange = () => {
       if (auth.isAuthenticated()) {
-        setIsAuthenticated(true);
-        // Обновляем данные пользователя
+        dispatch({ type: 'SET_AUTHENTICATED', value: true });
+
         const storedUser = localStorage.getItem('user');
         if (storedUser && storedUser !== 'undefined') {
           try {
-            setUser(JSON.parse(storedUser) || null);
+            const userData = JSON.parse(storedUser);
+            dispatch({ type: 'SET_USER', value: userData });
           } catch (e) {
             console.error('Ошибка при парсинге данных пользователя:', e);
-            setUser(null);
+            dispatch({ type: 'SET_USER', value: null });
           }
         } else if (storedUser === 'undefined') {
-          // Если в localStorage хранится строка 'undefined', очищаем её
           localStorage.removeItem('user');
-          setUser(null);
+          dispatch({ type: 'SET_USER', value: null });
         }
-        
-        // Обновляем также профиль, так как он мог измениться
+
         const fullProfile = auth.getFullProfile();
         if (fullProfile) {
-          setProfile(fullProfile.profile || null);
+          dispatch({ type: 'SET_PROFILE', value: fullProfile.profile || null });
         } else {
-          // Если полный профиль недоступен, получаем его с сервера
           const refreshProfile = async () => {
             try {
               const result = await auth.getProfile();
               if (result.success) {
-                setProfile(result.data?.profile || null);
+                dispatch({ type: 'SET_PROFILE', value: result.data?.profile || null });
               }
             } catch (error) {
               console.error('Ошибка при обновлении профиля через authChange:', error);
-              setProfile(null);
+              dispatch({ type: 'SET_PROFILE', value: null });
             }
           };
-          
+
           refreshProfile();
         }
       } else {
-        setIsAuthenticated(false);
-        setUser(null);
-        setProfile(null);
+        dispatch({ type: 'CLEAR_AUTH' });
       }
     };
 
     window.addEventListener('authChange', handleAuthChange);
 
-    // Очищаем подписку при размонтировании
     return () => {
       window.removeEventListener('authChange', handleAuthChange);
     };
@@ -99,30 +130,32 @@ export const AuthProvider = ({ children }) => {
   const updateProfileInternal = async (profileData) => {
     const result = await auth.updateProfile(profileData);
     if (result.success) {
-      // Обновляем состояние с новыми данные
-      setUser(result.data?.user || null);
-      setProfile(result.data?.profile || null);
+      dispatch({
+        type: 'SET_AUTH_DATA',
+        user: result.data?.user,
+        profile: result.data?.profile
+      });
     }
     return result;
   };
-  
+
   const updateProfile = async (profileData) => {
     return await updateProfileInternal(profileData);
   };
 
   // Функция для получения полного профиля
   const getFullProfile = () => {
-    return { user, profile };
+    return { user: state.user, profile: state.profile };
   };
 
   const value = {
-    user,
-    profile,
-    loading,
-    isAuthenticated,
-    setIsAuthenticated,
-    setUser,
-    setProfile,
+    user: state.user,
+    profile: state.profile,
+    loading: state.loading,
+    isAuthenticated: state.isAuthenticated,
+    setIsAuthenticated: (value) => dispatch({ type: 'SET_AUTHENTICATED', value }),
+    setUser: (value) => dispatch({ type: 'SET_USER', value }),
+    setProfile: (value) => dispatch({ type: 'SET_PROFILE', value }),
     updateProfile,
     getFullProfile,
     // Проксируем методы из оригинального auth

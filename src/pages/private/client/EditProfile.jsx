@@ -18,10 +18,10 @@ const EditProfile = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
+    reset,
   } = useForm();
 
-  // Загружаем текущий профиль
+  // Загружаем текущий профиль и инициализируем форму
   useEffect(() => {
     if (authLoading) return; // Ждем завершения инициализации аутентификации
 
@@ -30,37 +30,38 @@ const EditProfile = () => {
       return;
     }
 
-    // Устанавливаем общие поля
-    setValue("email", user?.email || "");
-    setValue("phone", user?.phone || "");
+    // Формируем данные для инициализации формы
+    const defaultValues = {
+      email: user?.email || "",
+      phone: user?.phone || "",
+    };
 
     // Устанавливаем имя и фамилию только для клиентов и мастеров
     if (user?.role === 'client' || user?.role === 'master') {
-      const firstName = profile?.firstName || user?.firstName || '';
-      const lastName = profile?.lastName || user?.lastName || '';
-      
-      setValue("firstName", firstName);
-      setValue("lastName", lastName);
+      defaultValues.firstName = profile?.firstName || user?.firstName || '';
+      defaultValues.lastName = profile?.lastName || user?.lastName || '';
     }
 
     if (profile) {
       if (user?.role === 'master') {
-        setValue("specialization", profile.specialization);
-        setValue("experience", profile.experience);
+        defaultValues.specialization = profile.specialization;
+        defaultValues.experience = profile.experience;
       }
 
       if (user?.role === 'salon') {
-        setValue("salonName", profile.name);
-        setValue("address", profile.address);
-        setValue("inn", profile.inn);
-        setValue("description", profile.description);
+        defaultValues.salonName = profile.name;
+        defaultValues.address = profile.address;
+        defaultValues.inn = profile.inn;
+        defaultValues.description = profile.description;
       }
     } else {
       console.log('Profile data is missing, user may need to create profile'); // Отладочное сообщение
     }
 
+    // Инициализируем форму одним вызовом
+    reset(defaultValues);
     setLoading(false);
-  }, [user, profile, authLoading, setValue, navigate, getCurrentUser]);
+  }, [user, profile, authLoading, reset, navigate, getCurrentUser]);
 
   const onSubmit = async (data) => {
     setSaving(true);
@@ -158,8 +159,9 @@ const EditProfile = () => {
               {(currentUser && currentUser.role === 'client') && (
                 <>
                   <div className="form-group">
-                    <label>Имя *</label>
+                    <label htmlFor="firstName">Имя *</label>
                     <input
+                      id="firstName"
                       type="text"
                       {...register("firstName", { required: "Имя обязательно" })}
                       className={errors.firstName ? "input-error" : ""}
@@ -170,8 +172,9 @@ const EditProfile = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>Фамилия *</label>
+                    <label htmlFor="lastName">Фамилия *</label>
                     <input
+                      id="lastName"
                       type="text"
                       {...register("lastName", { required: "Фамилия обязательна" })}
                       className={errors.lastName ? "input-error" : ""}
@@ -186,8 +189,9 @@ const EditProfile = () => {
               {(currentUser && currentUser.role === 'master') && (
                 <>
                   <div className="form-group">
-                    <label>Имя *</label>
+                    <label htmlFor="firstName">Имя *</label>
                     <input
+                      id="firstName"
                       type="text"
                       {...register("firstName", { required: "Имя обязательно" })}
                       className={errors.firstName ? "input-error" : ""}
@@ -198,8 +202,9 @@ const EditProfile = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>Фамилия *</label>
+                    <label htmlFor="lastName">Фамилия *</label>
                     <input
+                      id="lastName"
                       type="text"
                       {...register("lastName", { required: "Фамилия обязательна" })}
                       className={errors.lastName ? "input-error" : ""}
@@ -210,8 +215,9 @@ const EditProfile = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>Специализация *</label>
+                    <label htmlFor="specialization">Специализация *</label>
                     <input
+                      id="specialization"
                       type="text"
                       {...register("specialization", { required: "Специализация обязательна" })}
                       className={errors.specialization ? "input-error" : ""}
@@ -219,10 +225,11 @@ const EditProfile = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>Опыт работы (лет) *</label>
+                    <label htmlFor="experience">Опыт работы (лет) *</label>
                     <input
+                      id="experience"
                       type="number"
-                      {...register("experience", { 
+                      {...register("experience", {
                         required: "Опыт работы обязателен",
                         min: {
                           value: 0,
@@ -244,8 +251,9 @@ const EditProfile = () => {
               )}
 
               <div className="form-group">
-                <label>Email *</label>
+                <label htmlFor="email">Email *</label>
                 <input
+                  id="email"
                   type="email"
                   {...register("email", { required: "Email обязателен" })}
                   className={errors.email ? "input-error" : ""}
@@ -256,8 +264,9 @@ const EditProfile = () => {
               </div>
 
               <div className="form-group">
-                <label>Телефон *</label>
+                <label htmlFor="phone">Телефон *</label>
                 <input
+                  id="phone"
                   type="tel"
                   {...register("phone", { required: "Телефон обязателен" })}
                   className={errors.phone ? "input-error" : ""}
@@ -271,8 +280,9 @@ const EditProfile = () => {
               {(currentUser && currentUser.role === 'salon') && (
                 <>
                   <div className="form-group">
-                    <label>Название салона *</label>
+                    <label htmlFor="salonName">Название салона *</label>
                     <input
+                      id="salonName"
                       type="text"
                       {...register("salonName", { required: "Название салона обязательно" })}
                       className={errors.salonName ? "input-error" : ""}
@@ -280,8 +290,9 @@ const EditProfile = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>Адрес *</label>
+                    <label htmlFor="address">Адрес *</label>
                     <input
+                      id="address"
                       type="text"
                       {...register("address", { required: "Адрес обязателен" })}
                       className={errors.address ? "input-error" : ""}
@@ -289,8 +300,9 @@ const EditProfile = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>Описание салона</label>
+                    <label htmlFor="description">Описание салона</label>
                     <textarea
+                      id="description"
                       {...register("description")}
                       className={errors.description ? "input-error" : ""}
                       placeholder="Введите описание вашего салона..."
@@ -299,8 +311,9 @@ const EditProfile = () => {
                   </div>
 
                   <div className="form-group">
-                    <label>ИНН *</label>
+                    <label htmlFor="inn">ИНН *</label>
                     <input
+                      id="inn"
                       type="text"
                       {...register("inn", {
                         required: "ИНН обязателен",

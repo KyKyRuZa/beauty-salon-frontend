@@ -7,106 +7,90 @@ import Header from "../../../components/ui/Header";
 import { ServiceManagement } from "../../../components/catalog";
 import ReviewsList from "../../../components/reviews/ReviewsList";
 
+const MastersSection = () => (
+  <section className="section">
+    <h2 className="section-title">МОИ МАСТЕРА</h2>
+    <div className="masters-grid">
+      <p>В разработке</p>
+    </div>
+    <button className="btn-primary full-width">Добавить мастера</button>
+  </section>
+);
+
+const ScheduleSection = () => (
+  <section className="section">
+    <h2 className="section-title">РАСПИСАНИЕ САЛОНА</h2>
+    <div className="orders-list">
+      <p>В разработке</p>
+    </div>
+    <button className="btn-primary full-width">Управлять расписанием</button>
+  </section>
+);
+
+const AnalyticsSection = () => (
+  <section className="section">
+    <h2 className="section-title">АНАЛИТИКА</h2>
+    <div className="stats-grid">
+      <p>В разработке</p>
+    </div>
+    <div className="analytics-chart">
+      <h3>Динамика записей</h3>
+      <p>График будет отображаться здесь</p>
+    </div>
+  </section>
+);
+
+const ServicesSection = () => (
+  <section className="section">
+    <h2 className="section-title">УСЛУГИ САЛОНА</h2>
+    <ServiceManagement />
+  </section>
+);
+
+const ReviewsSection = ({ salonId }) => (
+  <section className="section">
+    <h2 className="section-title">ОТЗЫВЫ КЛИЕНТОВ</h2>
+    <ReviewsList salonId={salonId} showForm={false} />
+  </section>
+);
+
+const SettingsSection = ({ navigate, setActiveSection }) => (
+  <section className="section">
+    <h2 className="section-title">НАСТРОЙКИ САЛОНА</h2>
+    <div className="settings-list">
+      <div className="setting-item">
+        <span>Информация о салоне</span>
+        <button className="link-btn" onClick={() => navigate('/profile/edit')}>
+          Редактировать
+        </button>
+      </div>
+      <div className="setting-item">
+        <span>Услуги и цены</span>
+        <button className="link-btn" onClick={() => setActiveSection('services')}>
+          Управлять
+        </button>
+      </div>
+      <div className="setting-item">
+        <span>Рабочие часы</span>
+        <button className="link-btn">Настроить</button>
+      </div>
+    </div>
+  </section>
+);
+
+const DefaultSection = () => (
+  <section className="section">
+    <h2 className="section-title">ПРОФИЛЬ САЛОНА</h2>
+    <p>Выберите раздел для управления салоном</p>
+  </section>
+);
+
 const SalonProfile = ({ handleLogout }) => {
   const { user, profile, updateProfile: updateProfileInternal } = useAuth();
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('masters');
-  const renderContent = () => {
-    switch (activeSection) {
-      case 'masters':
-        return (
-          <section className="section">
-            <h2 className="section-title">МОИ МАСТЕРА</h2>
-            <div className="masters-grid">
-                <p>В разработке</p>
-            </div>
-            <button className="btn-primary full-width">Добавить мастера</button>
-          </section>
-        );
 
-      case 'schedule':
-        return (
-          <section className="section">
-            <h2 className="section-title">РАСПИСАНИЕ САЛОНА</h2>
-            <div className="orders-list">
-                <p>В разработке</p>
-            </div>
-            <button className="btn-primary full-width">Управлять расписанием</button>
-          </section>
-        );
-      
-      case 'analytics':
-        return (
-          <section className="section">
-            <h2 className="section-title">АНАЛИТИКА</h2>
-            <div className="stats-grid">
-              <p>В разработке</p>
-            </div>
-            <div className="analytics-chart">
-              <h3>Динамика записей</h3>
-              <p>График будет отображаться здесь</p>
-            </div>
-          </section>
-        );
-
-      case 'services':
-        return (
-          <section className="section">
-            <h2 className="section-title">УСЛУГИ САЛОНА</h2>
-            <ServiceManagement />
-          </section>
-        );
-
-      case 'reviews':
-        return (
-          <section className="section">
-            <h2 className="section-title">ОТЗЫВЫ КЛИЕНТОВ</h2>
-            <ReviewsList
-              salonId={profile?.id}
-              showForm={false}
-            />
-          </section>
-        );
-
-      case 'settings':
-        return (
-          <section className="section">
-            <h2 className="section-title">НАСТРОЙКИ САЛОНА</h2>
-            <div className="settings-list">
-              <div className="setting-item">
-                <span>Информация о салоне</span>
-                <button
-                  className="link-btn"
-                  onClick={() => navigate('/profile/edit')}
-                >
-                  Редактировать
-                </button>
-              </div>
-              <div className="setting-item">
-                <span>Услуги и цены</span>
-                <button className="link-btn" onClick={() => setActiveSection('services')}>
-                  Управлять
-                </button>
-              </div>
-              <div className="setting-item">
-                <span>Рабочие часы</span>
-                <button className="link-btn">Настроить</button>
-              </div>
-            </div>
-          </section>
-        );
-
-      default:
-        return (
-          <section className="section">
-            <h2 className="section-title">УПРАВЛЕНИЕ САЛОНОМ</h2>
-            <p>Выберите раздел для управления вашим салоном</p>
-          </section>
-        );
-    }
-  };
-
-  // Определяем URL аватара: сначала проверяем профиль, затем пользователя
+  // Определяем URL аватара
   const avatarUrl = profile?.image_url || user?.avatar || photo;
 
   return (
@@ -243,7 +227,12 @@ const SalonProfile = ({ handleLogout }) => {
           </aside>
 
           <section className="content">
-            {renderContent()}
+            {activeSection === 'masters' && <MastersSection />}
+            {activeSection === 'schedule' && <ScheduleSection />}
+            {activeSection === 'analytics' && <AnalyticsSection />}
+            {activeSection === 'services' && <ServicesSection />}
+            {activeSection === 'reviews' && <ReviewsSection salonId={profile?.id} />}
+            {activeSection === 'settings' && <SettingsSection navigate={navigate} setActiveSection={setActiveSection} />}
           </section>
         </div>
       </div>

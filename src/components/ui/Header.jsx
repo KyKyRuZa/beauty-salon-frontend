@@ -1,18 +1,43 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useReducer, useRef, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/ui.css';
 import logo from '../../assets/logo.svg';
 
 const CITIES = ['Казань', 'Альметьевск', 'Уфа', 'Ижевск', 'Набережные Челны'];
 
+const initialState = {
+  isMenuOpen: false,
+  searchQuery: '',
+  isCitiesOpen: false,
+  isProfileOpen: false,
+  selectedCity: 'Казань'
+};
+
+function headerReducer(state, action) {
+  switch (action.type) {
+    case 'TOGGLE_MENU':
+      return { ...state, isMenuOpen: !state.isMenuOpen };
+    case 'SET_SEARCH_QUERY':
+      return { ...state, searchQuery: action.value };
+    case 'TOGGLE_CITIES':
+      return { ...state, isCitiesOpen: !state.isCitiesOpen };
+    case 'TOGGLE_PROFILE':
+      return { ...state, isProfileOpen: !state.isProfileOpen };
+    case 'SET_SELECTED_CITY':
+      return { ...state, selectedCity: action.value, isCitiesOpen: false };
+    case 'CLOSE_CITIES':
+      return { ...state, isCitiesOpen: false };
+    case 'CLOSE_PROFILE':
+      return { ...state, isProfileOpen: false };
+    default:
+      return state;
+  }
+}
+
 const Header = () => {
   const { user, profile, getCurrentUser, logout } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isCitiesOpen, setIsCitiesOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [selectedCity, setSelectedCity] = useState('Казань');
+  const [state, dispatch] = useReducer(headerReducer, initialState);
 
   const citiesRef = useRef(null);
   const profileRef = useRef(null);
@@ -21,10 +46,10 @@ const Header = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (citiesRef.current && !citiesRef.current.contains(event.target)) {
-        setIsCitiesOpen(false);
+        dispatch({ type: 'CLOSE_CITIES' });
       }
       if (profileRef.current && !profileRef.current.contains(event.target)) {
-        setIsProfileOpen(false);
+        dispatch({ type: 'CLOSE_PROFILE' });
       }
     };
 
@@ -41,12 +66,11 @@ const Header = () => {
   };
 
   const handleCitySelect = (city) => {
-    setSelectedCity(city);
-    setIsCitiesOpen(false);
+    dispatch({ type: 'SET_SELECTED_CITY', value: city });
   };
 
   const toggleProfileDropdown = () => {
-    setIsProfileOpen(!isProfileOpen);
+    dispatch({ type: 'TOGGLE_PROFILE' });
   };
 
   // Проверка авторизации через auth сервис
@@ -54,44 +78,38 @@ const Header = () => {
 
   // Действия для НЕ авторизованного пользователя
   const handleRegistration = () => {
-    navigate('/auth?tab=register&type=user'); // Явно указываем параметры
-    setIsProfileOpen(false);
+    navigate('/auth?tab=register&type=user');
+    dispatch({ type: 'CLOSE_PROFILE' });
   };
 
   const handleLogin = () => {
-    navigate('/auth?tab=login'); // Явно указываем параметры
-    setIsProfileOpen(false);
+    navigate('/auth?tab=login');
+    dispatch({ type: 'CLOSE_PROFILE' });
   };
 
   // Действия для авторизованного пользователя
   const handleProfile = () => {
-    // Админов перенаправляем в админ-панель
     if (user?.role === 'admin' || user?.role === 'superadmin') {
       navigate('/admin/dashboard');
     } else {
       navigate('/profile');
     }
-    setIsProfileOpen(false);
-  };
-
-  const handleServices = () => {
-    navigate('/catalog');
+    dispatch({ type: 'CLOSE_PROFILE' });
   };
 
   const handleChat = () => {
     navigate('/chat');
-    setIsProfileOpen(false);
+    dispatch({ type: 'CLOSE_PROFILE' });
   };
 
   const handleSettings = () => {
     navigate('/profile#settings');
-    setIsProfileOpen(false);
+    dispatch({ type: 'CLOSE_PROFILE' });
   };
 
   const handleLogout = () => {
-    // Используем logout из контекста
     logout();
-    setIsProfileOpen(false);
+    dispatch({ type: 'CLOSE_PROFILE' });
   };
 
   // Форматирование имени пользователя
@@ -126,22 +144,28 @@ const Header = () => {
       <div className="header-container">
         <div className="header-left">
           <button
-            className={`header-menu-toggle ${isMenuOpen ? 'header-menu-toggle--open' : ''}`}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`header-menu-toggle ${state.isMenuOpen ? 'header-menu-toggle--open' : ''}`}
+            onClick={() => dispatch({ type: 'TOGGLE_MENU' })}
           >
             <span></span>
             <span></span>
             <span></span>
           </button>
 
-          <div className="header-logo" onClick={handleHome}>
+          <div
+            className="header-logo"
+            onClick={handleHome}
+            onKeyDown={(e) => e.key === 'Enter' && handleHome()}
+            role="button"
+            tabIndex={0}
+          >
             <img src={logo} alt="logo" className="logo" />
           </div>
 
-          <nav className={`header-nav ${isMenuOpen ? 'header-nav--open' : ''}`}>
-            <a onClick={handleServices} className="header-nav-link">
+          <nav className={`header-nav ${state.isMenuOpen ? 'header-nav--open' : ''}`}>
+            <Link to="/catalog" className="header-nav-link">
               Услуги
-            </a>
+            </Link>
             <a href="#pricing" className="header-nav-link">
               Отзывы
             </a>
@@ -156,8 +180,8 @@ const Header = () => {
             <input
               type="text"
               placeholder="Поиск услуг..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              value={state.searchQuery}
+              onChange={(e) => dispatch({ type: 'SET_SEARCH_QUERY', value: e.target.value })}
               className="search-input"
             />
             <button type="submit" className="search-button">
@@ -170,23 +194,23 @@ const Header = () => {
           <div className="header-location" ref={citiesRef}>
             <button
               className="location-trigger"
-              onClick={() => setIsCitiesOpen(!isCitiesOpen)}
+              onClick={() => dispatch({ type: 'TOGGLE_CITIES' })}
             >
               <span className="material-symbols-outlined" style={{fontSize: '1rem'}}>location_on</span>
-              <span className="location-text">{selectedCity}</span>
+              <span className="location-text">{state.selectedCity}</span>
               <span
-                className={`material-symbols-outlined expand-icon ${isCitiesOpen ? 'expand-icon--rotated' : ''}`}
+                className={`material-symbols-outlined expand-icon ${state.isCitiesOpen ? 'expand-icon--rotated' : ''}`}
                 style={{fontSize: '1rem'}}
               >
                 expand_more
               </span>
             </button>
 
-            <div className={`cities-dropdown ${isCitiesOpen ? 'cities-dropdown--open' : ''}`}>
+            <div className={`cities-dropdown ${state.isCitiesOpen ? 'cities-dropdown--open' : ''}`}>
               {CITIES.map(city => (
                 <button
                   key={city}
-                  className={`city-option ${city === selectedCity ? 'selected' : ''}`}
+                  className={`city-option ${city === state.selectedCity ? 'selected' : ''}`}
                   onClick={() => handleCitySelect(city)}
                 >
                   {city}
@@ -226,7 +250,7 @@ const Header = () => {
               )}
             </button>
 
-            <div className={`profile-dropdown ${isProfileOpen ? 'profile-dropdown--open' : ''}`}>
+            <div className={`profile-dropdown ${state.isProfileOpen ? 'profile-dropdown--open' : ''}`}>
               {isAuthenticated ? (
                 <>
                   <div className="user-info">

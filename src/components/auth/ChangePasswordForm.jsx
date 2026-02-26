@@ -1,15 +1,40 @@
-import { useState } from "react";
+import { useReducer } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "../../validations/zodResolver";
 import { changePasswordSchema } from "../../validations";
 import auth from "../../api/auth";
 
+const initialState = {
+  showCurrentPassword: false,
+  showNewPassword: false,
+  showConfirmNewPassword: false,
+  successMessage: "",
+  errorMessage: ""
+};
+
+function changePasswordReducer(state, action) {
+  switch (action.type) {
+    case 'TOGGLE_CURRENT_PASSWORD':
+      return { ...state, showCurrentPassword: !state.showCurrentPassword };
+    case 'TOGGLE_NEW_PASSWORD':
+      return { ...state, showNewPassword: !state.showNewPassword };
+    case 'TOGGLE_CONFIRM_PASSWORD':
+      return { ...state, showConfirmNewPassword: !state.showConfirmNewPassword };
+    case 'SET_SUCCESS':
+      return { ...state, successMessage: action.message, errorMessage: "" };
+    case 'SET_ERROR':
+      return { ...state, errorMessage: action.message, successMessage: "" };
+    case 'CLEAR_MESSAGES':
+      return { ...state, successMessage: "", errorMessage: "" };
+    case 'RESET':
+      return initialState;
+    default:
+      return state;
+  }
+}
+
 const ChangePasswordForm = () => {
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [state, dispatch] = useReducer(changePasswordReducer, initialState);
 
   const {
     register,
@@ -21,11 +46,9 @@ const ChangePasswordForm = () => {
   });
 
   const onSubmit = async (data) => {
-    setSuccessMessage("");
-    setErrorMessage("");
+    dispatch({ type: 'CLEAR_MESSAGES' });
 
     try {
-      // Вызов API для изменения пароля
       const result = await auth.changePassword({
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
@@ -33,13 +56,13 @@ const ChangePasswordForm = () => {
       });
 
       if (result.success) {
-        setSuccessMessage("Пароль успешно изменен!");
+        dispatch({ type: 'SET_SUCCESS', message: "Пароль успешно изменен!" });
         reset();
       } else {
-        setErrorMessage(result.error || "Ошибка при изменении пароля");
+        dispatch({ type: 'SET_ERROR', message: result.error || "Ошибка при изменении пароля" });
       }
     } catch (error) {
-      setErrorMessage(error.message || "Ошибка при изменении пароля");
+      dispatch({ type: 'SET_ERROR', message: error.message || "Ошибка при изменении пароля" });
     }
   };
 
@@ -53,7 +76,7 @@ const ChangePasswordForm = () => {
           <div className="password-input-container">
             <input
               id="currentPassword"
-              type={showCurrentPassword ? "text" : "password"}
+              type={state.showCurrentPassword ? "text" : "password"}
               {...register("currentPassword")}
               className={errors.currentPassword ? "input-error" : ""}
               placeholder="Введите текущий пароль"
@@ -62,11 +85,11 @@ const ChangePasswordForm = () => {
             <button
               type="button"
               className="password-toggle-button"
-              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-              aria-label={showCurrentPassword ? "Скрыть пароль" : "Показать пароль"}
+              onClick={() => dispatch({ type: 'TOGGLE_CURRENT_PASSWORD' })}
+              aria-label={state.showCurrentPassword ? "Скрыть пароль" : "Показать пароль"}
             >
               <span className="material-symbols-outlined">
-                {showCurrentPassword ? "visibility_off" : "visibility"}
+                {state.showCurrentPassword ? "visibility_off" : "visibility"}
               </span>
             </button>
           </div>
@@ -80,7 +103,7 @@ const ChangePasswordForm = () => {
           <div className="password-input-container">
             <input
               id="newPassword"
-              type={showNewPassword ? "text" : "password"}
+              type={state.showNewPassword ? "text" : "password"}
               {...register("newPassword")}
               className={errors.newPassword ? "input-error" : ""}
               placeholder="Придумайте новый пароль"
@@ -89,11 +112,11 @@ const ChangePasswordForm = () => {
             <button
               type="button"
               className="password-toggle-button"
-              onClick={() => setShowNewPassword(!showNewPassword)}
-              aria-label={showNewPassword ? "Скрыть пароль" : "Показать пароль"}
+              onClick={() => dispatch({ type: 'TOGGLE_NEW_PASSWORD' })}
+              aria-label={state.showNewPassword ? "Скрыть пароль" : "Показать пароль"}
             >
               <span className="material-symbols-outlined">
-                {showNewPassword ? "visibility_off" : "visibility"}
+                {state.showNewPassword ? "visibility_off" : "visibility"}
               </span>
             </button>
           </div>
@@ -107,7 +130,7 @@ const ChangePasswordForm = () => {
           <div className="password-input-container">
             <input
               id="confirmNewPassword"
-              type={showConfirmNewPassword ? "text" : "password"}
+              type={state.showConfirmNewPassword ? "text" : "password"}
               {...register("confirmNewPassword")}
               className={errors.confirmNewPassword ? "input-error" : ""}
               placeholder="Повторите новый пароль"
@@ -116,11 +139,11 @@ const ChangePasswordForm = () => {
             <button
               type="button"
               className="password-toggle-button"
-              onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
-              aria-label={showConfirmNewPassword ? "Скрыть пароль" : "Показать пароль"}
+              onClick={() => dispatch({ type: 'TOGGLE_CONFIRM_PASSWORD' })}
+              aria-label={state.showConfirmNewPassword ? "Скрыть пароль" : "Показать пароль"}
             >
               <span className="material-symbols-outlined">
-                {showConfirmNewPassword ? "visibility_off" : "visibility"}
+                {state.showConfirmNewPassword ? "visibility_off" : "visibility"}
               </span>
             </button>
           </div>
@@ -129,15 +152,15 @@ const ChangePasswordForm = () => {
           )}
         </div>
 
-        {errorMessage && (
+        {state.errorMessage && (
           <div className="error-message form-error">
-            {errorMessage}
+            {state.errorMessage}
           </div>
         )}
 
-        {successMessage && (
+        {state.successMessage && (
           <div className="success-message form-success">
-            {successMessage}
+            {state.successMessage}
           </div>
         )}
 

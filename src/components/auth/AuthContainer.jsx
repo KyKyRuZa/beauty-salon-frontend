@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../ui/Header';
 import LoginForm from './LoginForm';
@@ -9,26 +8,14 @@ const AuthContainer = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Извлекаем параметры из URL
   const searchParams = new URLSearchParams(location.search);
-  const tabFromUrl = searchParams.get('tab') || 'login';
-  const typeFromUrl = searchParams.get('type') || 'user';
+  const activeTab = searchParams.get('tab') || 'login';
+  const registrationType = searchParams.get('type') || 'user';
 
-  const [activeTab, setActiveTab] = useState(tabFromUrl);
-  const [registrationType, setRegistrationType] = useState(typeFromUrl);
-
-  // Обновляем состояние если URL изменилось
-  useEffect(() => {
-    setActiveTab(tabFromUrl);
-    setRegistrationType(typeFromUrl);
-  }, [tabFromUrl, typeFromUrl]);
-
-  // Обработчик переключения основных табов
   const handleMainTabChange = (tab) => {
     navigate(`?tab=${tab}&type=${registrationType}`, { replace: true });
   };
 
-  // Обработчик изменения типа регистрации
   const handleRegistrationTypeChange = (type) => {
     navigate(`?tab=register&type=${type}`, { replace: true });
   };

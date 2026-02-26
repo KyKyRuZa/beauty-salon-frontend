@@ -7,11 +7,12 @@ const DateSelector = ({ selectedDate, onDateSelect, masterId, serviceId }) => {
   const [loading, setLoading] = useState(false);
 
   const loadAvailableDates = useCallback(async () => {
+    if (!masterId) return;
+
     try {
       setLoading(true);
       const response = await getAvailableDates(masterId, serviceId);
       if (response.success && response.data) {
-        // Извлекаем только даты из ответа
         const dateStrings = response.data.map(item => item.date);
         setDates(dateStrings);
       } else {
@@ -25,15 +26,15 @@ const DateSelector = ({ selectedDate, onDateSelect, masterId, serviceId }) => {
     }
   }, [masterId, serviceId]);
 
-  // Загружаем доступные даты с сервера если передан masterId
+  // Загружаем доступные даты при монтировании и при изменении masterId/serviceId
+  // Это синхронизация состояния с внешними зависимостями, а не эмуляция обработчика событий
   useEffect(() => {
     if (masterId) {
       loadAvailableDates();
     } else {
-      // Fallback: генерируем следующие 7 дней
       setDates(generateNextDays(7));
     }
-  }, [masterId, loadAvailableDates]);
+  }, [masterId, serviceId, loadAvailableDates]);
 
   const formatDate = (dateString) => {
     // Парсим дату как локальную, а не UTC

@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '../../../components/ui/Header';
 import AdminLoginForm from '../../../components/admin/AdminLoginForm';
@@ -9,18 +8,9 @@ const AdminAuthContainer = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Извлекаем параметры из URL
   const searchParams = new URLSearchParams(location.search);
-  const tabFromUrl = searchParams.get('tab') || 'login';
+  const activeTab = searchParams.get('tab') || 'login';
 
-  const [activeTab, setActiveTab] = useState(tabFromUrl);
-
-  // Обновляем состояние если URL изменился
-  useEffect(() => {
-    setActiveTab(tabFromUrl);
-  }, [tabFromUrl]);
-
-  // Обработчик переключения табов
   const handleTabChange = (tab) => {
     navigate(`?tab=${tab}`, { replace: true });
   };

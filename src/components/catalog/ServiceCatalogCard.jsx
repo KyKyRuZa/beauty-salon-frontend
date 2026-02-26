@@ -12,7 +12,13 @@ const ServiceCatalogCard = ({ service, onClick }) => {
   };
 
   return (
-    <div className="service-catalog-card" onClick={() => onClick(service)}>
+    <div
+      className="service-catalog-card"
+      onClick={() => onClick(service)}
+      onKeyDown={(e) => e.key === 'Enter' && onClick(service)}
+      role="button"
+      tabIndex={0}
+    >
       <div className="service-catalog-image-container">
         {service.image_url ? (
           <img
