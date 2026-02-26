@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite'
+import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    include: ['tests/unit/**/*.test.js', 'tests/integration/**/*.test.js'],
+    setupFiles: ['./tests/setup.js'],
+    include: ['tests/unit/**/*.test.js', 'tests/integration/**/*.test.jsx'],
     exclude: ['tests/e2e/**', 'node_modules/**', 'dist/**'],
     coverage: {
       provider: 'v8',
@@ -12,5 +14,14 @@ export default defineConfig({
       include: ['src/**/*.{js,jsx}'],
       exclude: ['src/main.jsx']
     }
-  }
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '~': fileURLToPath(new URL('./tests', import.meta.url)),
+    },
+  },
+  esbuild: {
+    jsx: 'automatic',
+  },
 })
