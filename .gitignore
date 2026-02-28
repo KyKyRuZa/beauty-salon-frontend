@@ -1,5 +1,11 @@
-# Logs
-logs
+node_modules/
+.pnpm-store/
+
+dist/
+dist-ssr/
+*.local
+
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,28 +13,34 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Environment variables
 .env
 !.env.example
 
-# Editor directories and files
+coverage/
+
+test-results/
+playwright-report/
+.agents/
+
+!tests/e2e/
+tests/unit/
+tests/integration/
+tests/fixtures/
+tests/setup.js
+
 .vscode/*
 !.vscode/extensions.json
-.idea
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
 
-tests
-test-results
-playwright-report
-playwright-report/**
-.agents
+Thumbs.db
+.DS_Store
+._*

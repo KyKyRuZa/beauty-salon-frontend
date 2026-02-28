@@ -1,6 +1,6 @@
 import api from './api'
 import { z } from 'zod';
-import { registerSchema, loginSchema, adminRegisterSchema, adminLoginSchema } from '../validations';
+import { loginSchema, adminRegisterSchema, adminLoginSchema } from '../validations';
 
 class AuthService {
   constructor() {
@@ -54,20 +54,14 @@ class AuthService {
   // Регистрация
   async register(userData) {
     try {
-      // Валидация данных с помощью Zod
-      const validatedData = registerSchema.parse(userData);
-
-      const { data } = await api.post('/auth/register', validatedData)
+      // НЕ делаем валидацию здесь - она уже была сделана в RegisterForm через zodResolver
+      // Валидация registerSchema требует confirmPassword, который не отправляется на сервер
+      
+      const { data } = await api.post('/auth/register', userData)
       this.setAuthData(data)
       this.emitAuthChange() // Уведомляем об изменении
       return { success: true, data }
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return {
-          success: false,
-          error: error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred'
-        };
-      }
       // Handle axios errors
       if (error.response) {
         // Server responded with error status
@@ -352,10 +346,17 @@ class AuthService {
   setAuthData(authData) {
     this.token = authData.token
     this.user = authData?.user || null
+    // Сохраняем полные данные профиля (user + profile)
+    this.profileData = {
+      user: authData?.user || null,
+      profile: authData?.profile || null
+    }
     localStorage.setItem('token', authData.token)
     if (authData?.user) {
       localStorage.setItem('user', JSON.stringify(authData.user))
     }
+    // Эмитим событие для обновления контекста
+    this.emitAuthChange()
   }
 
   // Очистка данных авторизации

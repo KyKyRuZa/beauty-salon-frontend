@@ -122,7 +122,7 @@ const Header = () => {
       case 'master':
         return `${profile?.firstName || user.firstName || 'Мастер'}`;
       case 'salon':
-        return `${profile?.name?.split(' ')[0] || user.firstName || 'Салон'}`;
+        return `${profile?.name?.split(' ')[0] || user.name || 'Салон'}`;
       case 'admin':
       case 'superadmin':
         return `${profile?.firstName || user.firstName || 'Администратор'}`;

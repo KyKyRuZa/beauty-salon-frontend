@@ -22,10 +22,13 @@ const LoginForm = ({ onSwitchToRegister }) => {
   const onSubmit = async (data) => {
     try {
       const result = await auth.login(data);
-      
+
       if (result.success) {
         reset();
-        navigate("/profile");
+        // Даем время на обновление контекста авторизации и редирект
+        setTimeout(() => {
+          navigate("/profile", { replace: true });
+        }, 500);
       } else {
         setError("root", {
           message: result.error || "Неверный email или пароль"

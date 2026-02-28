@@ -1,24 +1,27 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CatalogProvider } from './context/CatalogContext';
 import Home from './pages/public/Home';
 import BookingForm from './components/form/BookingForm';
 import AuthContainer from './components/auth/AuthContainer';
-// import Chat from './pages/Chat';
 import Profile from "./pages/private/Profile";
 import EditProfile from './pages/private/client/EditProfile';
 import NotFound from './pages/public/NotFound';
 import CatalogPage from './pages/catalog/CatalogPage';
 import ServiceDetailPage from './pages/catalog/ServiceDetailPage';
-import ServiceManagementPage from './pages/private/admin/ServiceManagementPage';
-import AdminCatalogPage from './pages/private/admin/AdminCatalogPage';
 import ServiceMastersPage from './pages/catalog/ServiceMastersPage';
 import CategoryProvidersPage from './pages/catalog/CategoryProvidersPage';
 import TimeSlotsPage from './pages/catalog/TimeSlotsPage';
-import AdminPanel from './pages/private/admin/AdminPanel';
-import AdminProtectedRoute from './components/admin/AdminProtectedRoute';
-import AdminAuthContainer from './pages/public/admin/AdminAuthContainer';
 import ProviderProfile from './pages/public/ProviderProfile';
+import LoadingFallback from './components/LoadingFallback';
+
+// Lazy load для тяжёлых компонентов
+const AdminPanel = lazy(() => import('./pages/private/admin/AdminPanel'));
+const AdminCatalogPage = lazy(() => import('./pages/private/admin/AdminCatalogPage'));
+const ServiceManagementPage = lazy(() => import('./pages/private/admin/ServiceManagementPage'));
+const AdminAuthContainer = lazy(() => import('./pages/public/admin/AdminAuthContainer'));
+const AdminProtectedRoute = lazy(() => import('./components/admin/AdminProtectedRoute'));
 
 
 function App() {
@@ -30,14 +33,26 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/catalog" element={<CatalogPage />} />
               <Route path="/catalog/:id" element={<ServiceDetailPage />} />
-              <Route path="/catalog/services/manage" element={<ServiceManagementPage />} />
+              <Route path="/catalog/services/manage" element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <ServiceManagementPage />
+                </Suspense>
+              } />
               <Route path="/catalog/service/:serviceId/masters" element={<ServiceMastersPage />} />
               <Route path="/catalog/category/:categoryId/providers" element={<CategoryProvidersPage />} />
               <Route path="/catalog/provider/:providerId/timeslots" element={<TimeSlotsPage />} />
               <Route path="/provider/:providerId" element={<ProviderProfile />} />
-              <Route path="/admin/catalog" element={<AdminCatalogPage />} />
+              <Route path="/admin/catalog" element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdminCatalogPage />
+                </Suspense>
+              } />
               <Route path="/auth" element={<AuthContainer />} />
-              <Route path="/admin/auth" element={<AdminAuthContainer />} />
+              <Route path="/admin/auth" element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdminAuthContainer />
+                </Suspense>
+              } />
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/edit" element={<EditProfile />} />
               <Route path='/booking' element={<BookingForm/>}/>
@@ -45,9 +60,11 @@ function App() {
 
               {/* Защищенные маршруты админ-панели */}
               <Route path="/admin/*" element={
-                <AdminProtectedRoute>
-                  <AdminPanel />
-                </AdminProtectedRoute>
+                <Suspense fallback={<LoadingFallback />}>
+                  <AdminProtectedRoute>
+                    <AdminPanel />
+                  </AdminProtectedRoute>
+                </Suspense>
               } />
 
               <Route path="*" element={<NotFound />} />

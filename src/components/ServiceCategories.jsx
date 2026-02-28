@@ -1,9 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import '../styles/ServiceCategories.css';
-import firstImage from '../assets/1.png';
-import secondImage from '../assets/2.png';
-import thirdImage from '../assets/3.png';
+import firstImage from '../assets/1.webp';
+import secondImage from '../assets/2.webp';
+import thirdImage from '../assets/3.webp';
 
 const ServiceCategories = () => {
   const categories = [

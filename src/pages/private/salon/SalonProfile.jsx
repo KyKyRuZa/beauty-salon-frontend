@@ -113,7 +113,7 @@ const SalonProfile = ({ handleLogout }) => {
                         <div className="avatar-placeholder">
                           <span className="material-symbols-outlined" style={{fontSize: '2rem'}}>account_circle</span>
                           <span className="avatar-initials-text">
-                            {profile?.name?.charAt(0).toUpperCase() || user?.firstName?.charAt(0).toUpperCase() || 'С'}
+                            {profile?.name?.charAt(0).toUpperCase() || user?.name?.charAt(0).toUpperCase() || 'С'}
                           </span>
                         </div>
                       )}

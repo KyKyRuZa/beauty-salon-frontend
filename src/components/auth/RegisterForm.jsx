@@ -67,19 +67,21 @@ const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
   const onSubmit = async (data) => {
     setRegistrationError("");
 
+    // Подготовка данных для отправки на сервер
     const requestData = {
       role: type === 'user' ? 'client' : type,
       email: data.email,
       phone: data.phone?.replace(/\D/g, ''),
       password: data.password,
+      // confirmPassword не отправляем на сервер
     };
 
     // Подготовка данных профиля
     const profileData = {};
 
     if (type === 'user' || type === 'master') {
-      profileData.firstName = data.firstName;
-      profileData.lastName = data.lastName;
+      profileData.first_name = data.firstName;
+      profileData.last_name = data.lastName;
     }
 
     if (type === 'master') {
@@ -87,7 +89,7 @@ const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
     }
 
     if (type === 'salon') {
-      profileData.name = data.salonName;  // В модели Salon поле называется name, а не salonName
+      profileData.name = data.salonName;
       profileData.address = data.address;
       profileData.inn = data.inn;
     }
@@ -101,7 +103,10 @@ const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
       if (result.success) {
         reset();
         setPhoneValue("");
-        navigate("/profile");
+        // Даем время на обновление контекста авторизации и редирект
+        setTimeout(() => {
+          navigate("/profile", { replace: true });
+        }, 500);
       } else {
         if (result.error) {
           setRegistrationError(result.error);
@@ -152,35 +157,35 @@ const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="auth-form">
         <h2>{getTitle()}</h2>
-        
+
         {/* 1. Основная идентификация */}
         {(type === 'user' || type === 'master') && (
           <>
             <div className="form-group">
-              <label htmlFor="name">Имя *</label>
-              <input 
-                id="name"
-                {...register("name")}
-                className={errors.name ? "input-error" : ""}
+              <label htmlFor="firstName">Имя *</label>
+              <input
+                id="firstName"
+                {...register("firstName")}
+                className={errors.firstName ? "input-error" : ""}
                 placeholder="Иван"
                 disabled={isSubmitting}
               />
-              {errors.name && (
-                <p className="error-message">{errors.name.message}</p>
+              {errors.firstName && (
+                <p className="error-message">{errors.firstName.message}</p>
               )}
             </div>
-            
+
             <div className="form-group">
-              <label htmlFor="surname">Фамилия *</label>
-              <input 
-                id="surname"
-                {...register("surname")}
-                className={errors.surname ? "input-error" : ""}
+              <label htmlFor="lastName">Фамилия *</label>
+              <input
+                id="lastName"
+                {...register("lastName")}
+                className={errors.lastName ? "input-error" : ""}
                 placeholder="Иванов"
                 disabled={isSubmitting}
               />
-              {errors.surname && (
-                <p className="error-message">{errors.surname.message}</p>
+              {errors.lastName && (
+                <p className="error-message">{errors.lastName.message}</p>
               )}
             </div>
           </>

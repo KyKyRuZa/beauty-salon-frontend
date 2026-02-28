@@ -191,7 +191,7 @@ const MasterProfile = ({ handleLogout }) => {
                     if (file) {
                       const formData = new FormData();
                       formData.append('avatar', file);
-                      
+
                       // Вызываем обновление профиля
                       updateProfileInternal(formData);
                     }

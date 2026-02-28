@@ -9,6 +9,9 @@ const baseRegisterSchema = z.object({
   termsAccepted: z.boolean().refine(val => val === true, {
     message: 'You must accept the terms and conditions'
   }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'Пароли не совпадают',
+  path: ['confirmPassword']
 });
 
 const userRegisterSchema = baseRegisterSchema.extend({

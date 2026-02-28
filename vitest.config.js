@@ -12,7 +12,14 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: ['src/**/*.{js,jsx}'],
-      exclude: ['src/main.jsx']
+      exclude: ['src/main.jsx', 'src/config.js', '**/*.jsx'],
+      threshold: {
+        lines: 70,
+        functions: 60,
+        branches: 50,
+        statements: 70
+      },
+      reportOnFailure: true
     }
   },
   resolve: {

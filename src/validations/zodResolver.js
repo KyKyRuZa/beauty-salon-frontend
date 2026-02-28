@@ -9,13 +9,17 @@ export const zodResolver = (schema) => async (values) => {
       const errors = {};
       if (Array.isArray(error.errors)) {
         error.errors.forEach((err) => {
-          if (err.path) {
+          if (err.path && err.path.length > 0) {
             const field = err.path.join('.');
             errors[field] = { message: err.message, type: err.code };
+          } else if (err.path && err.path.length === 0) {
+            // Глобальная ошибка (например от refine)
+            errors.root = { message: err.message, type: err.code };
           }
         });
       }
-      return { values: {}, errors };
+      // Возвращаем оригинальные значения вместе с ошибками
+      return { values, errors };
     }
     return { values: {}, errors: {} };
   }
