@@ -96,16 +96,15 @@ export const createMasterService = async (serviceData) => {
       is_active: serviceData.is_active !== undefined ? serviceData.is_active : true, // По умолчанию активно
     };
 
-    logger.info('Sending data to createMasterService:', submitData);
+    logger.debug('Creating master service:', submitData);
 
     // Валидация данных с помощью Zod
     const validatedData = createMasterServiceSchema.parse(submitData);
 
     return await api.post('/catalog/master/service', validatedData);
   } catch (error) {
-    logger.error('Validation error in createMasterService:', error);
+    logger.error('Error in createMasterService:', error.message);
     if (error instanceof z.ZodError) {
-      logger.error('Zod validation errors:', error.errors);
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;
@@ -131,16 +130,15 @@ export const updateMasterService = async (id, serviceData) => {
       is_active: serviceData.is_active,
     };
 
-    logger.info('Sending data to updateMasterService:', submitData);
+    logger.debug('Updating master service:', submitData);
 
     // Валидация данных с помощью Zod
     const validatedData = updateMasterServiceSchema.parse(submitData);
 
     return await api.put(`/catalog/master/service/${id}`, validatedData);
   } catch (error) {
-    logger.error('Validation error in updateMasterService:', error);
+    logger.error('Error in updateMasterService:', error.message);
     if (error instanceof z.ZodError) {
-      logger.error('Zod validation errors:', error.errors);
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;
@@ -166,16 +164,15 @@ export const createSalonService = async (serviceData) => {
       is_active: serviceData.is_active !== undefined ? serviceData.is_active : true, // По умолчанию активно
     };
 
-    logger.info('Sending data to createSalonService:', submitData);
+    logger.debug('Creating salon service:', submitData);
 
     // Валидация данных с помощью Zod
     const validatedData = createMasterServiceSchema.parse(submitData);
 
     return await api.post('/catalog/salon/service', validatedData);
   } catch (error) {
-    logger.error('Validation error in createSalonService:', error);
+    logger.error('Error in createSalonService:', error.message);
     if (error instanceof z.ZodError) {
-      logger.error('Zod validation errors:', error.errors);
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;
@@ -201,16 +198,15 @@ export const updateSalonService = async (id, serviceData) => {
       is_active: serviceData.is_active,
     };
 
-    logger.info('Sending data to updateSalonService:', submitData);
+    logger.debug('Updating salon service:', submitData);
 
     // Валидация данных с помощью Zod
     const validatedData = updateMasterServiceSchema.parse(submitData);
 
     return await api.put(`/catalog/salon/service/${id}`, validatedData);
   } catch (error) {
-    logger.error('Validation error in updateSalonService:', error);
+    logger.error('Error in updateSalonService:', error.message);
     if (error instanceof z.ZodError) {
-      logger.error('Zod validation errors:', error.errors);
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;

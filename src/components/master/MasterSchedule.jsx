@@ -75,8 +75,7 @@ function masterScheduleReducer(state, action) {
   }
 }
 
-const MasterSchedule = () => {
-  const { profile } = useAuth();
+const MasterSchedule = ({ masterId: masterIdFromProps }) => {
   const [state, dispatch] = useReducer(masterScheduleReducer, initialState);
 
   const loadMasterServices = useCallback(async () => {
@@ -124,11 +123,12 @@ const MasterSchedule = () => {
         return;
       }
 
-      const masterId = profile?.id;
-      console.log('MasterSchedule: masterId из profile:', masterId, 'profile:', profile);
+      const masterId = masterIdFromProps;
+      console.log('MasterSchedule: masterId из props:', masterId);
 
       if (!masterId) {
-        console.error('MasterSchedule: masterId не найден');
+        // Профиль ещё не загружен, это нормально при первом рендере
+        console.log('MasterSchedule: masterId ещё не получен из props, ожидаем...');
         dispatch({ type: 'SET_SLOTS', value: [] });
         dispatch({ type: 'SET_AVAILABILITY_DATA', value: null });
         dispatch({ type: 'SET_LOADING', value: false });
@@ -158,7 +158,7 @@ const MasterSchedule = () => {
       console.error('Ошибка getAvailabilityWithSlots:', err.response?.data);
       try {
         console.log('Пробуем загрузить только слоты...');
-        const masterId = profile?.id;
+        const masterId = masterIdFromProps;
         const slotsResponse = await getMasterSlots({ date, master_id: masterId });
         console.log('Ответ getMasterSlots:', slotsResponse);
 
@@ -178,7 +178,14 @@ const MasterSchedule = () => {
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
     }
-  }, [state.selectedService, profile]);
+  }, [state.selectedService, masterIdFromProps]);
+
+  // Перезагружаем расписание, когда masterId становится доступен
+  useEffect(() => {
+    if (masterIdFromProps && state.selectedService) {
+      loadScheduleAndSlots(state.selectedDate);
+    }
+  }, [masterIdFromProps]);
 
   useEffect(() => {
     loadScheduleAndSlots(state.selectedDate);

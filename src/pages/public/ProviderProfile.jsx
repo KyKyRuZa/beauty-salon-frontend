@@ -5,6 +5,7 @@ import Footer from '../../components/ui/Footer';
 import ReviewsList from '../../components/reviews/ReviewsList';
 import { useAuth } from '../../context/AuthContext';
 import { toggleFavorite, checkFavorite } from '../../api/favorites';
+import userService from '../../api/user';
 import '../../styles/ProviderProfile.css';
 
 const initialState = {
@@ -47,13 +48,18 @@ const ProviderProfile = () => {
     dispatch({ type: 'SET_LOADING', value: true });
     try {
       const endpoint = state.providerType === 'master' ? 'master' : 'salon';
-      const response = await fetch(`/api/providers/${endpoint}/${providerId}`);
-      if (response.ok) {
-        const data = await response.json();
+      const getService = endpoint === 'master' ? userService.getMasterById : userService.getSalonById;
+      const response = await getService(providerId);
+      console.log('API Response:', response);
+      
+      // response.data - это { success: true, data: {...} }
+      const providerData = response.data || response;
+      
+      if (providerData) {
         dispatch({
           type: 'SET_PROVIDER',
           data: {
-            ...data.data,
+            ...providerData,
             has_training: true,
             skills: {
               hair: ['Укладка и причёски', 'Ламинирование и ботокс волос', 'Лечение волос и кожи головы'],

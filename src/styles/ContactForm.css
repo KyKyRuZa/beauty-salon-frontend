@@ -25,17 +25,13 @@
   margin-bottom: 40px;
 }
 
-.contact-form {
-  max-width: 500px;
-}
-
 .form-group {
   margin-bottom: 24px;
 }
 
 .form-input,
 .form-textarea {
-  width: 100%;
+  width: 700px;
   padding: 16px 0;
   border: none;
   border-bottom: 2px solid #e0e0e0;
@@ -60,7 +56,7 @@
   display: inline-block;
   width: 100%;
   padding: 16px;
-  background: #ffb6c1;
+  background: #FFA9AC;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -73,10 +69,14 @@
 .btn-submit:hover {
   background: #ff9aa8;
 }
-
+.contact-image{
+  position: absolute;
+  right: -100px;
+}
 .contact-image img {
-  width: 100%;
-  max-width: 400px;
+  width: 700px;
+  height: 500px;
+  rotate: -15deg;
 }
 
 @media (max-width: 768px) {

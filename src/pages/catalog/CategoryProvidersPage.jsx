@@ -13,7 +13,12 @@ const initialState = {
   loadingFavorites: {},
   isBookingModalOpen: false,
   selectedProvider: null,
-  providerImages: {}
+  providerImages: {},
+  // Фильтры
+  providerType: 'all', // all, master, salon
+  sortBy: 'popularity', // popularity, rating_desc, rating_asc, nearest_date, nearest_distance, price
+  minPrice: 0,
+  maxPrice: 10000
 };
 
 function categoryProvidersReducer(state, action) {
@@ -30,6 +35,16 @@ function categoryProvidersReducer(state, action) {
       return { ...state, selectedProvider: action.value };
     case 'SET_PROVIDER_IMAGES':
       return { ...state, providerImages: action.value };
+    case 'SET_PROVIDER_TYPE':
+      return { ...state, providerType: action.value };
+    case 'SET_SORT_BY':
+      return { ...state, sortBy: action.value };
+    case 'SET_MIN_PRICE':
+      return { ...state, minPrice: action.value };
+    case 'SET_MAX_PRICE':
+      return { ...state, maxPrice: action.value };
+    case 'RESET_FILTERS':
+      return { ...state, providerType: 'all', sortBy: 'popularity', minPrice: 0, maxPrice: 10000 };
     default:
       return state;
   }
@@ -78,7 +93,7 @@ const CategoryProvidersPage = () => {
       let hasChanges = false;
 
       for (const service of services) {
-        if (service.master && service.master_id) {
+        if (service.master_provider && service.master_id) {
           const masterId = service.master_id;
           if (!newImages[`master_${masterId}`]) {
             const imageUrl = await getMasterImage(masterId);
@@ -155,12 +170,12 @@ const CategoryProvidersPage = () => {
     return services.flatMap(service => {
       const serviceItems = [];
 
-      if (service.master) {
-        const masterImage = service.master.avatar_url ||
-                           service.master.image_url ||
-                           service.master.photo_url ||
-                           service.master.avatar ||
-                           service.master.image ||
+      if (service.master_provider) {
+        const masterImage = service.master_provider.avatar_url ||
+                           service.master_provider.image_url ||
+                           service.master_provider.photo_url ||
+                           service.master_provider.avatar ||
+                           service.master_provider.image ||
                            state.providerImages[`master_${service.master_id}`] ||
                            'https://via.placeholder.com/100';
 
@@ -170,10 +185,10 @@ const CategoryProvidersPage = () => {
             id: service.master_id,
             type: 'master',
             typeName: 'Бьюти-мастер',
-            name: `${service.master.first_name} ${service.master.last_name}`,
+            name: `${service.master_provider.first_name} ${service.master_provider.last_name}`,
             image: masterImage,
-            rating: service.master.rating || 4.8,
-            address: service.master.address || 'Адрес не указан',
+            rating: service.master_provider.rating || 4.8,
+            address: service.master_provider.address || 'Адрес не указан',
             hasTraining: false,
           }
         });
@@ -207,6 +222,58 @@ const CategoryProvidersPage = () => {
     });
   }, [services, state.providerImages]);
 
+  // Вычисляем максимальную цену для фильтра
+  const maxPriceValue = useMemo(() => {
+    if (transformedServices.length === 0) return 10000;
+    return Math.ceil(Math.max(...transformedServices.map(s => s.price || 0)) / 100) * 100;
+  }, [transformedServices]);
+
+  // Инициализация максимальной цены при первой загрузке
+  useEffect(() => {
+    if (transformedServices.length > 0 && state.maxPrice === 10000) {
+      dispatch({ type: 'SET_MAX_PRICE', value: maxPriceValue });
+    }
+  }, [maxPriceValue, transformedServices.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Фильтрация и сортировка
+  const filteredAndSortedServices = useMemo(() => {
+    let result = [...transformedServices];
+
+    // Фильтр по типу провайдера
+    if (state.providerType !== 'all') {
+      result = result.filter(s => s.provider.type === state.providerType);
+    }
+
+    // Фильтр по цене (используем maxPriceValue если state.maxPrice ещё не установлен)
+    const effectiveMaxPrice = state.maxPrice === 10000 ? maxPriceValue : state.maxPrice;
+    result = result.filter(s => {
+      const price = s.price || 0;
+      return price >= state.minPrice && price <= effectiveMaxPrice;
+    });
+
+    // Сортировка
+    switch (state.sortBy) {
+      case 'price_desc':
+        result.sort((a, b) => (b.price || 0) - (a.price || 0));
+        break;
+      case 'price_asc':
+        result.sort((a, b) => (a.price || 0) - (b.price || 0));
+        break;
+      case 'rating_desc':
+        result.sort((a, b) => (b.provider.rating || 0) - (a.provider.rating || 0));
+        break;
+      case 'rating_asc':
+        result.sort((a, b) => (a.provider.rating || 0) - (b.provider.rating || 0));
+        break;
+      case 'popularity':
+      default:
+        // По популярности - оставляем как есть (серверная сортировка)
+        break;
+    }
+
+    return result;
+  }, [transformedServices, state.providerType, state.sortBy, state.minPrice, state.maxPrice, maxPriceValue]);
+
   if (loading.category || loading.services) return <div className="loading-container">Загрузка...</div>;
   if (error) return <div className="error-container">{error}</div>;
 
@@ -223,25 +290,75 @@ const CategoryProvidersPage = () => {
           </div>
           <h1 className="page-title">ВЫБЕРИТЕ САЛОН / МАСТЕРА</h1>
 
-          {/* Filters Bar (Visual only for this update) */}
+          {/* Filters Bar */}
           <div className="filters-bar">
-            <select className="filter-select"><option>Все</option></select>
-            <select className="filter-select"><option>По популярности</option></select>
+            {/* Тип провайдера */}
+            <select 
+              className="filter-select"
+              value={state.providerType}
+              onChange={(e) => dispatch({ type: 'SET_PROVIDER_TYPE', value: e.target.value })}
+            >
+              <option value="all">Все</option>
+              <option value="master">Мастера</option>
+              <option value="salon">Салоны</option>
+            </select>
+
+            {/* Сортировка */}
+            <select 
+              className="filter-select"
+              value={state.sortBy}
+              onChange={(e) => dispatch({ type: 'SET_SORT_BY', value: e.target.value })}
+            >
+              <option value="popularity">По популярности</option>
+              <option value="price_desc">По цене (убывание)</option>
+              <option value="price_asc">По цене (возрастание)</option>
+              <option value="rating_desc">По рейтингу (убывание)</option>
+              <option value="rating_asc">По рейтинту (возрастание)</option>
+              
+            </select>
+
+            {/* Чекбокс избранных */}
             <label className="checkbox-label">
               <input type="checkbox" /> Сначала избранные
             </label>
+
+            {/* Фильтр цен */}
             <div className="price-filter">
               <span>Цена, ₽</span>
-              <input type="number" placeholder="400" />
+              <input 
+                type="number" 
+                placeholder="0" 
+                min="0"
+                value={state.minPrice || 0}
+                onChange={(e) => dispatch({ type: 'SET_MIN_PRICE', value: parseInt(e.target.value) || 0 })}
+                style={{ width: '80px' }}
+              />
               <span>до</span>
-              <input type="number" placeholder="10 000" />
+              <input 
+                type="number" 
+                placeholder={maxPriceValue.toString()}
+                min="0"
+                max={maxPriceValue}
+                value={maxPriceValue}
+                onChange={(e) => dispatch({ type: 'SET_MAX_PRICE', value: parseInt(e.target.value) || maxPriceValue })}
+                style={{ width: '80px' }}
+              />
             </div>
+
+            {/* Кнопка сброса */}
+            <button 
+              className="filter-select"
+              onClick={() => dispatch({ type: 'RESET_FILTERS' })}
+              style={{ cursor: 'pointer', background: '#f5f5f5' }}
+            >
+              Сбросить
+            </button>
           </div>
         </div>
 
         <div className="services-section">
           <div className="services-grid">
-            {transformedServices.map((item) => (
+            {filteredAndSortedServices.map((item) => (
               <div key={`${item.id}-${item.provider.id}-${item.provider.type}`} className="provider-card">
 
                 <div className={`card-badge ${item.provider.hasTraining ? 'badge-green' : 'badge-gray'}`}>
@@ -305,7 +422,7 @@ const CategoryProvidersPage = () => {
 
                   <button
                     className="btn-profile"
-                    onClick={(e) => { e.stopPropagation(); handleProfile(item.provider.id, item.provider.type); }}
+                    onClick={(e) => { e.stopPropagation(); item.provider && handleProfile(item.provider.id, item.provider.type); }}
                   >
                     ПОСМОТРЕТЬ ПРОФИЛЬ {item.provider.type === 'master' ? 'МАСТЕРА' : 'САЛОНА'}
                   </button>

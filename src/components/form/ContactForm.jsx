@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import '../../styles/ContactForm.css';
+import brushImage from '../../assets/brush.webp';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -70,7 +71,7 @@ const ContactForm = () => {
             </form>
           </div>
           <div className="contact-image">
-            <img src="/images/brush.png" alt="Makeup brush" />
+            <img src={brushImage} alt="Makeup brush" />
           </div>
         </div>
       </div>

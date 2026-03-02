@@ -7,8 +7,10 @@ export const zodResolver = (schema) => async (values) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errors = {};
-      if (Array.isArray(error.errors)) {
-        error.errors.forEach((err) => {
+      // Zod v4 использует issues вместо errors
+      const issues = error.issues || error.errors || [];
+      if (Array.isArray(issues)) {
+        issues.forEach((err) => {
           if (err.path && err.path.length > 0) {
             const field = err.path.join('.');
             errors[field] = { message: err.message, type: err.code };

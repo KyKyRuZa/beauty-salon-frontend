@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import '../styles/TransformationCTA.css';
-import womanImage from '../assets/cta-woman.png';
+import womanImage from '../assets/cta-woman.webp';
 
 const TransformationCTA = () => {
   return (

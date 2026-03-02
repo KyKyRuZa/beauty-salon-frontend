@@ -2,16 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import '../../../styles/Profile.css';
-import photo from '../../../assets/photo.png';
+import photo from '../../../assets/photo.webp';
 import Header from "../../../components/ui/Header";
 import { ServiceManagement } from "../../../components/catalog";
 import ReviewsList from "../../../components/reviews/ReviewsList";
 import MasterSchedule from "../../../components/master/MasterSchedule";
 
-const ScheduleSection = () => (
+const ScheduleSection = ({ masterId }) => (
   <section className="section">
     <h2 className="section-title">МОЁ РАСПИСАНИЕ</h2>
-    <MasterSchedule />
+    <MasterSchedule masterId={masterId} />
   </section>
 );
 
@@ -286,7 +286,7 @@ const MasterProfile = ({ handleLogout }) => {
           </aside>
 
           <section className="content">
-            {activeSection === 'schedule' && <ScheduleSection />}
+            {activeSection === 'schedule' && <ScheduleSection key={profile?.id} masterId={profile?.id} />}
             {activeSection === 'services' && <ServicesSection />}
             {activeSection === 'reviews' && <ReviewsSection masterId={profile?.id} />}
             {activeSection === 'stats' && <StatsSection />}

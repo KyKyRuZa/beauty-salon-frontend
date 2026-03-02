@@ -2,7 +2,7 @@ import { useReducer, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import '../../../styles/Profile.css';
-import photo from '../../../assets/photo.png';
+import photo from '../../../assets/photo.webp';
 import Header from "../../../components/ui/Header";
 import { getCatalogServices as CatalogService } from "../../../api/catalog";
 import BookingHistory from "../../../components/booking/BookingHistory";

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/Recomended.css';
 import RecomendedCard from './card/RecomendedCard';
-import photo from '../assets/photo.png';
+import photo from '../assets/photo.webp';
 
 const Recomended = () => {
   const [favorites, setFavorites] = useState(new Set()); // ← начальные избранные: id 2 и 4

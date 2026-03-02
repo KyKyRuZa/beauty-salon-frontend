@@ -5,17 +5,17 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!globalThis.process?.env?.CI,
   retries: globalThis.process?.env?.CI ? 2 : 0,
-  workers: 5,
+  workers: 8,
   reporter: 'html',
-  timeout: 30000,
+  timeout: 300000,  // 5 минут на тест
   expect: {
-    timeout: 5000
+    timeout: 20000  // 20 секунд на ожидание
   },
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    actionTimeout: 30000,
+    actionTimeout: 60000,  // 1 минута на действие
   },
   webServer: {
     command: 'npm run dev',

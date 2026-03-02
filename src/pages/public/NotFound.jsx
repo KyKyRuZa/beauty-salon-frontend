@@ -1,5 +1,5 @@
 import styles from '../../styles/NotFound.module.css'
-import notfound from '../../assets/notfound.png';
+import notfound from '../../assets/notfound.webp';
 import { Link } from 'react-router-dom';
 
 const NotFoundPage = () => {

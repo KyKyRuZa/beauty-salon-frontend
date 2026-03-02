@@ -25,10 +25,15 @@ const LoginForm = ({ onSwitchToRegister }) => {
 
       if (result.success) {
         reset();
+        // Загружаем профиль сразу после логина
+        const profileResult = await auth.getProfile();
+        if (profileResult.success) {
+          window.dispatchEvent(new CustomEvent('authChange'));
+        }
         // Даем время на обновление контекста авторизации и редирект
         setTimeout(() => {
           navigate("/profile", { replace: true });
-        }, 500);
+        }, 300);
       } else {
         setError("root", {
           message: result.error || "Неверный email или пароль"

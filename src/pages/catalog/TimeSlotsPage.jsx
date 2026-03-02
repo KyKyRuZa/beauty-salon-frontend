@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, useCallback } from 'react';
+import React, { useReducer, useEffect, useCallback,useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/ui/Header';
@@ -42,8 +42,31 @@ const TimeSlotsPage = () => {
   const { user } = useAuth();
   const [state, dispatch] = useReducer(timeSlotsReducer, initialState);
 
-  const serviceId = searchParams.get('service');
+  const serviceIdParam = searchParams.get('service');
   const type = searchParams.get('type') || 'master';
+
+  // Извлекаем ID услуги из параметра (может быть строкой, JSON или объектом)
+  const serviceId = useMemo(() => {
+    if (!serviceIdParam) return null;
+    console.log('serviceIdParam:', serviceIdParam, 'type:', typeof serviceIdParam);
+    
+    // Если это объект с id
+    if (typeof serviceIdParam === 'object' && serviceIdParam !== null) {
+      return serviceIdParam.id || null;
+    }
+    
+    try {
+      // Пытаемся распарсить как JSON
+      const parsed = typeof serviceIdParam === 'string' ? JSON.parse(serviceIdParam) : serviceIdParam;
+      const result = parsed?.id || parsed;
+      console.log('Parsed serviceId:', result);
+      return result;
+    } catch (e) {
+      console.error('Error parsing serviceId:', e);
+      // Если не JSON, используем как есть
+      return serviceIdParam;
+    }
+  }, [serviceIdParam]);
 
   const loadAvailableSlots = useCallback(async (date) => {
     try {
