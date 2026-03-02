@@ -71,19 +71,21 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
   }, [providerId, state.selectedDate, serviceId]);
 
   // Сбрасываем состояние при открытии модального окна
-  // Это синхронизация состояния с props, а не эмуляция обработчика событий
   useEffect(() => {
     if (isOpen) {
       dispatch({ type: 'RESET' });
     }
   }, [isOpen]);
 
-  const handleDateSelect = (date) => {
-    dispatch({ type: 'SET_SELECTED_DATE', value: date });
-    // Загружаем слоты сразу при выборе даты
-    if (date && providerId) {
+  // Загружаем слоты при изменении даты, providerId или serviceId
+  useEffect(() => {
+    if (state.selectedDate && providerId && !state.loadingSlots) {
       loadTimeSlots();
     }
+  }, [state.selectedDate, providerId, serviceId]);
+
+  const handleDateSelect = (date) => {
+    dispatch({ type: 'SET_SELECTED_DATE', value: date });
   };
 
   const handleSlotSelect = (slot) => {
@@ -149,6 +151,7 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
             <div className="slots-loading">Загрузка доступного времени...</div>
           ) : (
             <TimeSlotsSelector
+              key={state.selectedDate || 'no-date'}
               availableSlots={state.availableSlots}
               selectedDate={state.selectedDate}
               selectedSlot={state.selectedSlot}

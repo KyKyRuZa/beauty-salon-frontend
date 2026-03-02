@@ -1,10 +1,8 @@
 import React from 'react';
 import '../../styles/booking/TimeSlotsSelector.css';
 
-const EMPTY_SLOTS = [];
-
 const TimeSlotsSelector = ({
-  availableSlots = EMPTY_SLOTS,
+  availableSlots = [],
   selectedSlot,
   onSlotSelect,
   selectedDate
@@ -46,7 +44,10 @@ const TimeSlotsSelector = ({
     return slot.status === 'blocked';
   };
 
-  if (!availableSlots || availableSlots.length === 0) {
+  // Проверяем, что слоты есть и они валидны
+  const hasSlots = availableSlots && Array.isArray(availableSlots) && availableSlots.length > 0;
+
+  if (!hasSlots) {
     return (
       <div className="time-slots-selector">
         <h3 className="time-slots-title">
@@ -59,26 +60,26 @@ const TimeSlotsSelector = ({
         </div>
       </div>
     );
-  } 
+  }
 
   return (
     <div className="time-slots-selector">
       <h3 className="time-slots-title">
         Доступное время на {selectedDate ? formatSelectedDate(selectedDate) : 'выбранную дату'}
       </h3>
-      
+
       <div className="time-slots-grid">
         {availableSlots.map((slot, index) => {
           const uniqueKey = slot.id || `${slot.start_time}-${slot.end_time}-${index}`;
           const booked = isBooked(slot);
           const blocked = isBlocked(slot);
           const selected = isSelected(slot);
-          
+
           let slotClass = 'time-slot-item';
           if (booked) slotClass += ' booked';
           else if (blocked) slotClass += ' blocked';
           else if (selected) slotClass += ' selected';
-          
+
           return (
             <button
               key={uniqueKey}
