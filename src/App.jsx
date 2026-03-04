@@ -14,6 +14,7 @@ import ServiceMastersPage from './pages/catalog/ServiceMastersPage';
 import CategoryProvidersPage from './pages/catalog/CategoryProvidersPage';
 import TimeSlotsPage from './pages/catalog/TimeSlotsPage';
 import ProviderProfile from './pages/public/ProviderProfile';
+import SalonsMapPage from './pages/public/SalonsMapPage';
 import LoadingFallback from './components/LoadingFallback';
 
 // Lazy load для тяжёлых компонентов
@@ -56,6 +57,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/edit" element={<EditProfile />} />
               <Route path='/booking' element={<BookingForm/>}/>
+              <Route path="/salons-map" element={<SalonsMapPage />} />
               {/* <Route path='/chat' element={<Chat/>} /> */}
 
               {/* Защищенные маршруты админ-панели */}

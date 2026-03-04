@@ -145,6 +145,46 @@
   flex: 0 0 auto;
 }
 
+/* Кнопка карты салонов */
+.map-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.map-link:hover {
+  background: #e91e63;
+  color: white;
+}
+
+.map-link .material-symbols-outlined {
+  font-size: 18px;
+  color: #e91e63;
+}
+
+.map-link:hover .material-symbols-outlined {
+  color: white;
+}
+
+.map-link-text {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .map-link-text {
+    display: inline;
+  }
+}
+
 /* Локация */
 .header-location {
   position: relative;
