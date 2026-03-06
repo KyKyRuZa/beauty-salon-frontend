@@ -1,4 +1,5 @@
 import React, { useReducer, useCallback, useEffect } from 'react';
+import { logger } from '../../../utils/logger';
 import { getAllCategories, createCategory, updateCategory, deleteCategory } from '../../../api/admin';
 
 const initialState = {
@@ -65,7 +66,7 @@ const CategoriesManagement = () => {
       dispatch({ type: 'SET_CATEGORIES', value: response.data.data });
       dispatch({ type: 'SET_PAGINATION', value: response.data.pagination });
     } catch (err) {
-      console.error('Ошибка загрузки категорий:', err);
+      logger.error('Ошибка загрузки категорий:', err);
       dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки категорий' });
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
@@ -112,7 +113,7 @@ const CategoriesManagement = () => {
       fetchCategories();
     } catch (err) {
       dispatch({ type: 'SET_ERROR', value: 'Ошибка сохранения категории' });
-      console.error('Ошибка сохранения категории:', err);
+      logger.error('Ошибка сохранения категории:', err);
     }
   };
 
@@ -134,7 +135,7 @@ const CategoriesManagement = () => {
         fetchCategories();
       } catch (err) {
         dispatch({ type: 'SET_ERROR', value: 'Ошибка удаления категории' });
-        console.error('Ошибка удаления категории:', err);
+        logger.error('Ошибка удаления категории:', err);
       }
     }
   };

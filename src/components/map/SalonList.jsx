@@ -1,18 +1,19 @@
 import React from 'react';
 import SalonCard from './SalonCard';
 import { useSalonMap } from '../../context/SalonMapContext';
+import { logger } from '../../utils/logger';
 import '../../styles/SalonList.css';
 
 const SalonList = () => {
   const { salons, selectedSalon, selectSalon, loading, error, selectedCity } = useSalonMap();
 
   const handleBookSalon = (salon) => {
-    console.log('Запись в салон:', salon);
+    logger.debug('Запись в салон:', salon);
     // Здесь будет логика записи
   };
 
   const handleFavoriteSalon = (salon) => {
-    console.log('Добавить в избранное:', salon);
+    logger.debug('Добавить в избранное:', salon);
     // Здесь будет логика избранного
   };
 

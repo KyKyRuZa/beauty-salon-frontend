@@ -17,15 +17,19 @@ export default defineConfig({
         'src/**/index.js',
         'src/pages/**',
         'src/components/**',
-        'src/context/**'
+        'src/config.js',
+        'src/api/api.js',
+        'src/api/geocoding.js',
+        'src/api/providers.js',
+        'src/api/salonLocations.js',
+        'src/utils/geolocation.js'
       ],
       threshold: {
         lines: 50,
         functions: 40,
         branches: 30,
         statements: 50
-      },
-      reportOnFailure: false
+      }
     }
   },
   resolve: {

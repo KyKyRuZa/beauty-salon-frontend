@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect } from 'react';
+import { logger } from '../../../utils/logger';
 import { getAllCategories } from '../../../api/admin';
 
 const initialState = {
@@ -73,7 +74,7 @@ const SubcategoriesManagement = () => {
       dispatch({ type: 'SET_PAGINATION', value: { page: 1, limit: 10, total: 2, pages: 1 } });
       dispatch({ type: 'SET_ERROR', value: null });
     } catch (err) {
-      console.error('Ошибка загрузки подкатегорий:', err);
+      logger.error('Ошибка загрузки подкатегорий:', err);
       dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки подкатегорий' });
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
@@ -85,7 +86,7 @@ const SubcategoriesManagement = () => {
       const response = await getAllCategories({ limit: 100 });
       dispatch({ type: 'SET_CATEGORIES', value: response.data.data });
     } catch (err) {
-      console.error('Ошибка загрузки категорий:', err);
+      logger.error('Ошибка загрузки категорий:', err);
     }
   };
 
@@ -108,12 +109,12 @@ const SubcategoriesManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Сохранение подкатегории:', state.formData);
+      logger.debug('Сохранение подкатегории:', state.formData);
       dispatch({ type: 'RESET_FORM' });
       fetchSubcategories();
     } catch (err) {
       dispatch({ type: 'SET_ERROR', value: 'Ошибка сохранения подкатегории' });
-      console.error('Ошибка сохранения подкатегории:', err);
+      logger.error('Ошибка сохранения подкатегории:', err);
     }
   };
 
@@ -131,11 +132,11 @@ const SubcategoriesManagement = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Вы уверены, что хотите удалить эту подкатегорию?')) {
       try {
-        console.log('Удаление подкатегории с ID:', id);
+        logger.debug('Удаление подкатегории с ID:', id);
         fetchSubcategories();
       } catch (err) {
         dispatch({ type: 'SET_ERROR', value: 'Ошибка удаления подкатегории' });
-        console.error('Ошибка удаления подкатегории:', err);
+        logger.error('Ошибка удаления подкатегории:', err);
       }
     }
   };

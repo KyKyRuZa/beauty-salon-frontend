@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect } from 'react';
+import { logger } from '../../../utils/logger';
 import { getAllCategories } from '../../../api/admin';
 
 const initialState = {
@@ -78,7 +79,7 @@ const ServicesManagement = () => {
       dispatch({ type: 'SET_PAGINATION', value: { page: 1, limit: 10, total: 2, pages: 1 } });
       dispatch({ type: 'SET_ERROR', value: null });
     } catch (err) {
-      console.error('Ошибка загрузки услуг:', err);
+      logger.error('Ошибка загрузки услуг:', err);
       dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки услуг' });
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
@@ -95,7 +96,7 @@ const ServicesManagement = () => {
         { id: 2, name: 'Педикюр', category_id: 1 }
       ] });
     } catch (err) {
-      console.error('Ошибка загрузки категорий:', err);
+      logger.error('Ошибка загрузки категорий:', err);
     }
   };
 
@@ -118,12 +119,12 @@ const ServicesManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      console.log('Сохранение услуги:', state.formData);
+      logger.debug('Сохранение услуги:', state.formData);
       dispatch({ type: 'RESET_FORM' });
       fetchServices();
     } catch (err) {
       dispatch({ type: 'SET_ERROR', value: 'Ошибка сохранения услуги' });
-      console.error('Ошибка сохранения услуги:', err);
+      logger.error('Ошибка сохранения услуги:', err);
     }
   };
 
@@ -143,11 +144,11 @@ const ServicesManagement = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Вы уверены, что хотите удалить эту услугу?')) {
       try {
-        console.log('Удаление услуги с ID:', id);
+        logger.debug('Удаление услуги с ID:', id);
         fetchServices();
       } catch (err) {
         dispatch({ type: 'SET_ERROR', value: 'Ошибка удаления услуги' });
-        console.error('Ошибка удаления услуги:', err);
+        logger.error('Ошибка удаления услуги:', err);
       }
     }
   };

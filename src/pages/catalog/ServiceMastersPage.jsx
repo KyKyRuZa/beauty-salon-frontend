@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { logger } from '../../utils/logger';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCatalogServiceById } from '../../api/catalog';
 import ServiceCatalogCard from '../../components/catalog/ServiceCatalogCard';
@@ -20,11 +21,11 @@ const ServiceMastersPage = () => {
       // Получаем информацию об услуге
       const serviceResponse = await getCatalogServiceById(serviceId);
       setService(serviceResponse.data.data);
-      
+
       setError(null);
     } catch (err) {
       setError('Ошибка загрузки информации об услуге');
-      console.error('Ошибка:', err);
+      logger.error('Ошибка:', err);
     } finally {
       setLoading(false);
     }

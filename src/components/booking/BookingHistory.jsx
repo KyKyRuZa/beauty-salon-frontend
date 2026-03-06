@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { logger } from '../../utils/logger';
 import { useToast } from '../../context/ToastContext';
 import { getMyBookings, cancelBooking } from '../../api/booking';
 import '../../styles/booking/BookingHistory.css';
@@ -23,7 +24,7 @@ const BookingHistory = () => {
       const response = await getMyBookings(params);
       setBookings(response.data || []);
     } catch (err) {
-      console.error('Ошибка загрузки бронирований:', err);
+      logger.error('Ошибка загрузки бронирований:', err);
       setError('Не удалось загрузить историю записей');
     } finally {
       setLoading(false);
@@ -44,7 +45,7 @@ const BookingHistory = () => {
       await loadBookings();
       toast.success('Запись отменена');
     } catch (err) {
-      console.error('Ошибка отмены бронирования:', err);
+      logger.error('Ошибка отмены бронирования:', err);
       toast.error('Не удалось отменить запись');
     }
   };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { logger } from '../../utils/logger';
 import '../../styles/ContactForm.css';
 import brushImage from '../../assets/brush.webp';
 
@@ -12,7 +13,7 @@ const ContactForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission
-    console.log(formData);
+    logger.info('Отправка контактной формы:', formData);
   };
 
   const handleChange = (e) => {
@@ -71,7 +72,7 @@ const ContactForm = () => {
             </form>
           </div>
           <div className="contact-image">
-            <img src={brushImage} alt="Makeup brush" />
+            <img src={brushImage} alt="Makeup brush" loading="lazy" />
           </div>
         </div>
       </div>

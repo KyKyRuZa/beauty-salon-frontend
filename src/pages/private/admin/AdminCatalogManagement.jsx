@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect } from 'react';
+import { logger } from '../../../utils/logger';
 import {
   getCatalogCategories,
   createCatalogCategory,
@@ -65,7 +66,7 @@ const AdminCatalogManagement = () => {
       dispatch({ type: 'SET_CATEGORIES', value: response.data.data });
     } catch (err) {
       dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки категорий' });
-      console.error('Ошибка загрузки категорий:', err);
+      logger.error('Ошибка загрузки категорий:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
     }
@@ -88,7 +89,7 @@ const AdminCatalogManagement = () => {
       fetchCategories();
     } catch (err) {
       dispatch({ type: 'SET_ERROR', value: 'Ошибка сохранения категории' });
-      console.error('Ошибка сохранения категории:', err);
+      logger.error('Ошибка сохранения категории:', err);
     }
   };
 
@@ -112,7 +113,7 @@ const AdminCatalogManagement = () => {
         fetchCategories();
       } catch (err) {
         dispatch({ type: 'SET_ERROR', value: 'Ошибка удаления категории' });
-        console.error('Ошибка удаления категории:', err);
+        logger.error('Ошибка удаления категории:', err);
       }
     }
   };

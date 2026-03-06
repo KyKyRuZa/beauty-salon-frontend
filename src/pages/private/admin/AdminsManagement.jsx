@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect, useCallback } from 'react';
+import { logger } from '../../../utils/logger';
 import { getAllAdmins, createAdmin } from '../../../api/admin';
 
 const initialState = {
@@ -62,7 +63,7 @@ const AdminsManagement = () => {
       dispatch({ type: 'SET_ADMINS', value: response.data.data });
       dispatch({ type: 'SET_PAGINATION', value: response.data.pagination });
     } catch (err) {
-      console.error('Ошибка загрузки администраторов:', err);
+      logger.error('Ошибка загрузки администраторов:', err);
       dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки администраторов' });
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
@@ -97,7 +98,7 @@ const AdminsManagement = () => {
       fetchAdmins();
     } catch (err) {
       dispatch({ type: 'SET_ERROR', value: 'Ошибка создания администратора' });
-      console.error('Ошибка создания администратора:', err);
+      logger.error('Ошибка создания администратора:', err);
     }
   };
 

@@ -2,6 +2,8 @@
  * Утилиты для работы с геолокацией
  */
 
+import { logger } from './logger';
+
 const CITIES = ['Казань', 'Альметьевск', 'Уфа', 'Ижевск', 'Набережные Челны'];
 
 /**
@@ -80,7 +82,7 @@ export const saveGeoDataToSession = (data) => {
       sessionStorage.setItem('searchRadius', data.searchRadius.toString());
     }
   } catch (error) {
-    console.error('Ошибка сохранения данных геолокации:', error);
+    logger.error('Ошибка сохранения данных геолокации:', error);
   }
 };
 
@@ -104,7 +106,7 @@ export const getGeoDataFromSession = () => {
       searchRadius: searchRadius ? parseInt(searchRadius) : 5
     };
   } catch (error) {
-    console.error('Ошибка получения данных геолокации:', error);
+    logger.error('Ошибка получения данных геолокации:', error);
     return null;
   }
 };

@@ -53,10 +53,6 @@ COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 # Копирование собранного приложения из builder stage
 COPY --from=builder /app/dist .
 
-# Копирование SEO файлов (если они не попали в dist при сборке)
-COPY --from=builder /app/public/robots.txt ./robots.txt 2>/dev/null || true
-COPY --from=builder /app/public/sitemap.xml ./sitemap.xml 2>/dev/null || true
-
 # Создание непривилегированного пользователя для безопасности
 # UID 1001 выбран для совместимости с стандартными non-root пользователями
 RUN adduser -D -u 1001 nginx-user && \

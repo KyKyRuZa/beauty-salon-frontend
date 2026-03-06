@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { logger } from '../../utils/logger';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { toggleFavorite, checkFavorite } from '../../api/favorites';
@@ -29,7 +30,7 @@ const RecomendedCard = ({
       const response = await checkFavorite(masterId);
       setIsFavorite(response.data.isFavorite);
     } catch (error) {
-      console.error('Ошибка проверки статуса избранного:', error);
+      logger.error('Ошибка проверки статуса избранного:', error);
     }
   }, [masterId]);
 
@@ -56,7 +57,7 @@ const RecomendedCard = ({
         parentOnToggleFavorite(masterId, response.data.isFavorite);
       }
     } catch (error) {
-      console.error('Ошибка переключения избранного:', error);
+      logger.error('Ошибка переключения избранного:', error);
       toast.error(error.response?.data?.message || 'Ошибка при изменении избранного');
     }
   };

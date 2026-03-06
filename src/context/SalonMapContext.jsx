@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import { logger } from '../utils/logger';
 import { getNearbySalons, getSalonLocationsByCity } from '../api/salonLocations';
 import {
   requestGeolocation,
@@ -111,7 +112,7 @@ export const SalonMapProvider = ({ children }) => {
         await loadSalonsByCity(AVAILABLE_CITIES[0]);
       }
     } catch (error) {
-      console.error('Ошибка инициализации геолокации:', error);
+      logger.error('Ошибка инициализации геолокации:', error);
       dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
       await loadSalonsByCity(AVAILABLE_CITIES[0]);
     } finally {
@@ -129,7 +130,7 @@ export const SalonMapProvider = ({ children }) => {
       try {
         const geoData = await getCityByCoordinates(coordinates.lat, coordinates.lng);
         const matchedCity = findNearestAvailableCity(geoData.city, AVAILABLE_CITIES);
-        
+
         if (matchedCity) {
           dispatch({ type: 'SET_SELECTED_CITY', value: matchedCity });
           saveGeoDataToSession({
@@ -144,12 +145,12 @@ export const SalonMapProvider = ({ children }) => {
           await loadSalonsByCity(AVAILABLE_CITIES[0]);
         }
       } catch (error) {
-        console.error('Ошибка определения города:', error);
+        logger.error('Ошибка определения города:', error);
         dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
         await loadSalonsByCity(AVAILABLE_CITIES[0]);
       }
     } catch (error) {
-      console.error('Ошибка получения геолокации:', error);
+      logger.error('Ошибка получения геолокации:', error);
       dispatch({ type: 'SET_GEO_PERMISSION', value: 'denied' });
       dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
       await loadSalonsByCity(AVAILABLE_CITIES[0]);
@@ -164,7 +165,7 @@ export const SalonMapProvider = ({ children }) => {
       const response = await getSalonLocationsByCity(city);
       if (response.success) {
         dispatch({ type: 'SET_SALONS', value: response.data || [] });
-        
+
         // Устанавливаем центр карты на первый салон или город по умолчанию
         if (response.data && response.data.length > 0) {
           const firstSalon = response.data[0];
@@ -174,7 +175,7 @@ export const SalonMapProvider = ({ children }) => {
         }
       }
     } catch (error) {
-      console.error('Ошибка загрузки салонов:', error);
+      logger.error('Ошибка загрузки салонов:', error);
       dispatch({ type: 'SET_ERROR', value: error.message || 'Ошибка загрузки салонов' });
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
@@ -190,12 +191,12 @@ export const SalonMapProvider = ({ children }) => {
       if (response.success) {
         dispatch({ type: 'SET_SALONS', value: response.data.salons || [] });
         dispatch({ type: 'SET_SEARCH_RADIUS', value: response.data.searchRadius || 5 });
-        
+
         // Устанавливаем центр карты на координаты пользователя
         dispatch({ type: 'SET_MAP_CENTER', value: { lat, lng } });
       }
     } catch (error) {
-      console.error('Ошибка загрузки ближайших салонов:', error);
+      logger.error('Ошибка загрузки ближайших салонов:', error);
       dispatch({ type: 'SET_ERROR', value: error.message || 'Ошибка загрузки салонов' });
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });

@@ -108,7 +108,7 @@ const SalonProfile = ({ handleLogout }) => {
                   <label htmlFor="avatar-upload-salon" className="avatar-clickable-area">
                     <div className="avatar-content">
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt="Логотип салона" className="avatar" />
+                        <img src={avatarUrl} alt="Логотип салона" className="avatar" loading="lazy" />
                       ) : (
                         <div className="avatar-placeholder">
                           <span className="material-symbols-outlined" style={{fontSize: '2rem'}}>account_circle</span>

@@ -48,7 +48,13 @@ const SalonCard = ({ salon, isSelected, onClick, onBook, onFavorite }) => {
     >
       <div className="salon-card-image-wrapper">
         {image_url ? (
-          <img src={image_url} alt={name} className="salon-card-image" />
+          <img
+            src={image_url}
+            alt={name}
+            className="salon-card-image"
+            loading="lazy"
+            style={{ aspectRatio: '4/3', objectFit: 'cover' }}
+          />
         ) : (
           <div className="salon-card-image-placeholder">
             <span className="material-symbols-outlined">business</span>

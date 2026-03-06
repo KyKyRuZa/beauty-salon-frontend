@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect, useCallback, useRef } from 'react';
+import { logger } from '../../utils/logger';
 import { getCatalogCategories, searchCategories } from '../../api/catalog';
 import { useNavigate } from 'react-router-dom';
 import ServiceCategory from '../../components/catalog/ServiceCategory';
@@ -52,7 +53,7 @@ const CatalogPage = () => {
       dispatch({ type: 'SET_ERROR', value: null });
     } catch (err) {
       dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки категорий услуг' });
-      console.error('Ошибка загрузки категорий:', err);
+      logger.error('Ошибка загрузки категорий:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
     }
@@ -71,7 +72,7 @@ const CatalogPage = () => {
       const response = await searchCategories(query);
       dispatch({ type: 'SET_FILTERED_CATEGORIES', value: response.data || [] });
     } catch (err) {
-      console.error('Ошибка поиска категорий:', err);
+      logger.error('Ошибка поиска категорий:', err);
       dispatch({ type: 'SET_FILTERED_CATEGORIES', value: [] });
     } finally {
       dispatch({ type: 'SET_IS_SEARCHING', value: false });

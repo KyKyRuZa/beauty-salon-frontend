@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useSalonMap } from '../../context/SalonMapContext';
+import { logger } from '../../utils/logger';
 import '../../styles/YandexMap.css';
 
 const YandexMap = () => {
@@ -9,7 +10,7 @@ const YandexMap = () => {
   const mapInitialized = useRef(false);
 
   const apiKey = import.meta.env.VITE_YANDEX_MAPS_API_KEY || '';
-  console.log("Ключ API:" , apiKey || "НЕТ")
+  logger.debug('Ключ API:', apiKey ? 'есть' : 'нет');
   // Загрузка Яндекс.Карт
   useEffect(() => {
     if (mapInitialized.current) return;
@@ -73,6 +74,14 @@ const YandexMap = () => {
   useEffect(() => {
     if (!ymaps || !mapRef.current?.objectManager) return;
 
+    // Функция для экранирования HTML-сущностей (защита от XSS)
+    const escapeHtml = (str) => {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    };
+
     const features = salons.map((salon, index) => {
       const coords = salon.coordinates
         ? [salon.coordinates.lat, salon.coordinates.lng]
@@ -86,17 +95,17 @@ const YandexMap = () => {
           coordinates: coords
         },
         properties: {
-          balloonContentHeader: salon.name,
+          balloonContentHeader: escapeHtml(salon.name),
           balloonContentBody: `
             <div class="salon-balloon">
-              ${salon.image_url ? `<img src="${salon.image_url}" alt="${salon.name}" class="salon-balloon-image" />` : ''}
-              <p class="salon-balloon-rating">⭐ ${salon.rating || 'N/A'}</p>
-              <p class="salon-balloon-address">${salon.address || 'Адрес не указан'}</p>
-              ${salon.distance_km ? `<p class="salon-balloon-distance">${salon.distance_km} км от вас</p>` : ''}
+              ${salon.image_url ? `<img src="${escapeHtml(salon.image_url)}" alt="${escapeHtml(salon.name)}" class="salon-balloon-image" />` : ''}
+              <p class="salon-balloon-rating">⭐ ${escapeHtml(salon.rating || 'N/A')}</p>
+              <p class="salon-balloon-address">${escapeHtml(salon.address || 'Адрес не указан')}</p>
+              ${salon.distance_km ? `<p class="salon-balloon-distance">${escapeHtml(salon.distance_km)} км от вас</p>` : ''}
             </div>
           `,
-          balloonContentFooter: salon.city,
-          hintContent: salon.name,
+          balloonContentFooter: escapeHtml(salon.city),
+          hintContent: escapeHtml(salon.name),
           salonData: salon
         },
         options: {

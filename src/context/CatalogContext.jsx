@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
+import { logger } from '../utils/logger';
 import { getCatalogCategories, getServicesByCategory, getCategoryById } from '../api/catalog';
 import UserService from '../api/user';
 
@@ -85,7 +86,7 @@ export const CatalogProvider = ({ children }) => {
       dispatch({ type: 'SET_CATEGORIES', data: response.data.data || [] });
     } catch (err) {
       dispatch({ type: 'SET_ERROR', error: err.message || 'Ошибка загрузки категорий' });
-      console.error('Ошибка загрузки категорий:', err);
+      logger.error('Ошибка загрузки категорий:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', key: 'categories', value: false });
     }
@@ -101,7 +102,7 @@ export const CatalogProvider = ({ children }) => {
       dispatch({ type: 'SET_SERVICES', data: response.data.data || [] });
     } catch (err) {
       dispatch({ type: 'SET_ERROR', error: err.message || 'Ошибка загрузки услуг' });
-      console.error('Ошибка загрузки услуг:', err);
+      logger.error('Ошибка загрузки услуг:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', key: 'services', value: false });
     }
@@ -117,7 +118,7 @@ export const CatalogProvider = ({ children }) => {
       dispatch({ type: 'SET_SELECTED_CATEGORY', data: response.data.data });
     } catch (err) {
       dispatch({ type: 'SET_ERROR', error: err.message || 'Ошибка загрузки категории' });
-      console.error('Ошибка загрузки категории:', err);
+      logger.error('Ошибка загрузки категории:', err);
     } finally {
       dispatch({ type: 'SET_LOADING', key: 'category', value: false });
     }
@@ -133,7 +134,7 @@ export const CatalogProvider = ({ children }) => {
 
       return imageUrl;
     } catch (error) {
-      console.error(`Ошибка при получении данных мастера ${masterId}:`, error);
+      logger.error(`Ошибка при получении данных мастера ${masterId}:`, error);
       return null;
     }
   }, []);
@@ -148,7 +149,7 @@ export const CatalogProvider = ({ children }) => {
 
       return imageUrl;
     } catch (error) {
-      console.error(`Ошибка при получении данных салона ${salonId}:`, error);
+      logger.error(`Ошибка при получении данных салона ${salonId}:`, error);
       return null;
     }
   }, []);

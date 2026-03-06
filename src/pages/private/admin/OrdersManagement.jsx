@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect } from 'react';
+import { logger } from '../../../utils/logger';
 import '../../../styles/admin/OrdersManagement.css';
 
 const initialState = {
@@ -99,7 +100,7 @@ const OrdersManagement = () => {
       dispatch({ type: 'SET_PAGINATION', value: { page: 1, limit: 10, total: 4, pages: 1 } });
       dispatch({ type: 'SET_ERROR', value: null });
     } catch (err) {
-      console.error('Ошибка загрузки заказов:', err);
+      logger.error('Ошибка загрузки заказов:', err);
       dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки заказов' });
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });

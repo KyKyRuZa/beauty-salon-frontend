@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect } from 'react';
+import { logger } from '../../utils/logger';
 import { useAuth } from '../../context/AuthContext';
 import {
   getMasterServices,
@@ -77,7 +78,7 @@ const ServiceManagement = () => {
         const response = await getCatalogCategories();
         dispatch({ type: 'SET_CATEGORIES', value: response.data.data || [] });
       } catch (err) {
-        console.error('Ошибка при загрузке категорий:', err);
+        logger.error('Ошибка при загрузке категорий:', err);
         dispatch({ type: 'SET_ERROR', value: 'Ошибка при загрузке категорий: ' + (err.response?.data?.message || err.message) });
       }
     };
@@ -111,7 +112,7 @@ const ServiceManagement = () => {
           dispatch({ type: 'SET_SERVICES', value: response.data.data || [] });
         }
       } catch (err) {
-        console.error('Ошибка при загрузке услуг:', err);
+        logger.error('Ошибка при загрузке услуг:', err);
         if (err.response?.status === 401 || err.response?.status === 403) {
           dispatch({ type: 'SET_ERROR', value: 'Для доступа к услугам требуется авторизация. Пожалуйста, войдите в систему снова.' });
         } else {
@@ -193,7 +194,7 @@ const ServiceManagement = () => {
       dispatch({ type: 'RESET_FORM' });
       dispatch({ type: 'SET_ERROR', value: null });
     } catch (err) {
-      console.error('Ошибка при сохранении услуги:', err);
+      logger.error('Ошибка при сохранении услуги:', err);
       if (err.response?.status === 401 || err.response?.status === 403) {
         dispatch({ type: 'SET_ERROR', value: 'Для выполнения этого действия требуется авторизация. Пожалуйста, войдите в систему снова.' });
       } else {
@@ -234,7 +235,7 @@ const ServiceManagement = () => {
         dispatch({ type: 'SET_SERVICES', value: response.data.data || [] });
         dispatch({ type: 'SET_ERROR', value: null });
       } catch (err) {
-        console.error('Ошибка при удалении услуги:', err);
+        logger.error('Ошибка при удалении услуги:', err);
         if (err.response?.status === 401 || err.response?.status === 403) {
           dispatch({ type: 'SET_ERROR', value: 'Для выполнения этого действия требуется авторизация. Пожалуйста, войдите в систему снова.' });
         } else {

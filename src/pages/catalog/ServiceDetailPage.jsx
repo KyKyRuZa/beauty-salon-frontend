@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getCatalogServiceById, getServiceVariations } from '../../api/catalog';
+import { logger } from '../../utils/logger';
 import ServiceVariation from '../../components/catalog/ServiceVariation';
 import '../../styles/catalog/ServiceDetailPage.css';
 
@@ -27,7 +28,7 @@ const ServiceDetailPage = () => {
       setError(null);
     } catch (err) {
       setError('Ошибка загрузки деталей услуги');
-      console.error('Ошибка загрузки деталей услуги:', err);
+      logger.error('Ошибка загрузки деталей услуги:', err);
     } finally {
       setLoading(false);
     }
@@ -39,7 +40,7 @@ const ServiceDetailPage = () => {
 
   const handleVariationSelect = (variation) => {
     // TODO: Реализовать логику выбора варианта услуги
-    console.log('Выбран вариант услуги:', variation);
+    logger.debug('Выбран вариант услуги:', variation);
   };
 
   if (loading) {

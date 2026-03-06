@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import { logger } from "../../../utils/logger";
 import ChangePasswordForm from "../../../components/auth/ChangePasswordForm";
 import Header from "../../../components/ui/Header";
 import "../../../styles/EditProfile.css";
@@ -55,7 +56,7 @@ const EditProfile = () => {
         defaultValues.description = profile.description;
       }
     } else {
-      console.log('Profile data is missing, user may need to create profile'); // Отладочное сообщение
+      logger.debug('Profile data is missing, user may need to create profile');
     }
 
     // Инициализируем форму одним вызовом
@@ -69,7 +70,7 @@ const EditProfile = () => {
     setSuccess("");
 
     try {
-      console.log('Данные формы перед фильтрацией:', data);
+      logger.debug('Данные формы перед фильтрацией:', data);
 
       // Фильтруем только непустые значения
       const filteredData = {};
@@ -84,7 +85,7 @@ const EditProfile = () => {
         }
       }
 
-      console.log('Отфильтрованные данные перед отправкой:', filteredData);
+      logger.debug('Отфильтрованные данные перед отправкой:', filteredData);
 
       // Получаем полные данные профиля для проверки наличия профиля
       const fullProfile = getFullProfile();
@@ -110,7 +111,7 @@ const EditProfile = () => {
         setError(result.error || "Ошибка при обновления профиля");
       }
     } catch (error) {
-      console.error('Ошибка при обновлении профиля:', error);
+      logger.error('Ошибка при обновлении профиля:', error);
       setError(error.message || "Ошибка сервера. Попробуйте позже.");
     } finally {
       setSaving(false);

@@ -30,7 +30,7 @@ function App() {
     <AuthProvider>
       <CatalogProvider>
         <BrowserRouter>
-            <Routes>
+          <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/catalog" element={<CatalogPage />} />
               <Route path="/catalog/:id" element={<ServiceDetailPage />} />

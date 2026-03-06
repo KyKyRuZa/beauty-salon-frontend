@@ -47,7 +47,7 @@ const sendAppointmentToBot = async (data) => {
 
     return await response.json();
   } catch (error) {
-    console.error('Ошибка отправки данных:', error);
+    logger.error('Ошибка отправки данных:', error);
     throw error;
   }
 };

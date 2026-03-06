@@ -6,8 +6,8 @@ const Footer = () => {
   return (
     <footer className={styles.footer}>
       <div className={styles.column}>
-        <div className={styles.logo}>            
-            <img src={logo} alt="logo" className={styles.footer_logo} />
+        <div className={styles.logo}>
+            <img src={logo} alt="Бьюти Окна логотип" className={styles.footer_logo} width="120" height="40" loading="lazy" />
         </div>
         <div className={styles.socials}>
           <a href="https://vk.com" target="_blank" rel="noreferrer" aria-label="ВКонтакте">

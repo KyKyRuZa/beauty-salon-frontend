@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logger } from '../../../utils/logger';
 import { useAuth } from '../../../context/AuthContext';
 import { getCurrentAdmin, updateCurrentAdmin } from '../../../api/admin';
 import '../../../styles/admin/AdminProfile.css';
@@ -32,7 +33,7 @@ const AdminProfile = () => {
         });
       }
     } catch (error) {
-      console.error('Ошибка загрузки информации администратора:', error);
+      logger.error('Ошибка загрузки информации администратора:', error);
     } finally {
       setLoading(false);
     }
@@ -69,10 +70,10 @@ const AdminProfile = () => {
       if (response.data.success && response.data.data) {
         setAdminInfo(response.data.data);
       }
-      
+
       setEditing(false);
     } catch (error) {
-      console.error('Ошибка сохранения информации администратора:', error);
+      logger.error('Ошибка сохранения информации администратора:', error);
     }
   };
 

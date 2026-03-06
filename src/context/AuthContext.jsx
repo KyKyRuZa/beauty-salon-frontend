@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useReducer } from 'react';
+import { logger } from '../utils/logger';
 import auth from '../api/auth';
 
 const AuthContext = createContext();
@@ -66,10 +67,10 @@ export const AuthProvider = ({ children }) => {
               profile: result.data?.profile
             });
           } else {
-            console.error('Не удалось загрузить профиль:', result.error);
+            logger.error('Не удалось загрузить профиль:', result.error);
           }
         } catch (error) {
-          console.error('Ошибка при инициализации аутентификации:', error);
+          logger.error('Ошибка при инициализации аутентификации:', error);
         }
       }
       dispatch({ type: 'SET_LOADED' });
@@ -88,7 +89,7 @@ export const AuthProvider = ({ children }) => {
             const userData = JSON.parse(storedUser);
             dispatch({ type: 'SET_USER', value: userData });
           } catch (e) {
-            console.error('Ошибка при парсинге данных пользователя:', e);
+            logger.error('Ошибка при парсинге данных пользователя:', e);
             dispatch({ type: 'SET_USER', value: null });
           }
         } else if (storedUser === 'undefined') {
@@ -107,7 +108,7 @@ export const AuthProvider = ({ children }) => {
                 dispatch({ type: 'SET_PROFILE', value: result.data?.profile || null });
               }
             } catch (error) {
-              console.error('Ошибка при обновлении профиля через authChange:', error);
+              logger.error('Ошибка при обновлении профиля через authChange:', error);
               dispatch({ type: 'SET_PROFILE', value: null });
             }
           };

@@ -84,7 +84,7 @@ const ProviderProfile = () => {
         });
       }
     } catch (error) {
-      console.error('Ошибка загрузки профиля:', error);
+      logger.error('Ошибка загрузки профиля:', error);
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
     }
@@ -96,7 +96,7 @@ const ProviderProfile = () => {
       const response = await checkFavorite(providerId);
       dispatch({ type: 'SET_IS_FAVORITE', value: response.data.isFavorite });
     } catch (error) {
-      console.error('Ошибка проверки избранного:', error);
+      logger.error('Ошибка проверки избранного:', error);
     }
   }, [providerId, user, state.providerType]);
 
@@ -119,7 +119,7 @@ const ProviderProfile = () => {
       await toggleFavorite(providerId);
       dispatch({ type: 'TOGGLE_FAVORITE' });
     } catch (error) {
-      console.error('Ошибка переключения избранного:', error);
+      logger.error('Ошибка переключения избранного:', error);
       toast.error(error.response?.data?.message || 'Ошибка при изменении избранного');
     }
   };

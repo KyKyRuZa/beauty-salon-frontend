@@ -80,7 +80,8 @@ export const ToastProvider = ({ children }) => {
     info: (message, duration) => addToast(message, TOAST_TYPES.INFO, duration),
     warning: (message, duration) => addToast(message, TOAST_TYPES.WARNING, duration),
     remove: removeToast,
-    clear: clearToasts
+    clear: clearToasts,
+    toasts
   };
 
   return (

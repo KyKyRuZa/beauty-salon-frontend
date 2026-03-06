@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect, useCallback } from 'react';
+import { logger } from '../../utils/logger';
 import { getMasterReviews, getSalonReviews, createReview } from '../../api/reviews';
 import { useAuth } from '../../context/AuthContext';
 import '../../styles/ReviewsList.css';
@@ -54,7 +55,7 @@ const ReviewsList = ({ masterId, salonId, showForm = false, onReviewCreated }) =
 
       dispatch({ type: 'SET_REVIEWS', data: result.data || [] });
     } catch (err) {
-      console.error('Ошибка загрузки отзывов:', err);
+      logger.error('Ошибка загрузки отзывов:', err);
       dispatch({ type: 'SET_ERROR', error: 'Не удалось загрузить отзывы' });
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });
@@ -92,7 +93,7 @@ const ReviewsList = ({ masterId, salonId, showForm = false, onReviewCreated }) =
         onReviewCreated();
       }
     } catch (err) {
-      console.error('Ошибка создания отзыва:', err);
+      logger.error('Ошибка создания отзыва:', err);
       dispatch({ type: 'SET_ERROR', error: err.response?.data?.message || 'Не удалось создать отзыв' });
     } finally {
       dispatch({ type: 'SET_SUBMITTING', value: false });

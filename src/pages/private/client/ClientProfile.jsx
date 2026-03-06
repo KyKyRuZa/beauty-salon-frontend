@@ -1,4 +1,5 @@
 import { useReducer, useEffect } from "react";
+import { logger } from '../../../utils/logger';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import '../../../styles/Profile.css';
@@ -55,7 +56,7 @@ const ClientProfile = ({ handleLogout }) => {
       const services = response.data.data || [];
       dispatch({ type: 'SET_RECOMMENDATIONS', value: services.slice(0, 3) });
     } catch (error) {
-      console.error('Ошибка при загрузке рекомендаций:', error);
+      logger.error('Ошибка при загрузке рекомендаций:', error);
       dispatch({ type: 'SET_RECOMMENDATIONS', value: [] });
     } finally {
       dispatch({ type: 'SET_LOADING_RECOMMENDATIONS', value: false });
@@ -68,7 +69,7 @@ const ClientProfile = ({ handleLogout }) => {
       const response = await getFavorites();
       dispatch({ type: 'SET_FAVORITES', value: response.data || [] });
     } catch (error) {
-      console.error('Ошибка загрузки избранных:', error);
+      logger.error('Ошибка загрузки избранных:', error);
       dispatch({ type: 'SET_FAVORITES', value: [] });
     } finally {
       dispatch({ type: 'SET_LOADING_FAVORITES', value: false });
@@ -97,7 +98,7 @@ const ClientProfile = ({ handleLogout }) => {
                   <label htmlFor="avatar-upload" className="avatar-clickable-area">
                     <div className="avatar-content">
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt="Аватар" className="avatar" />
+                        <img src={avatarUrl} alt="Аватар" className="avatar" loading="lazy" />
                       ) : (
                         <div className="avatar-placeholder">
                           <span className="material-symbols-outlined" style={{fontSize: '2rem'}}>account_circle</span>
@@ -245,7 +246,7 @@ const RecommendationsContent = ({ recommendations, loadingRecommendations }) => 
         ) : recommendations.length > 0 ? (
           recommendations.map((service, index) => (
             <div key={service.id || index} className="recommendation-card">
-              <img src={photo} alt={service.name || "Рекомендация"} />
+              <img src={photo} alt={service.name || "Рекомендация"} loading="lazy" />
               <h3>{service.name || 'Услуга'}</h3>
               <p>От {service.minPrice || 'цена не указана'} ₽</p>
               <button className="btn-sm">Записаться</button>

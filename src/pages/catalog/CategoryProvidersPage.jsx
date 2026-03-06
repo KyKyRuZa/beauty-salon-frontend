@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useCallback, useReducer } from 'react';
+import { logger } from '../../utils/logger';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCatalog } from '../../context/CatalogContext';
 import { useAuth } from '../../context/AuthContext';
@@ -158,7 +159,7 @@ const CategoryProvidersPage = () => {
       dispatch({ type: 'SET_LOADING_FAVORITES', providerId, value: true });
       await toggleFavorite(providerId);
     } catch (error) {
-      console.error('Ошибка переключения избранного:', error);
+      logger.error('Ошибка переключения избранного:', error);
       toast.error(error.response?.data?.message || 'Ошибка при изменении избранного');
       // Откат изменения при ошибке
       dispatch({ type: 'TOGGLE_FAVORITE', providerId });

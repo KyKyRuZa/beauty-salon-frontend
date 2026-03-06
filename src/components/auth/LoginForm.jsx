@@ -5,11 +5,11 @@ import { zodResolver } from "../../validations/zodResolver";
 import { loginSchema } from "../../validations";
 import {logger} from "../../utils/logger"
 import auth from "../../api/auth";
+import PasswordInput from "../ui/PasswordInput";
 import "../../styles/auth/AuthForms.css"
 
 const LoginForm = ({ onSwitchToRegister }) => {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
   const {
     register,
     handleSubmit,
@@ -66,32 +66,14 @@ const LoginForm = ({ onSwitchToRegister }) => {
           <p className="error-message">{errors.email.message}</p>
         )}
       </div>
-      
-      <div className="form-group">
-        <label htmlFor="password">Пароль</label>
-        <div className="password-input-container">
-          <input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            {...register("password")}
-            className={errors.password ? "input-error" : ""}
-            disabled={isSubmitting}
-          />
-          <button
-            type="button"
-            className="password-toggle-button"
-            onClick={() => setShowPassword(!showPassword)}
-            aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
-          >
-            <span className="material-symbols-outlined">
-              {showPassword ? "visibility_off" : "visibility"}
-            </span>
-          </button>
-        </div>
-        {errors.password && (
-          <p className="error-message">{errors.password.message}</p>
-        )}
-      </div>
+
+      <PasswordInput
+        id="password"
+        label="Пароль"
+        register={register("password")}
+        errors={errors}
+        disabled={isSubmitting}
+      />
 
       {errors.root && (
         <div className="error-message form-error">

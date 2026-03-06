@@ -21,7 +21,7 @@ const TransformationCTA = () => {
             </Link>
           </div>
           <div className="cta-image">
-            <img src={womanImage} alt="Преображение" />
+            <img src={womanImage} alt="Преображение" loading="lazy" />
           </div>
         </div>
       </div>

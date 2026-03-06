@@ -44,5 +44,3 @@ tests/setup.js
 Thumbs.db
 .DS_Store
 ._*
-
-.agents

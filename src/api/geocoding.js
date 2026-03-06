@@ -3,6 +3,8 @@
  * Преобразует координаты (lat, lng) в название города
  */
 
+import { logger } from '../utils/logger';
+
 const YANDEX_GEOCODER_URL = 'https://geocode-maps.yandex.ru/1.x/';
 
 /**
@@ -46,7 +48,7 @@ export const getCityByCoordinates = async (lat, lng) => {
     
     throw new Error('Город не найден');
   } catch (error) {
-    console.error('Ошибка reverse geocoding:', error);
+    logger.error('Ошибка reverse geocoding:', error);
     throw error;
   }
 };

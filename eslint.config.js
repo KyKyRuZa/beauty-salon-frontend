@@ -51,7 +51,7 @@ export default defineConfig([
 
   // Конфиг для файлов конфигурации
   {
-    files: ['vite.config.js', '**/*.config.js', '**/*.config.mjs'],
+    files: ['vite.config.js', '**/*.config.js', '**/*.config.mjs', './tests/setup.js'],
     languageOptions: {
       globals: globals.node,
     },

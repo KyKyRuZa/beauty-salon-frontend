@@ -5,13 +5,13 @@ import { useNavigate } from "react-router-dom";
 import { zodResolver } from "../../validations/zodResolver";
 import { getRegisterSchema } from "../../validations";
 import {logger} from "../../utils/logger"
+import PasswordInput from "../ui/PasswordInput";
+import PhoneInput from "../ui/PhoneInput";
 import "../../styles/auth/AuthForms.css"
 
 const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
   const navigate = useNavigate();
   const [phoneValue, setPhoneValue] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [registrationError, setRegistrationError] = useState("");
 
   const {
@@ -211,7 +211,7 @@ const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
         {/* 2. Контактная информация */}
         <div className="form-group">
           <label htmlFor="email">Email *</label>
-          <input 
+          <input
             id="email"
             type="email"
             {...register("email")}
@@ -223,26 +223,17 @@ const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
             <p className="error-message">{errors.email.message}</p>
           )}
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="phone">Номер телефона *</label>
-          <input 
-            id="phone"
-            type="tel"
-            value={phoneValue}
-            onChange={handlePhoneChange}
-            onKeyDown={handlePhoneKeyDown}
-            onPaste={handlePhonePaste}
-            className={errors.phone ? "input-error" : ""}
-            placeholder="+7 (999) 999-99-99"
-            maxLength={18}
-            disabled={isSubmitting}
-            required
-          />
-          {errors.phone && (
-            <p className="error-message">{errors.phone.message}</p>
-          )}
-        </div>
+
+        <PhoneInput
+          id="phone"
+          label="Номер телефона *"
+          value={phoneValue}
+          onChange={handlePhoneChange}
+          onKeyDown={handlePhoneKeyDown}
+          onPaste={handlePhonePaste}
+          errors={errors}
+          disabled={isSubmitting}
+        />
         
         {/* 3. Дополнительные данные */}
         {type === 'master' && (
@@ -295,59 +286,23 @@ const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
         
         {/* 4. Безопасность (пароли) */}
         <div className="password-section">
-          <div className="form-group">
-            <label htmlFor="password">Пароль *</label>
-            <div className="password-input-container">
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                {...register("password")}
-                className={errors.password ? "input-error" : ""}
-                placeholder="Придумайте надежный пароль"
-                disabled={isSubmitting}
-              />
-              <button
-                type="button"
-                className="password-toggle-button"
-                onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
-              >
-                <span className="material-symbols-outlined">
-                  {showPassword ? "visibility_off" : "visibility"}
-                </span>
-              </button>
-            </div>
-            {errors.password && (
-              <p className="error-message">{errors.password.message}</p>
-            )}
-          </div>
+          <PasswordInput
+            id="password"
+            label="Пароль *"
+            register={register("password")}
+            errors={errors}
+            placeholder="Придумайте надежный пароль"
+            disabled={isSubmitting}
+          />
 
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Подтвердите пароль *</label>
-            <div className="password-input-container">
-              <input
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                {...register("confirmPassword")}
-                className={errors.confirmPassword ? "input-error" : ""}
-                placeholder="Повторите пароль"
-                disabled={isSubmitting}
-              />
-              <button
-                type="button"
-                className="password-toggle-button"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                aria-label={showConfirmPassword ? "Скрыть пароль" : "Показать пароль"}
-              >
-                <span className="material-symbols-outlined">
-                  {showConfirmPassword ? "visibility_off" : "visibility"}
-                </span>
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="error-message">{errors.confirmPassword.message}</p>
-            )}
-          </div>
+          <PasswordInput
+            id="confirmPassword"
+            label="Подтвердите пароль *"
+            register={register("confirmPassword")}
+            errors={errors}
+            placeholder="Повторите пароль"
+            disabled={isSubmitting}
+          />
         </div>
         
         <div className="checkbox-group">

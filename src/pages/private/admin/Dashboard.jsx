@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { logger } from '../../../utils/logger';
 import { useAuth } from '../../../context/AuthContext';
 import { getDashboardStats } from '../../../api/admin';
 
@@ -19,7 +20,7 @@ const Dashboard = () => {
       setStats(response.data.data);
       setError(null);
     } catch (err) {
-      console.error('Ошибка загрузки статистики:', err);
+      logger.error('Ошибка загрузки статистики:', err);
       setError('Ошибка загрузки статистики');
     } finally {
       setLoading(false);

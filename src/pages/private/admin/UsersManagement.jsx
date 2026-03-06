@@ -1,4 +1,5 @@
 import React, { useReducer, useEffect, useCallback } from 'react';
+import { logger } from '../../../utils/logger';
 import { getAllUsers } from '../../../api/admin';
 
 const initialState = {
@@ -42,7 +43,7 @@ const UsersManagement = () => {
       dispatch({ type: 'SET_USERS', value: response.data.data });
       dispatch({ type: 'SET_PAGINATION', value: response.data.pagination });
     } catch (err) {
-      console.error('Ошибка загрузки пользователей:', err);
+      logger.error('Ошибка загрузки пользователей:', err);
       dispatch({ type: 'SET_ERROR', value: 'Ошибка загрузки пользователей' });
     } finally {
       dispatch({ type: 'SET_LOADING', value: false });

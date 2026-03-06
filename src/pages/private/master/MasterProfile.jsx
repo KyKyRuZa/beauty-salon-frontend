@@ -161,7 +161,7 @@ const MasterProfile = ({ handleLogout }) => {
                   <label htmlFor="avatar-upload-master" className="avatar-clickable-area">
                     <div className="avatar-content">
                       {avatarUrl ? (
-                        <img src={avatarUrl} alt="Аватар" className="avatar" />
+                        <img src={avatarUrl} alt="Аватар" className="avatar" loading="lazy" />
                       ) : (
                         <div className="avatar-placeholder">
                           <span className="material-symbols-outlined" style={{fontSize: '2rem'}}>account_circle</span>
