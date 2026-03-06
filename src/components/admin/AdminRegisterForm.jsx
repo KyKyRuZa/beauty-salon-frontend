@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { adminRegisterSchema } from "../../validations";
 import { useState } from "react";
+import {logger} from "../../utils/logger"
 import auth from "../../api/auth";
 import { useNavigate } from "react-router-dom";
 import "../../styles/auth/AuthForms.css";
@@ -76,8 +77,8 @@ const AdminRegisterForm = ({ onSwitchToLogin }) => {
   const onSubmit = async (data) => {
     setRegistrationError("");
 
-    console.log("Form data:", data);
-    console.log("termsAccepted value:", data.termsAccepted);
+    logger.debug('Данные формы:', data);
+    logger.debug('Согласие с условиями:', data.termsAccepted);
 
     const requestData = {
       email: data.email?.trim(),
@@ -90,7 +91,7 @@ const AdminRegisterForm = ({ onSwitchToLogin }) => {
       termsAccepted: data.termsAccepted === true
     };
 
-    console.log("Request data:", requestData);
+    logger.debug('Данные запроса:', requestData);
 
     try {
       const result = await auth.adminRegister(requestData);
@@ -107,7 +108,7 @@ const AdminRegisterForm = ({ onSwitchToLogin }) => {
         }
       }
     } catch (error) {
-      console.error("Admin registration error:", error);
+      logger.error('Ошибка регистрации администратора:', error);
       setRegistrationError("Ошибка сервера. Попробуйте позже.");
     }
   };

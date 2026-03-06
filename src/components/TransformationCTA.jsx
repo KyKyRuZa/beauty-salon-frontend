@@ -16,7 +16,7 @@ const TransformationCTA = () => {
               Выберите услугу, салон, мастера и удобное время. Всё рядом и без лишних звонков —
               красота начинается с одного клика.
             </p>
-            <Link to="/booking" className="btn btn-cta">
+            <Link to="/catalog" className="btn btn-cta">
               ЗАПИСАТЬСЯ НА ПРИЕМ
             </Link>
           </div>

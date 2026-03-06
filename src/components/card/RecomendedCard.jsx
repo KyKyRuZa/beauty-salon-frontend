@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { toggleFavorite, checkFavorite } from '../../api/favorites';
 import '../../styles/RecomendedCard.css';
 
@@ -18,6 +19,7 @@ const RecomendedCard = ({
   onViewProfile,
   role = 'master',
 }) => {
+  const toast = useToast();
   const { user } = useAuth();
   const [isFavorite, setIsFavorite] = useState(parentIsFavorite || false);
   const roleLabel = role === 'salon' ? 'Салон красоты' : 'Бьюти-мастер';
@@ -42,20 +44,20 @@ const RecomendedCard = ({
     e.stopPropagation();
 
     if (!user) {
-      alert('Для добавления в избранное необходимо войти в систему');
+      toast.error('Для добавления в избранное необходимо войти в систему');
       return;
     }
 
     try {
       const response = await toggleFavorite(masterId);
-      setIsFavorite(response.data.added);
+      setIsFavorite(response.data.isFavorite);
 
       if (parentOnToggleFavorite) {
-        parentOnToggleFavorite(masterId, response.data.added);
+        parentOnToggleFavorite(masterId, response.data.isFavorite);
       }
     } catch (error) {
       console.error('Ошибка переключения избранного:', error);
-      alert(error.response?.data?.message || 'Ошибка при изменении избранного');
+      toast.error(error.response?.data?.message || 'Ошибка при изменении избранного');
     }
   };
 

@@ -4,8 +4,10 @@ import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
 import ReviewsList from '../../components/reviews/ReviewsList';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { toggleFavorite, checkFavorite } from '../../api/favorites';
 import userService from '../../api/user';
+import { logger } from '../../utils/logger';
 import '../../styles/ProviderProfile.css';
 
 const initialState = {
@@ -39,6 +41,7 @@ const ProviderProfile = () => {
   const { providerId, type = 'master' } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
   const [state, dispatch] = useReducer(providerReducer, {
     ...initialState,
     providerType: type
@@ -50,8 +53,8 @@ const ProviderProfile = () => {
       const endpoint = state.providerType === 'master' ? 'master' : 'salon';
       const getService = endpoint === 'master' ? userService.getMasterById : userService.getSalonById;
       const response = await getService(providerId);
-      console.log('API Response:', response);
-      
+      logger.debug('API Response:', response);
+
       // response.data - это { success: true, data: {...} }
       const providerData = response.data || response;
       
@@ -104,11 +107,11 @@ const ProviderProfile = () => {
 
   const handleToggleFavorite = async () => {
     if (!user) {
-      alert('Для добавления в избранное необходимо войти в систему');
+      toast.error('Для добавления в избранное необходимо войти в систему');
       return;
     }
     if (state.providerType !== 'master') {
-      alert('В избранное можно добавлять только мастеров');
+      toast.error('В избранное можно добавлять только мастеров');
       return;
     }
 
@@ -117,7 +120,7 @@ const ProviderProfile = () => {
       dispatch({ type: 'TOGGLE_FAVORITE' });
     } catch (error) {
       console.error('Ошибка переключения избранного:', error);
-      alert(error.response?.data?.message || 'Ошибка при изменении избранного');
+      toast.error(error.response?.data?.message || 'Ошибка при изменении избранного');
     }
   };
 

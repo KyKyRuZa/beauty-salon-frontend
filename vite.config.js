@@ -1,43 +1,36 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { copyFileSync, mkdirSync } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, resolve } from 'path'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
   plugins: [
     react(),
-    {
-      name: 'copy-seo-files',
-      closeBundle() {
-        const distDir = resolve(__dirname, 'dist')
-        try {
-          mkdirSync(distDir, { recursive: true })
-          copyFileSync(resolve(__dirname, 'public/robots.txt'), resolve(distDir, 'robots.txt'))
-          copyFileSync(resolve(__dirname, 'public/sitemap.xml'), resolve(distDir, 'sitemap.xml'))
-          console.log('✅ SEO файлы скопированы в dist (robots.txt, sitemap.xml)')
-        } catch (error) {
-          console.error('❌ Ошибка копирования SEO файлов:', error.message)
-        }
-      }
-    }
-  ],
+    viteStaticCopy({
+      targets: [
+        { src: 'public/robots.txt', dest: '' },
+        { src: 'public/sitemap.xml', dest: '' }
+      ]
+    }),
+    // Анализ бандла при ANALYZE=true
+    process.env.ANALYZE === 'true' && visualizer({
+      open: true,
+      filename: 'bundle-analysis.html'
+    })
+  ].filter(Boolean),
 
   server: {
     host: true,
-    open: true,
-    port: 5173,
+    open: process.env.VITE_OPEN_BROWSER !== 'false',
+    port: parseInt(process.env.VITE_DEV_PORT || '5173', 10),
     proxy: {
       '/api': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:5000',
         changeOrigin: true,
         secure: false
       },
       '/uploads': {
-        target: 'http://localhost:5000',
+        target: process.env.VITE_API_PROXY_TARGET || 'http://localhost:5000',
         changeOrigin: true,
         secure: false
       }
@@ -48,46 +41,45 @@ export default defineConfig({
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
-          let extType = assetInfo.name.split('.').at(1)
-          if (/png|jpe?g|gif|svg|webp|ico/i.test(extType)) {
-            extType = 'img'
-          } else if (/woff2?|ttf|eot/i.test(extType)) {
-            extType = 'fonts'
-          } else if (/css/i.test(extType)) {
-            extType = 'css'
+          const ext = assetInfo.name.split('.').pop()
+          if (/png|jpe?g|gif|svg|webp|ico/i.test(ext)) {
+            return 'assets/img/[name]-[hash][extname]'
           }
-          return `assets/${extType || 'misc'}/[name]-[hash][extname]`
+          if (/woff2?|ttf|eot/i.test(ext)) {
+            return 'assets/fonts/[name]-[hash][extname]'
+          }
+          if (/css/i.test(ext)) {
+            return 'assets/css/[name]-[hash][extname]'
+          }
+          return 'assets/misc/[name]-[hash][extname]'
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
 
         manualChunks(id) {
-          if (id.includes('node_modules/react/') && !id.includes('react-dom')) {
-            return 'react-vendor';
+          if (id.includes('/node_modules/react/') || id.includes('/node_modules/react-dom/')) {
+            return 'react-vendor'
           }
-          if (id.includes('node_modules/react-dom/')) {
-            return 'react-vendor';
+          if (id.includes('/node_modules/react-router-dom/')) {
+            return 'routing'
           }
-          if (id.includes('node_modules/react-router-dom/')) {
-            return 'routing';
+          if (id.includes('/node_modules/axios/')) {
+            return 'http'
           }
-          if (id.includes('node_modules/axios/')) {
-            return 'http';
+          if (id.includes('/node_modules/zod/')) {
+            return 'validation'
           }
-          if (id.includes('node_modules/zod/')) {
-            return 'validation';
+          if (id.includes('/node_modules/react-hook-form/') || id.includes('/node_modules/@hookform/resolvers/')) {
+            return 'forms'
           }
-          if (id.includes('node_modules/react-hook-form/') || id.includes('node_modules/@hookform/resolvers/')) {
-            return 'forms';
+          if (id.includes('/node_modules/socket.io-client/')) {
+            return 'socket'
           }
-          if (id.includes('node_modules/socket.io-client/')) {
-            return 'socket';
+          if (id.includes('/node_modules/react-input-mask/')) {
+            return 'input'
           }
-          if (id.includes('node_modules/react-input-mask/')) {
-            return 'input';
-          }
-          if (id.includes('node_modules/date-fns/')) {
-            return 'date';
+          if (id.includes('/node_modules/date-fns/')) {
+            return 'date'
           }
         }
       }
@@ -97,43 +89,14 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
-        passes: 2,
-        unsafe_comps: true,
-        unsafe_math: true,
-        unsafe_proto: true,
-        unsafe_regexp: true,
-        pure_getters: true,
-        keep_fargs: false
+        passes: 2
       },
       format: {
-        comments: false 
-      },
-      mangle: {
-        properties: {
-          regex: /^__/
-        }
+        comments: false
       }
     },
     cssCodeSplit: true,
     sourcemap: false,
     target: 'es2015'
-  },
-  
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      'axios',
-      'zod',
-      'react-hook-form',
-      '@hookform/resolvers',
-      'socket.io-client',
-      'date-fns',
-      'react-input-mask',
-      'react-datepicker',
-      'prop-types'
-    ],
-    exclude: []
   }
 })

@@ -1,11 +1,13 @@
 import React, { useReducer, useEffect, useCallback,useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
 import DateSelector from '../../components/booking/DateSelector';
 import TimeSlotsSelector from '../../components/booking/TimeSlotsSelector';
 import { createBooking, getAvailableSlots } from '../../api/booking';
+import { logger } from '../../utils/logger';
 import '../../styles/booking/TimeSlotsPage.css';
 
 const initialState = {
@@ -40,6 +42,7 @@ const TimeSlotsPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
+  const toast = useToast();
   const [state, dispatch] = useReducer(timeSlotsReducer, initialState);
 
   const serviceIdParam = searchParams.get('service');
@@ -48,21 +51,21 @@ const TimeSlotsPage = () => {
   // Извлекаем ID услуги из параметра (может быть строкой, JSON или объектом)
   const serviceId = useMemo(() => {
     if (!serviceIdParam) return null;
-    console.log('serviceIdParam:', serviceIdParam, 'type:', typeof serviceIdParam);
-    
+    logger.debug('serviceIdParam:', serviceIdParam, 'type:', typeof serviceIdParam);
+
     // Если это объект с id
     if (typeof serviceIdParam === 'object' && serviceIdParam !== null) {
       return serviceIdParam.id || null;
     }
-    
+
     try {
       // Пытаемся распарсить как JSON
       const parsed = typeof serviceIdParam === 'string' ? JSON.parse(serviceIdParam) : serviceIdParam;
       const result = parsed?.id || parsed;
-      console.log('Parsed serviceId:', result);
+      logger.debug('Parsed serviceId:', result);
       return result;
     } catch (e) {
-      console.error('Error parsing serviceId:', e);
+      logger.error('Ошибка обработки ID услуги:', e);
       // Если не JSON, используем как есть
       return serviceIdParam;
     }
@@ -81,27 +84,26 @@ const TimeSlotsPage = () => {
         params.service_id = parseInt(serviceId);
       }
 
-      console.log('Загрузка слотов для мастера', params.master_id, 'дата:', dateStr, 'услуга:', serviceId);
+      logger.debug('Загрузка слотов для мастера', params.master_id, 'дата:', dateStr, 'услуга:', serviceId);
 
       const response = await getAvailableSlots(params);
 
       let slots = response.data || [];
-      console.log('Загруженные слоты:', slots);
+      logger.debug('Загруженные слоты:', slots);
 
       if (serviceId) {
         slots = slots.filter(slot =>
           slot.service_id === parseInt(serviceId) || slot.service_id === null
         );
-        console.log('Отфильтрованные слоты для услуги', serviceId, ':', slots);
+        logger.debug('Отфильтрованные слоты для услуги', serviceId, ':', slots);
       } else {
-        console.log('serviceId не указан, показываем все слоты:', slots.length);
+        logger.debug('serviceId не указан, показываем все слоты:', slots.length);
       }
 
       dispatch({ type: 'SET_AVAILABLE_SLOTS', value: slots });
     } catch (error) {
-      console.error('Ошибка загрузки слотов:', error);
-      const mockSlots = generateMockSlots(date);
-      dispatch({ type: 'SET_AVAILABLE_SLOTS', value: mockSlots });
+      logger.error('Ошибка загрузки слотов:', error);
+      dispatch({ type: 'SET_AVAILABLE_SLOTS', value: [] });
     }
   }, [providerId, serviceId, type]);
 
@@ -112,7 +114,7 @@ const TimeSlotsPage = () => {
   }, [state.selectedDate, loadAvailableSlots]);
 
   const handleDateSelect = (date) => {
-    console.log('handleDateSelect: выбрана дата', date, 'type:', typeof date);
+    logger.debug('handleDateSelect: выбрана дата', date, 'type:', typeof date);
     dispatch({ type: 'SET_SELECTED_DATE', value: date });
   };
 
@@ -122,7 +124,7 @@ const TimeSlotsPage = () => {
 
   const handleBookNow = () => {
     if (!user) {
-      alert('Для записи необходимо войти в систему');
+      toast.error('Для записи необходимо войти в систему');
       return;
     }
     dispatch({ type: 'SET_BOOKING_MODAL', value: true });
@@ -130,12 +132,12 @@ const TimeSlotsPage = () => {
 
   const handleConfirmBooking = async () => {
     if (!state.selectedSlot || !providerId) {
-      alert('Выберите время');
+      toast.error('Выберите время');
       return;
     }
 
     if (!serviceId) {
-      alert('Услуга не выбрана');
+      toast.error('Услуга не выбрана');
       return;
     }
 
@@ -151,12 +153,12 @@ const TimeSlotsPage = () => {
 
       await createBooking(bookingData);
 
-      alert('Запись успешно создана!');
+      toast.success('Запись успешно создана!');
       dispatch({ type: 'RESET_BOOKING' });
       navigate('/profile');
     } catch (error) {
-      console.error('Ошибка создания записи:', error);
-      alert(error.response?.data?.message || 'Ошибка при создании записи');
+      logger.error('Ошибка создания записи:', error);
+      toast.error(error.response?.data?.message || 'Ошибка при создании записи');
     }
   };
 
@@ -306,22 +308,6 @@ const formatSelectedDate = (dateString) => {
     month: 'long',
     year: 'numeric'
   });
-};
-
-const generateMockSlots = () => {
-  const slots = [];
-  const startHour = 9;
-  const endHour = 18;
-
-  for (let hour = startHour; hour < endHour; hour++) {
-    slots.push({
-      start_time: `${hour.toString().padStart(2, '0')}:00`,
-      end_time: `${(hour + 1).toString().padStart(2, '0')}:00`,
-      available: true
-    });
-  }
-
-  return slots;
 };
 
 export default TimeSlotsPage;

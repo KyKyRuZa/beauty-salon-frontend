@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useCallback, useReducer } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCatalog } from '../../context/CatalogContext';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { toggleFavorite } from '../../api/favorites';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
@@ -54,6 +55,7 @@ const CategoryProvidersPage = () => {
   const { categoryId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
   const [state, dispatch] = useReducer(categoryProvidersReducer, initialState);
   
   const {
@@ -145,7 +147,7 @@ const CategoryProvidersPage = () => {
     e.stopPropagation();
 
     if (!user) {
-      alert('Для добавления в избранное необходимо войти в систему');
+      toast.error('Для добавления в избранное необходимо войти в систему');
       return;
     }
 
@@ -157,13 +159,13 @@ const CategoryProvidersPage = () => {
       await toggleFavorite(providerId);
     } catch (error) {
       console.error('Ошибка переключения избранного:', error);
-      alert(error.response?.data?.message || 'Ошибка при изменении избранного');
+      toast.error(error.response?.data?.message || 'Ошибка при изменении избранного');
       // Откат изменения при ошибке
       dispatch({ type: 'TOGGLE_FAVORITE', providerId });
     } finally {
       dispatch({ type: 'SET_LOADING_FAVORITES', providerId, value: false });
     }
-  }, [user]);
+  }, [user, toast]);
 
   // Трансформация данных для отображения - мемоизируем результат
   const transformedServices = useMemo(() => {

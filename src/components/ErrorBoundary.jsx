@@ -20,7 +20,7 @@ class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     this.setState({ errorInfo });
-    logger.error('ErrorBoundary caught an error:', error, errorInfo);
+    logger.error('Перехвачена ошибка ErrorBoundary:', error, errorInfo);
   }
 
   handleReset = () => {

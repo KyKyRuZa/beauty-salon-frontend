@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useToast } from '../../context/ToastContext';
 import { getMyBookings, cancelBooking } from '../../api/booking';
 import '../../styles/booking/BookingHistory.css';
 
 const BookingHistory = () => {
+  const toast = useToast();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,9 +42,10 @@ const BookingHistory = () => {
     try {
       await cancelBooking(bookingId);
       await loadBookings();
+      toast.success('Запись отменена');
     } catch (err) {
       console.error('Ошибка отмены бронирования:', err);
-      alert('Не удалось отменить запись');
+      toast.error('Не удалось отменить запись');
     }
   };
 

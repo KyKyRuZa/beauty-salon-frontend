@@ -3,7 +3,8 @@ import { useState } from "react";
 import auth from "../../api/auth";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "../../validations/zodResolver";
-import { getRegisterSchema } from "../../validations"; // Используем центральный экспорт
+import { getRegisterSchema } from "../../validations";
+import {logger} from "../../utils/logger"
 import "../../styles/auth/AuthForms.css"
 
 const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
@@ -115,8 +116,8 @@ const RegisterForm = ({ type, onTypeChange, onSwitchToLogin }) => {
         }
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      setRegistrationError("Ошибка сервера. Попробуйте позже.");
+      logger.error('Ошибка регистрации:', error);
+      setRegistrationError('Ошибка сервера. Попробуйте позже.');
     }
   };
 

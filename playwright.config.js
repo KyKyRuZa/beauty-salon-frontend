@@ -2,23 +2,25 @@ import { defineConfig, devices } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
-  fullyParallel: false,
-  forbidOnly: !!globalThis.process?.env?.CI,
-  retries: globalThis.process?.env?.CI ? 2 : 0,
-  workers: 8,
-  reporter: 'html',
-  timeout: 300000,  // 5 минут на тест
+  fullyParallel: !process.env.CI,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: process.env.CI
+    ? [['github'], ['json', { outputFile: 'test-results/results.json' }], ['html']]
+    : 'html',
+  timeout: 30000,  // 30 секунд на тест
   expect: {
-    timeout: 20000  // 20 секунд на ожидание
+    timeout: 5000  // 5 секунд на ожидание элемента
   },
   use: {
-    baseURL: 'http://localhost:5173',
-    trace: 'on-first-retry',
+    baseURL: process.env.VITE_BASE_URL || 'http://localhost:5173',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    actionTimeout: 60000,  // 1 минута на действие
+    actionTimeout: 15000,  // 15 секунд на действие
   },
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run preview',
     url: 'http://localhost:5173',
     reuseExistingServer: true,
     timeout: 60000,
@@ -30,6 +32,10 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] }
     }
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] }
+    // }
   ],
   outputDir: 'test-results/'
 })

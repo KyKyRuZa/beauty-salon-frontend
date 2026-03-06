@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { zodResolver } from "../../validations/zodResolver";
-import { loginSchema } from "../../validations"; // Используем центральный экспорт
+import { loginSchema } from "../../validations";
+import {logger} from "../../utils/logger"
 import auth from "../../api/auth";
 import "../../styles/auth/AuthForms.css"
 
@@ -40,7 +41,7 @@ const LoginForm = ({ onSwitchToRegister }) => {
         });
       }
     } catch (error) {
-      console.error("Login error:", error);
+      logger.error('Ошибка входа:', error);
       setError("root", {
         message: "Ошибка сервера. Попробуйте позже."
       });

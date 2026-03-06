@@ -90,8 +90,8 @@ const TimeSlotsSelector = ({
               <span className="time-range">
                 {formatDuration(slot.start_time, slot.end_time)}
               </span>
-              {booked && <span className="slot-badge">Занято</span>}
-              {blocked && <span className="slot-badge">Недоступно</span>}
+              {booked && <span className="slot-badge"></span>}
+              {blocked && <span className="slot-badge"></span>}
             </button>
           );
         })}

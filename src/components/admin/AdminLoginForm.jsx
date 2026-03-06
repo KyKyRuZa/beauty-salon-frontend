@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../../validations";
 import { useNavigate } from "react-router-dom";
+import {logger} from "../../utils/logger"
 import auth from "../../api/auth";
 import "../../styles/auth/AuthForms.css";
 
@@ -30,7 +31,7 @@ const AdminLoginForm = ({ onSwitchToRegister }) => {
         });
       }
     } catch (error) {
-      console.error("Admin login error:", error);
+      logger.error('Ошибка входа администратора:', error);
       setError("root", {
         message: "Ошибка сервера. Попробуйте позже."
       });

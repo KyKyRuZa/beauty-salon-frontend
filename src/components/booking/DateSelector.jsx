@@ -1,40 +1,44 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAvailableDates } from '../../api/timeslots';
+import { logger } from '../../utils/logger';
 import '../../styles/booking/DateSelector.css';
 
 const DateSelector = ({ selectedDate, onDateSelect, masterId, serviceId }) => {
   const [dates, setDates] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const loadAvailableDates = useCallback(async () => {
-    if (!masterId) return;
-
-    try {
-      setLoading(true);
-      const response = await getAvailableDates(masterId, serviceId);
-      if (response.success && response.data) {
-        const dateStrings = response.data.map(item => item.date);
-        setDates(dateStrings);
-      } else {
-        setDates(generateNextDays(7));
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки доступных дат:', error);
-      setDates(generateNextDays(7));
-    } finally {
-      setLoading(false);
-    }
-  }, [masterId, serviceId]);
-
-  // Загружаем доступные даты при монтировании и при изменении masterId/serviceId
-  // Это синхронизация состояния с внешними зависимостями, а не эмуляция обработчика событий
+  // Загружаем доступные даты при изменении masterId/serviceId
   useEffect(() => {
-    if (masterId) {
-      loadAvailableDates();
-    } else {
+    logger.debug('[DateSelector] useEffect triggered', { masterId, serviceId });
+    
+    if (!masterId) {
       setDates(generateNextDays(7));
+      return;
     }
-  }, [masterId, serviceId, loadAvailableDates]);
+
+    const loadAvailableDates = async () => {
+      try {
+        setLoading(true);
+        const response = await getAvailableDates(masterId, serviceId);
+        logger.debug('[DateSelector] getAvailableDates response:', response);
+        
+        if (response.success && response.data && response.data.length > 0) {
+          const dateStrings = response.data.map(item => item.date);
+          logger.debug('[DateSelector] Setting dates:', dateStrings);
+          setDates(dateStrings);
+        } else {
+          setDates(generateNextDays(7));
+        }
+      } catch (error) {
+        logger.error('Ошибка загрузки доступных дат:', error);
+        setDates(generateNextDays(7));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAvailableDates();
+  }, [masterId, serviceId]);
 
   const formatDate = (dateString) => {
     // Парсим дату как локальную, а не UTC
@@ -56,7 +60,7 @@ const DateSelector = ({ selectedDate, onDateSelect, masterId, serviceId }) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     // Сравниваем по компонентам даты
-    const isSameDay = (d1, d2) => 
+    const isSameDay = (d1, d2) =>
       d1.getFullYear() === d2.getFullYear() &&
       d1.getMonth() === d2.getMonth() &&
       d1.getDate() === d2.getDate();
@@ -78,22 +82,16 @@ const DateSelector = ({ selectedDate, onDateSelect, masterId, serviceId }) => {
         <div className="dates-loading">Загрузка дат...</div>
       ) : (
         <div className="dates-grid">
-          {dates.map((item) => {
-            const dateString = typeof item === 'string' ? item : item.date;
-            const isAvailable = item.available !== false;
-
-            return (
-              <button
-                key={dateString}
-                className={`date-item ${isSelected(dateString) ? 'selected' : ''} ${!isAvailable ? 'disabled' : ''}`}
-                onClick={() => isAvailable && onDateSelect(dateString)}
-                disabled={!isAvailable}
-              >
-                <span className="date-day-name">{getDayName(dateString)}</span>
-                <span className="date-full">{formatDate(dateString)}</span>
-              </button>
-            );
-          })}
+          {dates.map((dateString) => (
+            <button
+              key={dateString}
+              className={`date-item ${isSelected(dateString) ? 'selected' : ''}`}
+              onClick={() => onDateSelect(dateString)}
+            >
+              <span className="date-day-name">{getDayName(dateString)}</span>
+              <span className="date-full">{formatDate(dateString)}</span>
+            </button>
+          ))}
         </div>
       )}
     </div>

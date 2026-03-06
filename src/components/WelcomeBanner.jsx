@@ -6,7 +6,7 @@ const Welcome = () => {
   const navigate = useNavigate();
 
   const handleServices = () => {
-    navigate('/services');
+    navigate('/catalog');
   };
 
   return (

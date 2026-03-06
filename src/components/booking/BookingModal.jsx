@@ -3,6 +3,8 @@ import DateSelector from './DateSelector';
 import TimeSlotsSelector from './TimeSlotsSelector';
 import { getMasterSlots } from '../../api/timeslots';
 import { createBooking } from '../../api/booking';
+import { useToast } from '../../context/ToastContext';
+import { logger } from '../../utils/logger';
 import '../../styles/booking/BookingModal.css';
 
 const initialState = {
@@ -30,6 +32,7 @@ function bookingModalReducer(state, action) {
 }
 
 const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) => {
+  const toast = useToast();
   const [state, dispatch] = useReducer(bookingModalReducer, initialState);
 
   const loadTimeSlots = useCallback(async () => {
@@ -47,7 +50,7 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
       }
 
       const response = await getMasterSlots(params);
-      console.log('Полученные слоты:', response);
+      logger.debug('Полученные слоты:', response);
 
       let slots = [];
       if (response.success && Array.isArray(response.data)) {
@@ -60,10 +63,10 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
         slots = slots.filter(slot => slot.service_id === serviceId || slot.service_id === null);
       }
 
-      console.log('Отфильтрованные слоты:', slots);
+      logger.debug('Отфильтрованные слоты:', slots);
       dispatch({ type: 'SET_AVAILABLE_SLOTS', value: slots });
     } catch (error) {
-      console.error('Ошибка загрузки временных слотов:', error);
+      logger.error('Ошибка загрузки временных слотов:', error);
       dispatch({ type: 'SET_AVAILABLE_SLOTS', value: [] });
     } finally {
       dispatch({ type: 'SET_LOADING_SLOTS', value: false });
@@ -94,7 +97,7 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
 
   const handleConfirmBooking = async () => {
     if (!state.selectedDate || !state.selectedSlot) {
-      alert('Пожалуйста, выберите дату и время');
+      toast.error('Пожалуйста, выберите дату и время');
       return;
     }
 
@@ -108,20 +111,20 @@ const BookingModal = ({ isOpen, onClose, providerId, serviceId, serviceTitle }) 
         comment: ''
       };
 
-      console.log('Создание бронирования:', bookingData);
+      logger.debug('Создание бронирования:', bookingData);
 
       const response = await createBooking(bookingData);
 
       if (response.success) {
-        alert(`✅ Запись успешно создана!\n\nДата: ${state.selectedDate}\nВремя: ${state.selectedSlot.start_time.split('T')[1]?.substring(0, 5)} - ${state.selectedSlot.end_time.split('T')[1]?.substring(0, 5)}\nУслуга: ${serviceTitle}`);
+        toast.success(`Запись успешно создана! ${state.selectedDate} ${state.selectedSlot.start_time.split('T')[1]?.substring(0, 5)}`);
         onClose();
       } else {
-        alert(`Ошибка при создании записи: ${response.message || 'Неизвестная ошибка'}`);
+        toast.error(`Ошибка: ${response.message || 'Неизвестная ошибка'}`);
       }
     } catch (error) {
-      console.error('Ошибка создания бронирования:', error);
+      logger.error('Ошибка создания бронирования:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Произошла ошибка при создании записи';
-      alert(`❌ ${errorMessage}`);
+      toast.error(errorMessage);
     }
   };
 

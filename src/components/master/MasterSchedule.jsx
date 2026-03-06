@@ -9,6 +9,8 @@ import {
 } from '../../api/timeslots';
 import { getMasterServices } from '../../api/catalog';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
+import { logger } from '../../utils/logger';
 import '../../styles/master/MasterSchedule.css';
 
 const initialState = {
@@ -77,28 +79,29 @@ function masterScheduleReducer(state, action) {
 
 const MasterSchedule = ({ masterId: masterIdFromProps }) => {
   const [state, dispatch] = useReducer(masterScheduleReducer, initialState);
+  const toast = useToast();
 
   const loadMasterServices = useCallback(async () => {
     try {
       dispatch({ type: 'SET_LOADING_SERVICES', value: true });
       const response = await getMasterServices();
-      console.log('Загрузка услуг мастера, ответ:', response);
+      logger.debug('Загрузка услуг мастера, ответ:', response);
 
       const servicesData = response?.data?.data || response?.data || response;
 
       if (servicesData && Array.isArray(servicesData)) {
         dispatch({ type: 'SET_MASTER_SERVICES', value: servicesData });
-        console.log('Услуги мастера загружены:', servicesData);
+        logger.debug('Услуги мастера загружены:', servicesData);
         if (servicesData.length > 0) {
           dispatch({ type: 'SET_SELECTED_SERVICE', value: servicesData[0].id.toString() });
-          console.log('Выбрана услуга по умолчанию:', servicesData[0].id, servicesData[0].name);
+          logger.debug('Выбрана услуга по умолчанию:', servicesData[0].id, servicesData[0].name);
         }
       } else {
-        console.warn('Услуги мастера не получены или пустые:', servicesData);
+        logger.warn('Услуги мастера не получены или пустые:', servicesData);
         dispatch({ type: 'SET_MASTER_SERVICES', value: [] });
       }
     } catch (err) {
-      console.error('Ошибка загрузки услуг мастера:', err);
+      logger.error('Ошибка загрузки услуг мастера:', err);
       dispatch({ type: 'SET_ERROR', value: 'Не удалось загрузить услуги мастера' });
     } finally {
       dispatch({ type: 'SET_LOADING_SERVICES', value: false });
@@ -113,10 +116,10 @@ const MasterSchedule = ({ masterId: masterIdFromProps }) => {
     dispatch({ type: 'SET_LOADING', value: true });
     dispatch({ type: 'SET_ERROR', value: null });
     try {
-      console.log('Загрузка расписания со слотами для даты:', date, 'услуга:', state.selectedService);
+      logger.debug('Загрузка расписания со слотами для даты:', date, 'услуга:', state.selectedService);
 
       if (!state.selectedService) {
-        console.log('Услуга не выбрана, пропускаем загрузку слотов');
+        logger.debug('Услуга не выбрана, пропускаем загрузку слотов');
         dispatch({ type: 'SET_SLOTS', value: [] });
         dispatch({ type: 'SET_AVAILABILITY_DATA', value: null });
         dispatch({ type: 'SET_LOADING', value: false });
@@ -124,11 +127,11 @@ const MasterSchedule = ({ masterId: masterIdFromProps }) => {
       }
 
       const masterId = masterIdFromProps;
-      console.log('MasterSchedule: masterId из props:', masterId);
+      logger.debug('MasterSchedule: masterId из props:', masterId);
 
       if (!masterId) {
         // Профиль ещё не загружен, это нормально при первом рендере
-        console.log('MasterSchedule: masterId ещё не получен из props, ожидаем...');
+        logger.debug('MasterSchedule: masterId ещё не получен из props, ожидаем...');
         dispatch({ type: 'SET_SLOTS', value: [] });
         dispatch({ type: 'SET_AVAILABILITY_DATA', value: null });
         dispatch({ type: 'SET_LOADING', value: false });
@@ -136,7 +139,7 @@ const MasterSchedule = ({ masterId: masterIdFromProps }) => {
       }
 
       const response = await getAvailabilityWithSlots(date, masterId, state.selectedService ? parseInt(state.selectedService) : null);
-      console.log('Ответ getAvailabilityWithSlots:', response);
+      logger.debug('Ответ getAvailabilityWithSlots:', response);
 
       if (response.data) {
         dispatch({ type: 'SET_AVAILABILITY_DATA', value: response.data });
@@ -147,20 +150,20 @@ const MasterSchedule = ({ masterId: masterIdFromProps }) => {
         );
 
         dispatch({ type: 'SET_SLOTS', value: loadedSlots });
-        console.log('Установлены слоты из расписания:', loadedSlots?.length);
+        logger.debug('Установлены слоты из расписания:', loadedSlots?.length);
       } else {
         dispatch({ type: 'SET_AVAILABILITY_DATA', value: null });
         dispatch({ type: 'SET_SLOTS', value: [] });
-        console.log('Расписание не найдено');
+        logger.debug('Расписание не найдено');
       }
     } catch (err) {
-      console.error('Ошибка загрузки расписания:', err);
-      console.error('Ошибка getAvailabilityWithSlots:', err.response?.data);
+      logger.error('Ошибка загрузки расписания:', err);
+      logger.error('Ошибка getAvailabilityWithSlots:', err.response?.data);
       try {
-        console.log('Пробуем загрузить только слоты...');
+        logger.debug('Пробуем загрузить только слоты...');
         const masterId = masterIdFromProps;
         const slotsResponse = await getMasterSlots({ date, master_id: masterId });
-        console.log('Ответ getMasterSlots:', slotsResponse);
+        logger.debug('Ответ getMasterSlots:', slotsResponse);
 
         let loadedSlots = slotsResponse.data || [];
         loadedSlots = loadedSlots.filter(slot =>
@@ -169,9 +172,9 @@ const MasterSchedule = ({ masterId: masterIdFromProps }) => {
 
         dispatch({ type: 'SET_SLOTS', value: loadedSlots });
         dispatch({ type: 'SET_AVAILABILITY_DATA', value: null });
-        console.log('Установлены слоты напрямую:', loadedSlots?.length);
+        logger.debug('Установлены слоты напрямую:', loadedSlots?.length);
       } catch (slotsErr) {
-        console.error('Ошибка getMasterSlots:', slotsErr.response?.data);
+        logger.error('Ошибка getMasterSlots:', slotsErr.response?.data);
         dispatch({ type: 'SET_ERROR', value: 'Не удалось загрузить расписание' });
         dispatch({ type: 'SET_SLOTS', value: [] });
       }
@@ -235,7 +238,7 @@ const MasterSchedule = ({ masterId: masterIdFromProps }) => {
       const endDateTime = new Date(`${state.selectedDate}T${state.slotForm.end_time}`);
 
       if (startDateTime >= endDateTime) {
-        alert('Время окончания должно быть позже времени начала');
+        toast.error('Время окончания должно быть позже времени начала');
         return;
       }
 
@@ -253,32 +256,34 @@ const MasterSchedule = ({ masterId: masterIdFromProps }) => {
 
       await loadScheduleAndSlots(state.selectedDate);
       handleCloseModal();
+      toast.success('Слот сохранён');
     } catch (err) {
-      console.error('Ошибка сохранения слота:', err);
-      alert(err.response?.data?.message || 'Ошибка при сохранении слота');
+      logger.error('Ошибка сохранения слота:', err);
+      toast.error(err.response?.data?.message || 'Ошибка при сохранении слота');
     }
   };
 
   const handleDeleteSlot = async (slotId) => {
-    if (!confirm('Вы уверены, что хотите удалить этот слот?')) return;
+    if (!window.confirm('Вы уверены, что хотите удалить этот слот?')) return;
 
     try {
       await deleteTimeSlot(slotId);
       await loadScheduleAndSlots(state.selectedDate);
+      toast.success('Слот удалён');
     } catch (err) {
-      console.error('Ошибка удаления слота:', err);
-      alert(err.response?.data?.message || 'Ошибка при удалении слота');
+      logger.error('Ошибка удаления слота:', err);
+      toast.error(err.response?.data?.message || 'Ошибка при удалении слота');
     }
   };
 
   const handleCreateSchedule = async () => {
-    console.log('=== handleCreateSchedule START ===');
-    console.log('scheduleForm:', state.scheduleForm);
-    console.log('selectedDate:', state.selectedDate);
-    console.log('selectedService:', state.selectedService);
+    logger.debug('=== handleCreateSchedule START ===');
+    logger.debug('scheduleForm:', state.scheduleForm);
+    logger.debug('selectedDate:', state.selectedDate);
+    logger.debug('selectedService:', state.selectedService);
 
     if (!state.selectedService) {
-      alert('Выберите услугу');
+      toast.error('Выберите услугу');
       return;
     }
 
@@ -286,10 +291,10 @@ const MasterSchedule = ({ masterId: masterIdFromProps }) => {
     const endTime = state.scheduleForm.end_time || '18:00';
     const slotDuration = state.scheduleForm.slot_duration || 60;
 
-    console.log('Подготовленные данные:', { startTime, endTime, slotDuration, serviceId: state.selectedService });
+    logger.debug('Подготовленные данные:', { startTime, endTime, slotDuration, serviceId: state.selectedService });
 
     try {
-      console.log('Вызов setAvailability...');
+      logger.debug('Вызов setAvailability...');
       const requestData = {
         date: state.selectedDate,
         start_time: startTime,
@@ -299,15 +304,15 @@ const MasterSchedule = ({ masterId: masterIdFromProps }) => {
       };
 
       const response = await setAvailability(requestData);
-      console.log('Расписание создано:', response);
+      logger.debug('Расписание создано:', response);
       await loadScheduleAndSlots(state.selectedDate);
-      alert('Расписание успешно создано');
+      toast.success('Расписание успешно создано');
     } catch (err) {
-      console.error('Ошибка создания расписания:', err);
-      console.error('Ответ сервера:', err.response?.data);
-      alert(err.response?.data?.message || 'Ошибка при создании расписания');
+      logger.error('Ошибка создания расписания:', err);
+      logger.error('Ответ сервера:', err.response?.data);
+      toast.error(err.response?.data?.message || 'Ошибка при создании расписания');
     }
-    console.log('=== handleCreateSchedule END ===');
+    logger.debug('=== handleCreateSchedule END ===');
   };
 
   const formatTime = (dateString) => {

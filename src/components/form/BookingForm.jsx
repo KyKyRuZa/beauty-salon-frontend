@@ -4,7 +4,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { appointmentSchema } from '../../validations';
 import InputMask from "react-input-mask";
 import { useSearchParams } from 'react-router-dom';
+import { useToast } from '../../context/ToastContext';
 import { createBooking } from '../../api/booking';
+import { logger } from '../../utils/logger';
 import '../../styles/booking/BookingForm.css'
 
 const formatAppointmentDate = (dateString, timeString) => {
@@ -51,6 +53,7 @@ const sendAppointmentToBot = async (data) => {
 };
 
 const BookingForm = () => {
+  const toast = useToast();
   const [searchParams] = useSearchParams();
   const provider = searchParams.get('provider');
   const date = searchParams.get('date');
@@ -80,7 +83,7 @@ const BookingForm = () => {
 
   const onSubmit = async (data) => {
   try {
-    console.log("Отправляемые данные:", data);
+    logger.debug("Отправляемые данные:", data);
 
     // Если есть masterId и serviceId, создаём бронирование через новую систему
     if (masterId && serviceId) {
@@ -91,16 +94,16 @@ const BookingForm = () => {
         end_time: new Date(`${data.date}T${data.time}`).toISOString(), // Будет рассчитано на сервере
         comment: `Клиент: ${data.name}, Телефон: ${data.phone}`
       };
-      
+
       const response = await createBooking(bookingData);
-      console.log("Ответ сервера:", response);
+      logger.debug("Ответ сервера:", response);
     } else {
       // Старая логика - отправка в бот
       const response = await sendAppointmentToBot(data);
-      console.log("Ответ сервера:", response);
+      logger.debug("Ответ сервера:", response);
     }
 
-    alert("Заявка отправлена успешно! Ожидайте подтверждения записи.");
+    toast.success("Заявка отправлена успешно! Ожидайте подтверждения записи.");
     reset({
       name: '',
       phone: '',
@@ -108,8 +111,8 @@ const BookingForm = () => {
       time: time || ''   // Сохраняем время из URL
     });
   } catch (error) {
-    console.error("Ошибка при отправке:", error);
-    alert("Произошла ошибка при отправке заявки. Пожалуйста, попробуйте позже.");
+    logger.error("Ошибка при отправке:", error);
+    toast.error("Произошла ошибка при отправке заявки. Пожалуйста, попробуйте позже.");
   }
 };
 
