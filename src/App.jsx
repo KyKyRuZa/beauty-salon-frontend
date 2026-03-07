@@ -3,10 +3,6 @@ import { Suspense, lazy } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CatalogProvider } from './context/CatalogContext';
 import Home from './pages/public/Home';
-import BookingForm from './components/form/BookingForm';
-import AuthContainer from './components/auth/AuthContainer';
-import Profile from "./pages/private/Profile";
-import EditProfile from './pages/private/client/EditProfile';
 import NotFound from './pages/public/NotFound';
 import CatalogPage from './pages/catalog/CatalogPage';
 import ServiceDetailPage from './pages/catalog/ServiceDetailPage';
@@ -14,15 +10,18 @@ import ServiceMastersPage from './pages/catalog/ServiceMastersPage';
 import CategoryProvidersPage from './pages/catalog/CategoryProvidersPage';
 import TimeSlotsPage from './pages/catalog/TimeSlotsPage';
 import ProviderProfile from './pages/public/ProviderProfile';
-import SalonsMapPage from './pages/public/SalonsMapPage';
 import LoadingFallback from './components/LoadingFallback';
 
-// Lazy load для тяжёлых компонентов
 const AdminPanel = lazy(() => import('./pages/private/admin/AdminPanel'));
 const AdminCatalogPage = lazy(() => import('./pages/private/admin/AdminCatalogPage'));
 const ServiceManagementPage = lazy(() => import('./pages/private/admin/ServiceManagementPage'));
 const AdminAuthContainer = lazy(() => import('./pages/public/admin/AdminAuthContainer'));
 const AdminProtectedRoute = lazy(() => import('./components/admin/AdminProtectedRoute'));
+const Profile = lazy(() => import('./pages/private/Profile'));
+const EditProfile = lazy(() => import('./pages/private/client/EditProfile'));
+const SalonsMapPage = lazy(() => import('./pages/public/SalonsMapPage'));
+const AuthContainer = lazy(() => import('./components/auth/AuthContainer'));
+const BookingForm = lazy(() => import('./components/form/BookingForm'));
 
 
 function App() {
@@ -48,16 +47,36 @@ function App() {
                   <AdminCatalogPage />
                 </Suspense>
               } />
-              <Route path="/auth" element={<AuthContainer />} />
+              <Route path="/auth" element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <AuthContainer />
+                </Suspense>
+              } />
               <Route path="/admin/auth" element={
                 <Suspense fallback={<LoadingFallback />}>
                   <AdminAuthContainer />
                 </Suspense>
               } />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/profile/edit" element={<EditProfile />} />
-              <Route path='/booking' element={<BookingForm/>}/>
-              <Route path="/salons-map" element={<SalonsMapPage />} />
+              <Route path="/profile" element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <Profile />
+                </Suspense>
+              } />
+              <Route path="/profile/edit" element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <EditProfile />
+                </Suspense>
+              } />
+              <Route path='/booking' element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <BookingForm/>
+                </Suspense>
+              }/>
+              <Route path="/salons-map" element={
+                <Suspense fallback={<LoadingFallback />}>
+                  <SalonsMapPage />
+                </Suspense>
+              } />
               {/* <Route path='/chat' element={<Chat/>} /> */}
 
               {/* Защищенные маршруты админ-панели */}

@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { SalonMapProvider, useSalonMap } from '../../context/SalonMapContext';
 import GeoLocationPrompt from '../../components/GeoLocationPrompt';
-import YandexMap from '../../components/map/YandexMap';
 import SalonList from '../../components/map/SalonList';
 import MapFilters from '../../components/map/MapFilters';
 import Header from '../../components/ui/Header';
+import LoadingFallback from '../../components/LoadingFallback';
 import '../../styles/SalonsMapPage.css';
+
+// Lazy load для тяжёлого компонента карты
+const YandexMap = lazy(() => import('../../components/map/YandexMap'));
 
 const SalonsMapContent = () => {
   const { loadingGeo, selectedCity } = useSalonMap();
@@ -69,7 +72,9 @@ const SalonsMapContent = () => {
               Салоны
             </button>
           )}
-          <YandexMap />
+          <Suspense fallback={<LoadingFallback />}>
+            <YandexMap />
+          </Suspense>
         </main>
       </div>
 
