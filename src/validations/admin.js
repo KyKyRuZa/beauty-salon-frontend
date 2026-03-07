@@ -1,15 +1,14 @@
-import { z } from 'zod';
+import { object, string, boolean, enum as enumType } from 'zod';
 import { emailSchema, passwordSchema, nameSchema } from './base';
 
-// Admin validation schemas
-export const adminRegisterSchema = z.object({
+export const adminRegisterSchema = object({
   email: emailSchema,
   password: passwordSchema,
-  confirmPassword: z.string(),
+  confirmPassword: string(),
   first_name: nameSchema,
   last_name: nameSchema,
-  phone: z.string().min(10, 'Введите корректный номер телефона'),
-  termsAccepted: z.boolean().transform((val) => val === true).refine(
+  phone: string().min(10, 'Введите корректный номер телефона'),
+  termsAccepted: boolean().transform((val) => val === true).refine(
     (val) => val === true,
     { message: 'Необходимо принять условия политики конфиденциальности' }
   ),
@@ -18,15 +17,15 @@ export const adminRegisterSchema = z.object({
   path: ['confirmPassword'],
 });
 
-export const adminLoginSchema = z.object({
+export const adminLoginSchema = object({
   email: emailSchema,
   password: passwordSchema,
 });
 
-export const adminUpdateSchema = z.object({
+export const adminUpdateSchema = object({
   firstName: nameSchema.optional(),
   lastName: nameSchema.optional(),
   email: emailSchema.optional(),
-  phone: z.string().optional(),
-  role: z.enum(['admin', 'superadmin']).optional(),
+  phone: string().optional(),
+  role: enumType(['admin']).optional(),
 });

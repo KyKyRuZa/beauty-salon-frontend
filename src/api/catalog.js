@@ -1,5 +1,5 @@
 import api from './api';
-import { z } from 'zod';
+import { ZodError } from 'zod';
 import { createCategorySchema, updateCategorySchema, createMasterServiceSchema, updateMasterServiceSchema } from '../validations';
 import { logger } from '../utils/logger';
 
@@ -26,7 +26,7 @@ export const createCatalogCategory = async (categoryData) => {
 
     return await api.post('/catalog/categories', validatedData);
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;
@@ -41,7 +41,7 @@ export const updateCatalogCategory = async (id, categoryData) => {
 
     return await api.put(`/catalog/categories/${id}`, validatedData);
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;
@@ -104,7 +104,7 @@ export const createMasterService = async (serviceData) => {
     return await api.post('/catalog/master/service', validatedData);
   } catch (error) {
     logger.error('Error in createMasterService:', error.message);
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;
@@ -138,7 +138,7 @@ export const updateMasterService = async (id, serviceData) => {
     return await api.put(`/catalog/master/service/${id}`, validatedData);
   } catch (error) {
     logger.error('Error in updateMasterService:', error.message);
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;
@@ -172,7 +172,7 @@ export const createSalonService = async (serviceData) => {
     return await api.post('/catalog/salon/service', validatedData);
   } catch (error) {
     logger.error('Error in createSalonService:', error.message);
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;
@@ -206,7 +206,7 @@ export const updateSalonService = async (id, serviceData) => {
     return await api.put(`/catalog/salon/service/${id}`, validatedData);
   } catch (error) {
     logger.error('Error in updateSalonService:', error.message);
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;

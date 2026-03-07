@@ -1,5 +1,5 @@
 import api from './api'
-import { z } from 'zod';
+import { ZodError } from 'zod';
 import { loginSchema, adminRegisterSchema, adminLoginSchema } from '../validations';
 
 class AuthService {
@@ -22,7 +22,7 @@ class AuthService {
       this.emitAuthChange() // Уведомляем об изменении
       return { success: true, data }
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof ZodError) {
         return {
           success: false,
           error: error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred'
@@ -102,7 +102,7 @@ class AuthService {
       const response = await api.put('/auth/change-password', passwordData);
       return { success: true, message: response.data.message };
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof ZodError) {
         return {
           success: false,
           error: error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred'
@@ -218,7 +218,7 @@ class AuthService {
       this.emitAuthChange() // Уведомляем об изменении
       return { success: true, data: profileDataResponse }
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof ZodError) {
         return {
           success: false,
           error: error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred'
@@ -258,7 +258,7 @@ class AuthService {
       this.emitAuthChange() // Уведомляем об изменении
       return { success: true, data }
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof ZodError) {
         return {
           success: false,
           error: error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred'
@@ -298,7 +298,7 @@ class AuthService {
       this.emitAuthChange() // Уведомляем об изменении
       return { success: true, data }
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof ZodError) {
         return {
           success: false,
           error: error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred'

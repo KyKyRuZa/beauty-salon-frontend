@@ -1,5 +1,5 @@
 import api from './api';
-import { z } from 'zod';
+import { ZodError } from 'zod';
 import { createCategorySchema, updateCategorySchema, adminUpdateSchema } from '../validations';
 
 // API для административных функций
@@ -27,7 +27,7 @@ export const updateCurrentAdmin = async (adminData) => {
 
     return await api.put('/admin/profile', validatedData);
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;
@@ -57,7 +57,7 @@ export const createCategory = async (categoryData) => {
 
     return await api.post('/admin/categories', validatedData);
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       throw new Error(error.errors?.map?.(err => `${err.path.join('.')}: ${err.message}`).join('; ') || 'Validation error occurred');
     } else {
       throw new Error(error.message || 'Validation error occurred');
@@ -73,7 +73,7 @@ export const updateCategory = async (id, categoryData) => {
 
     return await api.put(`/admin/categories/${id}`, validatedData);
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
     }
     throw error;

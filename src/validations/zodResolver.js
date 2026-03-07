@@ -1,11 +1,11 @@
-import { z } from 'zod';
+import { ZodError } from 'zod';
 
 export const zodResolver = (schema) => async (values) => {
   try {
     const result = await schema.parseAsync(values);
     return { values: result, errors: {} };
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       const errors = {};
       // Zod v4 использует issues вместо errors
       const issues = error.issues || error.errors || [];

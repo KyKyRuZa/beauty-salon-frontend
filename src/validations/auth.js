@@ -1,12 +1,12 @@
-import { z } from 'zod';
+import { object, string, boolean } from 'zod';
 import { emailSchema, passwordSchema, nameSchema } from './base';
 
-const baseRegisterSchema = z.object({
+const baseRegisterSchema = object({
   email: emailSchema,
   password: passwordSchema,
-  confirmPassword: z.string(),
-  phone: z.string(),
-  termsAccepted: z.boolean().refine(val => val === true, {
+  confirmPassword: string(),
+  phone: string(),
+  termsAccepted: boolean().refine(val => val === true, {
     message: 'You must accept the terms and conditions'
   }),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -22,13 +22,13 @@ const userRegisterSchema = baseRegisterSchema.extend({
 const masterRegisterSchema = baseRegisterSchema.extend({
   firstName: nameSchema,
   lastName: nameSchema,
-  specialization: z.string().min(1, 'Specialization is required'),
+  specialization: string().min(1, 'Specialization is required'),
 });
 
 const salonRegisterSchema = baseRegisterSchema.extend({
-  salonName: z.string().min(1, 'Salon name is required'),
-  address: z.string().min(1, 'Address is required'),
-  inn: z.string().min(10, 'INN must be at least 10 digits').max(12, 'INN must be at most 12 digits'),
+  salonName: string().min(1, 'Salon name is required'),
+  address: string().min(1, 'Address is required'),
+  inn: string().min(10, 'INN must be at least 10 digits').max(12, 'INN must be at most 12 digits'),
 });
 
 export const getRegisterSchema = (type) => {
@@ -47,15 +47,15 @@ export const getRegisterSchema = (type) => {
 // Экспорт общего регистрационного схемы (для совместимости)
 export const registerSchema = userRegisterSchema;
 
-export const loginSchema = z.object({
+export const loginSchema = object({
   email: emailSchema,
   password: passwordSchema,
 });
 
-export const changePasswordSchema = z.object({
+export const changePasswordSchema = object({
   currentPassword: passwordSchema,
   newPassword: passwordSchema,
-  confirmNewPassword: z.string(),
+  confirmNewPassword: string(),
 }).refine((data) => data.newPassword === data.confirmNewPassword, {
   message: "Пароли не совпадают",
   path: ["confirmNewPassword"],

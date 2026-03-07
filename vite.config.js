@@ -96,7 +96,7 @@ export default defineConfig({
       }
     },
     cssCodeSplit: true,
-    sourcemap: false,
+    sourcemap: true,
     target: 'es2015'
   }
 })

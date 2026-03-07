@@ -1,5 +1,5 @@
 import api from './api';
-import { z } from 'zod';
+import { ZodError } from 'zod';
 
 class UserService {
   // Получение профиля текущего пользователя
@@ -34,7 +34,7 @@ class UserService {
       });
       return response.data;
     } catch (error) {
-      if (error instanceof z.ZodError) {
+      if (error instanceof ZodError) {
         throw new Error(error.errors?.map?.(err => err.message).join(', ') || 'Validation error occurred');
       }
       throw error.response?.data || error;
