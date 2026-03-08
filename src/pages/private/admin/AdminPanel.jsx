@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import auth from '../../../api/auth';
-import Dashboard from './Dashboard';
-import UsersManagement from './UsersManagement';
-import CategoriesManagement from './CategoriesManagement';
-import SubcategoriesManagement from './SubcategoriesManagement';
-import ServicesManagement from './ServicesManagement';
-import OrdersManagement from './OrdersManagement';
-import AdminsManagement from './AdminsManagement';
-import AdminProfile from './AdminProfile';
 import '../../../styles/admin/AdminPanel.css';
+
+// Lazy loading для тяжёлых подкомпонентов
+const Dashboard = lazy(() => import('./Dashboard'));
+const UsersManagement = lazy(() => import('./UsersManagement'));
+const CategoriesManagement = lazy(() => import('./CategoriesManagement'));
+const SubcategoriesManagement = lazy(() => import('./SubcategoriesManagement'));
+const ServicesManagement = lazy(() => import('./ServicesManagement'));
+const OrdersManagement = lazy(() => import('./OrdersManagement'));
+const AdminsManagement = lazy(() => import('./AdminsManagement'));
+const AdminProfile = lazy(() => import('./AdminProfile'));
 
 const AdminPanel = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -76,17 +78,19 @@ const AdminPanel = () => {
         </header>
 
         <main className="admin-content">
-          <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/profile" element={<AdminProfile />} />
-            <Route path="/admins" element={<AdminsManagement />} />
-            <Route path="/users" element={<UsersManagement />} />
-            <Route path="/categories" element={<CategoriesManagement />} />
-            <Route path="/subcategories" element={<SubcategoriesManagement />} />
-            <Route path="/services" element={<ServicesManagement />} />
-            <Route path="/orders" element={<OrdersManagement />} />
-            <Route path="/" element={<Dashboard />} />
-          </Routes>
+          <Suspense fallback={<div className="loading-component">Загрузка раздела...</div>}>
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<AdminProfile />} />
+              <Route path="/admins" element={<AdminsManagement />} />
+              <Route path="/users" element={<UsersManagement />} />
+              <Route path="/categories" element={<CategoriesManagement />} />
+              <Route path="/subcategories" element={<SubcategoriesManagement />} />
+              <Route path="/services" element={<ServicesManagement />} />
+              <Route path="/orders" element={<OrdersManagement />} />
+              <Route path="/" element={<Dashboard />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </div>

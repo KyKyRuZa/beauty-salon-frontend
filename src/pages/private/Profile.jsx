@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense, lazy } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import ClientProfile from "./client/ClientProfile";
-import MasterProfile from "./master/MasterProfile";
-import SalonProfile from "./salon/SalonProfile";
 import Header from "../../components/ui/Header";
 import '../../styles/Profile.css';
+
+// Lazy loading для профилей разных ролей
+const ClientProfile = lazy(() => import('./client/ClientProfile'));
+const MasterProfile = lazy(() => import('./master/MasterProfile'));
+const SalonProfile = lazy(() => import('./salon/SalonProfile'));
 
 const Profile = () => {
   const { user, loading: authLoading, logout } = useAuth();
@@ -59,11 +61,11 @@ const Profile = () => {
   // Рендерим соответствующий компонент в зависимости от роли
   switch (user?.role) {
     case 'client':
-      return <ClientProfile handleLogout={handleLogout} />;
+      return <Suspense fallback={<div className="loading-component">Загрузка профиля...</div>}><ClientProfile handleLogout={handleLogout} /></Suspense>;
     case 'master':
-      return <MasterProfile handleLogout={handleLogout} />;
+      return <Suspense fallback={<div className="loading-component">Загрузка профиля...</div>}><MasterProfile handleLogout={handleLogout} /></Suspense>;
     case 'salon':
-      return <SalonProfile handleLogout={handleLogout} />;
+      return <Suspense fallback={<div className="loading-component">Загрузка профиля...</div>}><SalonProfile handleLogout={handleLogout} /></Suspense>;
     default:
       return (
         <div className="profile-page">

@@ -139,6 +139,17 @@ const YandexMap = () => {
     }
   }, [salons, selectedSalon, ymaps]);
 
+  // Отдельное обновление центра карты при изменении mapCenter
+  useEffect(() => {
+    if (!ymaps || !mapRef.current?.ymaps || !mapCenter) return;
+
+    mapRef.current.ymaps.setCenter(
+      [mapCenter.lat, mapCenter.lng],
+      12,
+      { duration: 300 }
+    );
+  }, [ymaps, mapCenter]);
+
   // Кнопка "Моё местоположение"
   const handleGoToMyLocation = () => {
     if (userCoordinates && mapRef.current?.ymaps) {

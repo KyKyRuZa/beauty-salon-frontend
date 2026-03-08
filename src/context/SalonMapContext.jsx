@@ -13,6 +13,16 @@ import { getCityByCoordinates, findNearestAvailableCity } from '../api/geocoding
 
 const SalonMapContext = createContext();
 
+// Координаты городов по умолчанию
+const CITY_COORDINATES = {
+  'Казань': { lat: 55.796127, lng: 49.106414 },
+  'Альметьевск': { lat: 54.901171, lng: 52.297230 },
+  'Набережные Челны': { lat: 55.741272, lng: 52.403662 },
+  'Уфа': { lat: 54.735152, lng: 55.958736 },
+  'Ижевск': { lat: 56.852834, lng: 53.206852 }
+};
+
+// eslint-disable-next-line react-refresh/only-export-components
 export const useSalonMap = () => {
   const context = useContext(SalonMapContext);
   if (!context) {
@@ -163,14 +173,32 @@ export const SalonMapProvider = ({ children }) => {
 
     try {
       const response = await getSalonLocationsByCity(city);
+      logger.debug('Загрузка салонов по городу:', city, response);
+      
       if (response.success) {
         dispatch({ type: 'SET_SALONS', value: response.data || [] });
+        logger.debug('Салоны загружены:', response.data?.length);
 
-        // Устанавливаем центр карты на первый салон или город по умолчанию
+        // Устанавливаем центр карты на первый салон или координаты города
         if (response.data && response.data.length > 0) {
           const firstSalon = response.data[0];
+          logger.debug('Первый салон:', firstSalon);
+          logger.debug('Координаты первого салона:', firstSalon.coordinates);
+          
           if (firstSalon.coordinates) {
-            dispatch({ type: 'SET_MAP_CENTER', value: firstSalon.coordinates });
+            const center = {
+              lat: firstSalon.coordinates.lat || firstSalon.coordinates[0],
+              lng: firstSalon.coordinates.lng || firstSalon.coordinates[1]
+            };
+            logger.debug('Центр карты:', center);
+            dispatch({ type: 'SET_MAP_CENTER', value: center });
+          }
+        } else {
+          // Если салонов нет, используем координаты города по умолчанию
+          const cityCoords = CITY_COORDINATES[city];
+          if (cityCoords) {
+            logger.debug('Салонов нет, используем координаты города:', cityCoords);
+            dispatch({ type: 'SET_MAP_CENTER', value: cityCoords });
           }
         }
       }

@@ -1,4 +1,4 @@
-import { object, string, number, boolean } from 'zod';
+import { string, number, boolean } from 'zod';
 
 // Base validation schemas
 export const emailSchema = string()

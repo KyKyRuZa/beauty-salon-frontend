@@ -7,7 +7,6 @@ export const zodResolver = (schema) => async (values) => {
   } catch (error) {
     if (error instanceof ZodError) {
       const errors = {};
-      // Zod v4 использует issues вместо errors
       const issues = error.issues || error.errors || [];
       if (Array.isArray(issues)) {
         issues.forEach((err) => {
@@ -20,7 +19,6 @@ export const zodResolver = (schema) => async (values) => {
           }
         });
       }
-      // Возвращаем оригинальные значения вместе с ошибками
       return { values, errors };
     }
     return { values: {}, errors: {} };
