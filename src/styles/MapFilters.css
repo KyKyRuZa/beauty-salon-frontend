@@ -2,6 +2,9 @@
   padding: 16px;
   background: white;
   border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .filter-group {

@@ -7,6 +7,15 @@ import { logger } from '../utils/logger';
 
 const YANDEX_GEOCODER_URL = 'https://geocode-maps.yandex.ru/1.x/';
 
+// Координаты городов для определения по геолокации (fallback)
+const CITY_COORDINATES = {
+  'Казань': { lat: 55.7887, lng: 49.1221 },
+  'Альметьевск': { lat: 55.0167, lng: 52.3200 },
+  'Уфа': { lat: 54.7388, lng: 55.9721 },
+  'Ижевск': { lat: 56.8527, lng: 53.2115 },
+  'Набережные Челны': { lat: 55.7256, lng: 52.4069 }
+};
+
 /**
  * Определить город по координатам
  * @param {number} lat - Широта
@@ -15,19 +24,42 @@ const YANDEX_GEOCODER_URL = 'https://geocode-maps.yandex.ru/1.x/';
  */
 export const getCityByCoordinates = async (lat, lng) => {
   try {
-    const url = `${YANDEX_GEOCODER_URL}?apikey=${import.meta.env.VITE_YANDEX_MAPS_API_KEY || ''}&geocode=${lng},${lat}&format=json&lang=ru_RU`;
+    const apiKey = import.meta.env.VITE_YANDEX_MAPS_API_KEY || '';
     
+    if (!apiKey) {
+      logger.warn('API ключ Яндекс.Карт не указан, используем локальное определение города');
+      const city = findNearestCity(lat, lng);
+      if (city) {
+        return { city, fullAddress: city, coordinates: { lat, lng } };
+      }
+      throw new Error('Город не найден');
+    }
+    
+    const url = `${YANDEX_GEOCODER_URL}?apikey=${apiKey}&geocode=${lng},${lat}&format=json&lang=ru_RU`;
+
     const response = await fetch(url);
-    const data = await response.json();
     
+    if (!response.ok) {
+      if (response.status === 403) {
+        logger.warn('Yandex Geocoding API вернул 403, используем локальное определение города');
+        const city = findNearestCity(lat, lng);
+        if (city) {
+          return { city, fullAddress: city, coordinates: { lat, lng } };
+        }
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+
     if (data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember.length > 0) {
       const featureMember = data.response.GeoObjectCollection.featureMember;
-      
+
       // Ищем город среди результатов
       for (const member of featureMember) {
         const geoObject = member.GeoObject;
         const metaData = geoObject.metaDataProperty;
-        
+
         if (metaData.GeocoderMetaData && metaData.GeocoderMetaData.kind === 'locality') {
           return {
             city: geoObject.name,
@@ -36,7 +68,7 @@ export const getCityByCoordinates = async (lat, lng) => {
           };
         }
       }
-      
+
       // Если город не найден, берем первый результат
       const firstResult = featureMember[0].GeoObject;
       return {
@@ -45,13 +77,68 @@ export const getCityByCoordinates = async (lat, lng) => {
         coordinates: { lat, lng }
       };
     }
-    
+
     throw new Error('Город не найден');
   } catch (error) {
     logger.error('Ошибка reverse geocoding:', error);
+    // Fallback: определяем город по расстоянию
+    const city = findNearestCity(lat, lng);
+    if (city) {
+      return { city, fullAddress: city, coordinates: { lat, lng } };
+    }
     throw error;
   }
 };
+
+/**
+ * Найти ближайший город из списка доступных по координатам
+ * @param {number} lat - Широта пользователя
+ * @param {number} lng - Долгота пользователя
+ * @returns {string|null}
+ */
+const findNearestCity = (lat, lng) => {
+  let nearestCity = null;
+  let minDistance = Infinity;
+  
+  for (const [city, coords] of Object.entries(CITY_COORDINATES)) {
+    const distance = calculateDistance(lat, lng, coords.lat, coords.lng);
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearestCity = city;
+    }
+  }
+  
+  // Если ближайший город дальше 100км, возвращаем null
+  if (minDistance > 100) {
+    logger.warn(`Ближайший город ${nearestCity} слишком далеко (${minDistance.toFixed(1)} км)`);
+    return null;
+  }
+  
+  logger.info(`Определён город: ${nearestCity} (${minDistance.toFixed(1)} км от пользователя)`);
+  return nearestCity;
+};
+
+/**
+ * Рассчитать расстояние между двумя точками (формула Haversine)
+ * @param {number} lat1 - Широта первой точки
+ * @param {number} lng1 - Долгота первой точки
+ * @param {number} lat2 - Широта второй точки
+ * @param {number} lng2 - Долгота второй точки
+ * @returns {number} - Расстояние в километрах
+ */
+const calculateDistance = (lat1, lng1, lat2, lng2) => {
+  const R = 6371; // Радиус Земли в км
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
+
+const toRad = (deg) => deg * (Math.PI / 180);
 
 /**
  * Проверить, есть ли город в списке доступных

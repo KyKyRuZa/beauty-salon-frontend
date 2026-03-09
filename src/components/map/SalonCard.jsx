@@ -41,6 +41,21 @@ const SalonCard = ({ salon, isSelected, onClick, onBook, onFavorite }) => {
 
   const open = isOpenNow();
 
+  // Форматирование времени работы для отображения
+  const getWorkingHoursText = () => {
+    if (!working_hours) return 'Время работы не указано';
+    
+    const today = new Date();
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    const currentDay = days[today.getDay()];
+    const schedule = working_hours[currentDay];
+    
+    if (!schedule) return 'Выходной день';
+    if (!schedule.is_open) return 'Закрыто';
+    
+    return `${schedule.open} - ${schedule.close}`;
+  };
+
   return (
     <div
       className={`salon-card ${isSelected ? 'selected' : ''} ${!is_verified ? 'unverified' : ''}`}
@@ -100,6 +115,13 @@ const SalonCard = ({ salon, isSelected, onClick, onBook, onFavorite }) => {
             <span className="material-symbols-outlined info-icon">schedule</span>
             <span className={`info-text ${open ? 'open' : 'closed'}`}>
               {open ? 'Открыто сейчас' : 'Закрыто'}
+            </span>
+          </div>
+
+          <div className="info-row">
+            <span className="material-symbols-outlined info-icon">access_time</span>
+            <span className="info-text working-hours">
+              {getWorkingHoursText()}
             </span>
           </div>
         </div>

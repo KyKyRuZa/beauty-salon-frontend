@@ -8,6 +8,10 @@
   transition: all 0.3s;
   cursor: pointer;
   margin-bottom: 16px;
+  /* Фиксированная ширина для сайдбара */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .salon-card:hover {

@@ -18,6 +18,8 @@
   flex-direction: column;
   transition: transform 0.3s ease-out;
   z-index: 100;
+  height: calc(100vh - 0px); /* Высота страницы минус header (~70px) */
+  overflow: hidden;
 }
 
 .salons-map-sidebar.open {
@@ -37,6 +39,9 @@
   padding: 16px 20px;
   background: white;
   border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0; /* Чтобы header не сжимался */
+  box-sizing: border-box;
+  width: 100%;
 }
 
 .sidebar-header h1 {

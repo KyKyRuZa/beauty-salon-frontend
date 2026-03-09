@@ -5,10 +5,6 @@ import '../../styles/MapFilters.css';
 const MapFilters = () => {
   const { filters, updateFilters, searchRadius, AVAILABLE_CITIES, selectedCity, selectCity } = useSalonMap();
 
-  const handleRadiusChange = (value) => {
-    updateFilters({ searchRadius: value });
-  };
-
   return (
     <div className="map-filters">
       <div className="filter-group">
@@ -29,25 +25,15 @@ const MapFilters = () => {
         </select>
       </div>
 
-      <div className="filter-group">
-        <label className="filter-label">
-          <span className="material-symbols-outlined">radar</span>
-          Радиус поиска: {searchRadius} км
-        </label>
-        <input
-          type="range"
-          className="filter-range"
-          min="1"
-          max="50"
-          value={searchRadius}
-          onChange={(e) => handleRadiusChange(parseInt(e.target.value))}
-        />
-        <div className="range-labels">
-          <span>1 км</span>
-          <span>25 км</span>
-          <span>50 км</span>
+      {/* Радиус поиска определяется автоматически на основе геолокации */}
+      {searchRadius && (
+        <div className="filter-group">
+          <label className="filter-label">
+            <span className="material-symbols-outlined">radar</span>
+            Радиус поиска: {searchRadius} км (авто)
+          </label>
         </div>
-      </div>
+      )}
 
       <div className="filter-group">
         <label className="filter-label">

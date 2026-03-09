@@ -27,7 +27,35 @@
 .salon-list-content {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 16px;
+  padding-bottom: 335px; /* Чтобы последняя карточка полностью прокручивалась */
+  /* Плавный скролл */
+  scroll-behavior: smooth;
+  /* Кастомный скроллбар */
+  scrollbar-width: thin;
+  scrollbar-color: #e0e0e0 transparent;
+  /* Убираем белую полосу */
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Кастомный скроллбар для Webkit */
+.salon-list-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.salon-list-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.salon-list-content::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 2px;
+}
+
+.salon-list-content::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
 }
 
 .salon-list-loading,
