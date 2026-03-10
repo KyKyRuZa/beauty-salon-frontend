@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api', // URL для пользовательского сервиса с префиксом /api
+  baseURL: '/api', // Относительный путь - работает через proxy в dev и напрямую в prod
   timeout: 30000,
 });
 

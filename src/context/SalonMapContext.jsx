@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { logger } from '../utils/logger';
 import { getNearbySalons, getSalonLocationsByCity } from '../api/salonLocations';
+import { detectCity } from '../api/geo';
 import {
   requestGeolocation,
   checkGeolocationPermission,
@@ -136,28 +137,51 @@ export const SalonMapProvider = ({ children }) => {
       dispatch({ type: 'SET_USER_COORDINATES', value: coordinates });
       dispatch({ type: 'SET_GEO_PERMISSION', value: 'granted' });
 
-      // Определяем город по координатам
+      // Определяем город через backend API
       try {
-        const geoData = await getCityByCoordinates(coordinates.lat, coordinates.lng);
-        const matchedCity = findNearestAvailableCity(geoData.city, AVAILABLE_CITIES);
+        const geoData = await detectCity(coordinates.lat, coordinates.lng);
+        logger.info(`Город определён через API: ${geoData.city} (${geoData.distance} км)`);
 
-        if (matchedCity) {
-          dispatch({ type: 'SET_SELECTED_CITY', value: matchedCity });
+        if (geoData.city) {
+          dispatch({ type: 'SET_SELECTED_CITY', value: geoData.city });
           saveGeoDataToSession({
-            city: matchedCity,
+            city: geoData.city,
             coordinates,
-            geoPermission: 'granted'
+            geoPermission: 'granted',
+            searchRadius: geoData.distance
           });
-          await loadSalonsByCoordinates(coordinates.lat, coordinates.lng, matchedCity);
+          
+          // Загружаем салоны по координатам
+          await loadSalonsByCoordinates(coordinates.lat, coordinates.lng, geoData.city);
         } else {
-          // Город не найден в списке, используем первый доступный
+          // Город не найден, используем первый доступный
           dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
           await loadSalonsByCity(AVAILABLE_CITIES[0]);
         }
       } catch (error) {
-        logger.error('Ошибка определения города:', error);
-        dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
-        await loadSalonsByCity(AVAILABLE_CITIES[0]);
+        logger.error('Ошибка определения города через API:', error);
+        // Fallback: используем геолокацию из geocoding.js
+        try {
+          const geoData = await getCityByCoordinates(coordinates.lat, coordinates.lng);
+          const matchedCity = findNearestAvailableCity(geoData.city, AVAILABLE_CITIES);
+          
+          if (matchedCity) {
+            dispatch({ type: 'SET_SELECTED_CITY', value: matchedCity });
+            saveGeoDataToSession({
+              city: matchedCity,
+              coordinates,
+              geoPermission: 'granted'
+            });
+            await loadSalonsByCoordinates(coordinates.lat, coordinates.lng, matchedCity);
+          } else {
+            dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
+            await loadSalonsByCity(AVAILABLE_CITIES[0]);
+          }
+        } catch (fallbackError) {
+          logger.error('Ошибка fallback определения города:', fallbackError);
+          dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
+          await loadSalonsByCity(AVAILABLE_CITIES[0]);
+        }
       }
     } catch (error) {
       logger.error('Ошибка получения геолокации:', error);

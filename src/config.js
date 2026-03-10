@@ -1,6 +1,6 @@
 export const config = {
-  // API Configuration
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  // API Configuration - используем относительные пути для proxy
+  apiBaseUrl: '/api', // Относительный путь работает через Vite proxy
   wsBaseUrl: import.meta.env.VITE_WS_BASE_URL || 'ws://localhost:5000',
 
   // Timeouts
@@ -26,7 +26,7 @@ export const config = {
 
 // Валидация обязательных переменных в production
 if (config.isProd) {
-  const requiredVars = ['VITE_API_BASE_URL'];
+  const requiredVars = ['VITE_WS_BASE_URL'];
   const missing = requiredVars.filter(
     key => !import.meta.env[key]
   );

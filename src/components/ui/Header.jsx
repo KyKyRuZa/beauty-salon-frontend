@@ -2,7 +2,6 @@ import React, { useReducer, useRef, useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import SearchForm from './SearchForm';
-import CitySelector from './CitySelector';
 import ProfileDropdown from './ProfileDropdown';
 import '../../styles/ui.css';
 import '../../styles/ProfileDropdown.css';
@@ -43,10 +42,22 @@ const Header = () => {
   const { user, profile, getCurrentUser, logout } = useAuth();
   const [state, dispatch] = useReducer(headerReducer, initialState);
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState(null);
 
   const citiesRef = useRef(null);
   const profileRef = useRef(null);
   const navigate = useNavigate();
+
+  // Обновление аватарки при изменении profile
+  useEffect(() => {
+    if (profile?.image_url) {
+      setAvatarUrl(profile.image_url);
+    } else if (user?.avatar) {
+      setAvatarUrl(user.avatar);
+    } else {
+      setAvatarUrl(null);
+    }
+  }, [profile?.image_url, user?.avatar]);
 
   // Debounce для поиска (300ms)
   useEffect(() => {
@@ -81,11 +92,7 @@ const Header = () => {
       navigate(`/catalog?search=${encodeURIComponent(debouncedSearchQuery)}`);
     }
   };
-
-  const handleCitySelect = (city) => {
-    dispatch({ type: 'SET_SELECTED_CITY', value: city });
-  };
-
+  
   // Проверка авторизации через auth сервис
   const isAuthenticated = getCurrentUser() !== null;
 
@@ -144,10 +151,10 @@ const Header = () => {
     }
   };
 
-  // Получаем URL аватара
+  // Получаем URL аватара (теперь используется avatarUrl из state)
   const getUserAvatar = () => {
     if (!user) return null;
-    return profile?.image_url || user.avatar || null;
+    return avatarUrl;
   };
 
   return (
@@ -202,13 +209,6 @@ const Header = () => {
             <span className="material-symbols-outlined">map</span>
             <span className="map-link-text">Салоны</span>
           </Link>
-
-          <CitySelector
-            selectedCity={state.selectedCity}
-            isOpen={state.isCitiesOpen}
-            onToggle={() => dispatch({ type: 'TOGGLE_CITIES' })}
-            onSelect={(city) => handleCitySelect(city)}
-          />
 
           <div className="header-profile" ref={profileRef}>
             <button

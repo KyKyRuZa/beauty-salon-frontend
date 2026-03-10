@@ -21,7 +21,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Установка всех зависимостей (включая devDependencies)
-RUN npm ci
+RUN npm install
 
 # Копирование исходного кода
 # При запуске через docker-compose этот слой будет переопределён volume
