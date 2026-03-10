@@ -108,7 +108,7 @@ const ToastContainer = ({ toasts, removeToast }) => {
   );
 };
 
-const Toast = ({ id, message, type, onClose }) => {
+const Toast = ({ message, type, onClose }) => {
   const icons = {
     success: 'check_circle',
     error: 'error',

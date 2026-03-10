@@ -1,15 +1,7 @@
-/**
- * Утилиты для работы с геолокацией
- */
-
 import { logger } from './logger';
 
 const CITIES = ['Казань', 'Альметьевск', 'Уфа', 'Ижевск', 'Набережные Челны'];
 
-/**
- * Запросить геолокацию у пользователя
- * @returns {Promise<{lat: number, lng: number}>}
- */
 export const requestGeolocation = () => {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {

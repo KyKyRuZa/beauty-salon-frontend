@@ -14,3 +14,8 @@ export const getSalonReviews = async (salonId, params = {}) => {
   const response = await api.get(`/reviews/salon/${salonId}`, { params });
   return response.data;
 };
+
+export const getMyReviews = async () => {
+  const response = await api.get('/reviews/my');
+  return response.data;
+};

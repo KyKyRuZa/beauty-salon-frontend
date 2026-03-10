@@ -2,6 +2,8 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { CatalogProvider } from './context/CatalogContext';
+import { SalonMapProvider } from './context/SalonMapContext';
+import { ToastProvider } from './context/ToastContext';
 import Home from './pages/public/Home';
 import NotFound from './pages/public/NotFound';
 import CatalogPage from './pages/catalog/CatalogPage';
@@ -26,10 +28,12 @@ const BookingForm = lazy(() => import('./components/form/BookingForm'));
 
 function App() {
   return (
-    <AuthProvider>
-      <CatalogProvider>
-        <BrowserRouter>
-          <Routes>
+    <ToastProvider>
+      <AuthProvider>
+        <CatalogProvider>
+          <SalonMapProvider>
+            <BrowserRouter>
+              <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/catalog" element={<CatalogPage />} />
               <Route path="/catalog/:id" element={<ServiceDetailPage />} />
@@ -90,9 +94,11 @@ function App() {
 
               <Route path="*" element={<NotFound />} />
             </Routes>
-        </BrowserRouter>
+          </BrowserRouter>
+        </SalonMapProvider>
       </CatalogProvider>
     </AuthProvider>
+  </ToastProvider>
   );
 }
 

@@ -50,7 +50,7 @@ const ServicesSection = () => (
 const ReviewsSection = ({ salonId }) => (
   <section className="section">
     <h2 className="section-title">ОТЗЫВЫ КЛИЕНТОВ</h2>
-    <ReviewsList salonId={salonId} showForm={false} />
+    <ReviewsList salonId={salonId} showForm={true} />
   </section>
 );
 

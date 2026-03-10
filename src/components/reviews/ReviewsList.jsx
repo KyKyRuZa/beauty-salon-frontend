@@ -111,7 +111,6 @@ const ReviewsList = ({ masterId, salonId, showForm = false, onReviewCreated }) =
   return (
     <div className="reviews-list-container">
       <div className="reviews-header">
-        <h3>Отзывы</h3>
         {showForm && user && !state.showReviewForm && (
           <button
             className="btn-write-review"
@@ -200,11 +199,16 @@ const ReviewItem = ({ review }) => {
     day: 'numeric'
   });
 
+  // Получаем имя из профиля клиента (user.client_profile)
+  const authorName = review.user?.client_profile?.first_name && review.user?.client_profile?.last_name
+    ? `${review.user.client_profile.first_name} ${review.user.client_profile.last_name}`
+    : 'Клиент';
+
   return (
     <div className="review-item">
       <div className="review-header">
         <div className="review-author">
-          <span className="author-name">Клиент</span>
+          <span className="author-name">{authorName}</span>
           <span className="review-date">{date}</span>
         </div>
         <div className="review-rating">

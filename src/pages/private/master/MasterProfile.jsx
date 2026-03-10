@@ -25,7 +25,7 @@ const ServicesSection = () => (
 const ReviewsSection = ({ masterId }) => (
   <section className="section">
     <h2 className="section-title">ОТЗЫВЫ КЛИЕНТОВ</h2>
-    <ReviewsList masterId={masterId} showForm={false} />
+    <ReviewsList masterId={masterId} showForm={true} />
   </section>
 );
 

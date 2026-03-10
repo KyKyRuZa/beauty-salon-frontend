@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, useEffect, useState } from 'react';
 import { logger } from '../utils/logger';
 import { getNearbySalons, getSalonLocationsByCity } from '../api/salonLocations';
 import { detectCity } from '../api/geo';
@@ -85,51 +85,70 @@ function salonMapReducer(state, action) {
 
 export const SalonMapProvider = ({ children }) => {
   const [state, dispatch] = useReducer(salonMapReducer, initialState);
+  const [isMounted, setIsMounted] = useState(true);
 
   // Инициализация при монтировании
   useEffect(() => {
-    initializeGeoLocation();
-  }, []);
-
-  const initializeGeoLocation = async () => {
-    dispatch({ type: 'SET_LOADING_GEO', value: true });
-
-    try {
-      // Проверяем sessionStorage
-      const sessionData = getGeoDataFromSession();
+    let isInitMounted = true;
+    
+    const initializeGeoLocation = async () => {
+      if (!isInitMounted) return;
       
-      if (sessionData?.city) {
-        dispatch({ type: 'SET_SELECTED_CITY', value: sessionData.city });
-        if (sessionData.coordinates) {
-          dispatch({ type: 'SET_USER_COORDINATES', value: sessionData.coordinates });
-          await loadSalonsByCoordinates(sessionData.coordinates.lat, sessionData.coordinates.lng, sessionData.city);
-        } else {
-          await loadSalonsByCity(sessionData.city);
+      dispatch({ type: 'SET_LOADING_GEO', value: true });
+
+      try {
+        // Проверяем sessionStorage
+        const sessionData = getGeoDataFromSession();
+
+        if (sessionData?.city) {
+          dispatch({ type: 'SET_SELECTED_CITY', value: sessionData.city });
+          if (sessionData.coordinates) {
+            dispatch({ type: 'SET_USER_COORDINATES', value: sessionData.coordinates });
+            await loadSalonsByCoordinates(sessionData.coordinates.lat, sessionData.coordinates.lng, sessionData.city);
+          } else {
+            await loadSalonsByCity(sessionData.city);
+          }
+          dispatch({ type: 'SET_GEO_PERMISSION', value: sessionData.geoPermission || 'prompt' });
+          if (isInitMounted) dispatch({ type: 'SET_LOADING_GEO', value: false });
+          return;
         }
-        dispatch({ type: 'SET_GEO_PERMISSION', value: sessionData.geoPermission || 'prompt' });
-        dispatch({ type: 'SET_LOADING_GEO', value: false });
-        return;
-      }
 
-      // Проверяем разрешение
-      const permission = await checkGeolocationPermission();
-      dispatch({ type: 'SET_GEO_PERMISSION', value: permission });
+        // Проверяем разрешение
+        const permission = await checkGeolocationPermission();
+        if (isInitMounted) dispatch({ type: 'SET_GEO_PERMISSION', value: permission });
 
-      if (permission === 'granted') {
-        await requestUserGeolocation();
-      } else {
-        // Устанавливаем город по умолчанию
+        if (permission === 'granted') {
+          await requestUserGeolocation();
+        } else {
+          // Устанавливаем город по умолчанию
+          dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
+          await loadSalonsByCity(AVAILABLE_CITIES[0]);
+        }
+      } catch (error) {
+        logger.error('Ошибка инициализации геолокации:', error);
         dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
         await loadSalonsByCity(AVAILABLE_CITIES[0]);
+      } finally {
+        if (isInitMounted) dispatch({ type: 'SET_LOADING_GEO', value: false });
       }
-    } catch (error) {
-      logger.error('Ошибка инициализации геолокации:', error);
-      dispatch({ type: 'SET_SELECTED_CITY', value: AVAILABLE_CITIES[0] });
-      await loadSalonsByCity(AVAILABLE_CITIES[0]);
-    } finally {
-      dispatch({ type: 'SET_LOADING_GEO', value: false });
-    }
-  };
+    };
+
+    initializeGeoLocation();
+
+    return () => {
+      isInitMounted = false;
+      logger.info('SalonMapContext cleanup');
+    };
+  }, []);
+
+  // Cleanup при размонтировании провайдера
+  useEffect(() => {
+    setIsMounted(true);
+    return () => {
+      setIsMounted(false);
+      logger.info('SalonMapProvider unmounted');
+    };
+  }, []);
 
   const requestUserGeolocation = async () => {
     try {

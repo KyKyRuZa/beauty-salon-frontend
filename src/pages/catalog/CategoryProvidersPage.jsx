@@ -8,6 +8,7 @@ import { toggleFavorite } from '../../api/favorites';
 import Header from '../../components/ui/Header';
 import Footer from '../../components/ui/Footer';
 import BookingModal from '../../components/booking/BookingModal';
+import ErrorFallback from '../../components/ErrorFallback';
 import '../../styles/catalog/CategoryProvidersPage.css';
 
 const initialState = {
@@ -277,8 +278,25 @@ const CategoryProvidersPage = () => {
     return result;
   }, [transformedServices, state.providerType, state.sortBy, state.minPrice, state.maxPrice, maxPriceValue]);
 
+  // Обработка ошибок
+  if (error) {
+    return (
+      <>
+        <Header />
+        <ErrorFallback
+          error={error}
+          title="Не удалось загрузить данные"
+          onRetry={() => {
+            loadCategoryById(categoryId);
+            loadServicesByCategory(categoryId);
+          }}
+        />
+        <Footer />
+      </>
+    );
+  }
+
   if (loading.category || loading.services) return <div className="loading-container">Загрузка...</div>;
-  if (error) return <div className="error-container">{error}</div>;
 
   return (
     <>

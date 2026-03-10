@@ -1,4 +1,4 @@
-import React, { useReducer, useRef, useEffect, useState } from 'react';
+import React, { useReducer, useRef, useEffect, useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import SearchForm from './SearchForm';
@@ -132,8 +132,8 @@ const Header = () => {
     dispatch({ type: 'CLOSE_PROFILE' });
   };
 
-  // Форматирование имени пользователя
-  const getUserName = () => {
+  // Форматирование имени пользователя (мемоизируем)
+  const userName = useMemo(() => {
     if (!user) return "Профиль";
 
     switch(user.role) {
@@ -149,7 +149,7 @@ const Header = () => {
       default:
         return user.email?.split('@')[0] || 'Профиль';
     }
-  };
+  }, [user?.role, user?.firstName, user?.email, user?.name, profile?.firstName, profile?.name]);
 
   // Получаем URL аватара (теперь используется avatarUrl из state)
   const getUserAvatar = () => {
@@ -214,7 +214,7 @@ const Header = () => {
             <button
               className="header-action-btn profile-trigger"
               onClick={() => dispatch({ type: 'TOGGLE_PROFILE' })}
-              aria-label={isAuthenticated ? `Профиль пользователя ${getUserName()}` : 'Войти в систему'}
+              aria-label={isAuthenticated ? `Профиль пользователя ${userName}` : 'Войти в систему'}
               aria-expanded={state.isProfileOpen}
               aria-haspopup="menu"
             >
@@ -239,7 +239,7 @@ const Header = () => {
               )}
               {isAuthenticated && user && (
                 <span className="user-badge">
-                  {getUserName().charAt(0).toUpperCase()}
+                  {userName.charAt(0).toUpperCase()}
                 </span>
               )}
             </button>
@@ -249,7 +249,7 @@ const Header = () => {
               user={user}
               isAuthenticated={isAuthenticated}
               avatarUrl={getUserAvatar()}
-              userName={getUserName()}
+              userName={userName}
               onProfile={handleProfile}
               onChat={handleChat}
               onSettings={handleSettings}

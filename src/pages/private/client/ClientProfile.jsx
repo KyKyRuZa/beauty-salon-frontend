@@ -8,13 +8,16 @@ import Header from "../../../components/ui/Header";
 import { getCatalogServices as CatalogService } from "../../../api/catalog";
 import BookingHistory from "../../../components/booking/BookingHistory";
 import { getFavorites } from "../../../api/favorites";
+import { getMyReviews } from "../../../api/reviews";
 
 const initialState = {
   activeSection: 'recommendations',
   recommendations: [],
   loadingRecommendations: false,
   favorites: [],
-  loadingFavorites: false
+  loadingFavorites: false,
+  reviews: [],
+  loadingReviews: false
 };
 
 function clientReducer(state, action) {
@@ -29,6 +32,10 @@ function clientReducer(state, action) {
       return { ...state, favorites: action.value };
     case 'SET_LOADING_FAVORITES':
       return { ...state, loadingFavorites: action.value };
+    case 'SET_REVIEWS':
+      return { ...state, reviews: action.value };
+    case 'SET_LOADING_REVIEWS':
+      return { ...state, loadingReviews: action.value };
     default:
       return state;
   }
@@ -46,6 +53,8 @@ const ClientProfile = ({ handleLogout }) => {
       loadRecommendations();
     } else if (state.activeSection === 'favorites') {
       loadFavorites();
+    } else if (state.activeSection === 'feedback') {
+      loadReviews();
     }
   }, [state.activeSection]);
 
@@ -73,6 +82,19 @@ const ClientProfile = ({ handleLogout }) => {
       dispatch({ type: 'SET_FAVORITES', value: [] });
     } finally {
       dispatch({ type: 'SET_LOADING_FAVORITES', value: false });
+    }
+  };
+
+  const loadReviews = async () => {
+    dispatch({ type: 'SET_LOADING_REVIEWS', value: true });
+    try {
+      const response = await getMyReviews();
+      dispatch({ type: 'SET_REVIEWS', value: response.data || [] });
+    } catch (error) {
+      logger.error('Ошибка загрузки отзывов:', error);
+      dispatch({ type: 'SET_REVIEWS', value: [] });
+    } finally {
+      dispatch({ type: 'SET_LOADING_REVIEWS', value: false });
     }
   };
 
@@ -215,13 +237,7 @@ const ClientProfile = ({ handleLogout }) => {
               </section>
             )}
             {state.activeSection === 'feedback' && (
-              <section className="section">
-                <h2 className="section-title">МОИ ОТЗЫВЫ</h2>
-                <div className="orders-list">
-                  <p>В разработке</p>
-                </div>
-                <button className="btn-primary full-width">Показать все отзывы</button>
-              </section>
+              <MyReviewsContent reviews={state.reviews} loadingReviews={state.loadingReviews} />
             )}
             {state.activeSection === 'favorites' && (
               <FavoritesContent favorites={state.favorites} loadingFavorites={state.loadingFavorites} navigate={navigate} />
@@ -298,6 +314,70 @@ const FavoritesContent = ({ favorites, loadingFavorites, navigate }) => {
             onClick={() => navigate('/catalog')}
           >
             Найти мастеров
+          </button>
+        </div>
+      )}
+    </section>
+  );
+};
+
+const MyReviewsContent = ({ reviews, loadingReviews, navigate }) => {
+  return (
+    <section className="section">
+      <h2 className="section-title">МОИ ОТЗЫВЫ</h2>
+      {loadingReviews ? (
+        <p>Загрузка...</p>
+      ) : reviews.length > 0 ? (
+        <div className="reviews-list">
+          {reviews.map(review => {
+            const providerName = review.master
+              ? `${review.master.first_name} ${review.master.last_name}`
+              : review.salon?.name || 'Неизвестно';
+            
+            const providerType = review.master ? 'Мастер' : 'Салон';
+            const providerImage = review.master?.image_url || review.salon?.image_url || photo;
+            const date = new Date(review.created_at).toLocaleDateString('ru-RU', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            });
+
+            return (
+              <div key={review.id} className="review-item">
+                <div className="review-header">
+                  <img
+                    src={providerImage}
+                    alt={providerName}
+                    className="review-provider-avatar"
+                    style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                  <div className="review-info">
+                    <h4>{providerName}</h4>
+                    <p className="review-type">{providerType}</p>
+                    <p className="review-date">{date}</p>
+                  </div>
+                  <div className="review-rating">
+                    {'★'.repeat(review.rating)}
+                    {'☆'.repeat(5 - review.rating)}
+                  </div>
+                </div>
+                {review.comment && (
+                  <div className="review-comment">
+                    {review.comment}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="no-reviews">
+          <p>У вас пока нет отзывов</p>
+          <button
+            className="btn-primary"
+            onClick={() => navigate('/catalog')}
+          >
+            Найти мастеров и салоны
           </button>
         </div>
       )}

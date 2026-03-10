@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useReducer } from 'react';
+import { createContext, useContext, useEffect, useReducer, useState } from 'react';
 import { logger } from '../utils/logger';
 import auth from '../api/auth';
 
@@ -53,27 +53,66 @@ function authReducer(state, action) {
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 1000; // 1 секунда
+  const REQUEST_TIMEOUT = 5000; // 5 секунд
+
+  // Функция загрузки профиля с retry и timeout
+  const loadProfileWithRetry = async (attempt = 1) => {
+    try {
+      // Создаём promise с timeout
+      const profilePromise = auth.getProfile();
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout: профиль не загрузился')), REQUEST_TIMEOUT)
+      );
+
+      const result = await Promise.race([profilePromise, timeoutPromise]);
+
+      if (result.success) {
+        logger.info(`Профиль загружен с попытки ${attempt}`);
+        dispatch({
+          type: 'SET_AUTH_DATA',
+          user: result.data?.user,
+          profile: result.data?.profile
+        });
+        setRetryCount(0); // Сброс счётчика при успехе
+        return true;
+      } else {
+        logger.warn(`Попытка ${attempt}: Не удалось загрузить профиль - ${result.error}`);
+        if (attempt < MAX_RETRIES) {
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
+          return loadProfileWithRetry(attempt + 1);
+        }
+        logger.error('Превышено количество попыток загрузки профиля');
+        return false;
+      }
+    } catch (error) {
+      logger.error(`Попытка ${attempt}: Ошибка загрузки профиля:`, error.message);
+      if (attempt < MAX_RETRIES) {
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
+        return loadProfileWithRetry(attempt + 1);
+      }
+      logger.error('Превышено количество попыток загрузки профиля после ошибок');
+      return false;
+    }
+  };
 
   // Загружаем данные пользователя и профиля при монтировании
   useEffect(() => {
+    let isMounted = true;
+
     const initializeAuth = async () => {
+      if (!isMounted) return;
+
       if (auth.isAuthenticated()) {
-        try {
-          const result = await auth.getProfile();
-          if (result.success) {
-            dispatch({
-              type: 'SET_AUTH_DATA',
-              user: result.data?.user,
-              profile: result.data?.profile
-            });
-          } else {
-            logger.error('Не удалось загрузить профиль:', result.error);
-          }
-        } catch (error) {
-          logger.error('Ошибка при инициализации аутентификации:', error);
-        }
+        logger.info('Инициализация аутентификации...');
+        await loadProfileWithRetry();
       }
-      dispatch({ type: 'SET_LOADED' });
+      
+      if (isMounted) {
+        dispatch({ type: 'SET_LOADED' });
+      }
     };
 
     initializeAuth();
@@ -123,7 +162,9 @@ export const AuthProvider = ({ children }) => {
     window.addEventListener('authChange', handleAuthChange);
 
     return () => {
+      isMounted = false;
       window.removeEventListener('authChange', handleAuthChange);
+      logger.info('Auth context cleanup');
     };
   }, []);
 

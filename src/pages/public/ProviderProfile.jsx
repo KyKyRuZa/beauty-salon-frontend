@@ -129,10 +129,6 @@ const ProviderProfile = () => {
     navigate(url);
   };
 
-  const handleWriteReview = () => {
-    navigate(`/reviews/write?provider=${providerId}&type=${state.providerType}`);
-  };
-
   const handleTypeChange = (e) => {
     const newType = e.target.value;
     dispatch({ type: 'SET_PROVIDER_TYPE', value: newType });
@@ -224,9 +220,6 @@ const ProviderProfile = () => {
                       {state.isFavorite ? 'В ИЗБРАННОМ' : 'ДОБАВИТЬ В ИЗБРАННОЕ'}
                     </button>
                   )}
-                  <button className="btn-review" onClick={handleWriteReview}>
-                    ОСТАВИТЬ ОТЗЫВ
-                  </button>
                 </div>
               </div>
             </aside>
@@ -333,7 +326,7 @@ const ProviderProfile = () => {
                 <ReviewsList
                   masterId={state.providerType === 'master' ? providerId : undefined}
                   salonId={state.providerType === 'salon' ? providerId : undefined}
-                  showForm={false}
+                  showForm={true}
                 />
                 <button className="btn-show-all">ВСЕ ОТЗЫВЫ</button>
               </section>
