@@ -11,7 +11,7 @@ import '../../styles/SalonsMapPage.css';
 const YandexMap = lazy(() => import('../../components/map/YandexMap'));
 
 const SalonsMapContent = () => {
-  const { loadingGeo, selectedCity } = useSalonMap();
+  const { loadingGeo } = useSalonMap();
   const [showGeoPrompt, setShowGeoPrompt] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 

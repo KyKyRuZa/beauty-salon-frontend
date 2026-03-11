@@ -4,7 +4,6 @@ import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/ui/Header";
 import '../../styles/Profile.css';
 
-// Lazy loading для профилей разных ролей
 const ClientProfile = lazy(() => import('./client/ClientProfile'));
 const MasterProfile = lazy(() => import('./master/MasterProfile'));
 const SalonProfile = lazy(() => import('./salon/SalonProfile'));
@@ -58,7 +57,6 @@ const Profile = () => {
     );
   }
 
-  // Рендерим соответствующий компонент в зависимости от роли
   switch (user?.role) {
     case 'client':
       return <Suspense fallback={<div className="loading-component">Загрузка профиля...</div>}><ClientProfile handleLogout={handleLogout} /></Suspense>;

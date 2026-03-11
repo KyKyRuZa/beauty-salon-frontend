@@ -23,9 +23,10 @@ const DateSelector = ({ selectedDate, onDateSelect, masterId, serviceId }) => {
         logger.debug('[DateSelector] getAvailableDates response:', response);
         
         if (response.success && response.data && response.data.length > 0) {
-          const dateStrings = response.data.map(item => item.date);
-          logger.debug('[DateSelector] Setting dates:', dateStrings);
-          setDates(dateStrings);
+          // Убираем дубликаты дат через Set и группировку
+          const uniqueDates = [...new Set(response.data.map(item => item.date))];
+          logger.debug('[DateSelector] Unique dates:', uniqueDates);
+          setDates(uniqueDates);
         } else {
           setDates(generateNextDays(7));
         }

@@ -176,6 +176,10 @@
   border: none;
 }
 
+.btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
 .btn-outline {
   background: white;
   border: 1px solid #e0e0e0;
@@ -194,8 +198,4 @@
 
 .btn-primary:hover {
   background: #c2185b;
-}
-
-.btn .material-symbols-outlined {
-  font-size: 18px;
 }

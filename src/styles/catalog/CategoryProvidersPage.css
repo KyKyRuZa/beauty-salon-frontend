@@ -344,15 +344,6 @@
 }
 
 /* Loading and Error States */
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-  font-size: 18px;
-  color: #666;
-}
-
 .error-container {
   display: flex;
   justify-content: center;

@@ -1,0 +1,95 @@
+/* ===================================
+   БАЗОВЫЕ СТИЛИ МАКЕТА
+   =================================== */
+
+/* Основная страница */
+.page {
+  font-family: 'Jost', sans-serif;
+  line-height: 24px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: hsl(0, 0%, 96%);
+}
+
+/* ===================================
+   КОНТЕЙНЕРЫ
+   =================================== */
+
+/* Стандартный контейнер */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Контейнер с отступом сверху (для страниц с header) */
+.container--with-header {
+  margin-top: 100px;
+}
+
+/* Контейнер для профиля */
+.container--profile {
+  max-width: 1400px;
+  margin: 120px auto;
+  padding: 0 20px;
+}
+
+/* ===================================
+   СЕТКИ И РАЗМЕТКА
+   =================================== */
+
+/* Grid для карточек */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  justify-items: center;
+}
+
+/* Grid для статистики */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+/* Flex для действий */
+.actions-row {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+/* ===================================
+   ОТСТУПЫ И СЕКЦИИ
+   =================================== */
+
+.section {
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+/* ===================================
+   АДАПТИВНОСТЬ
+   =================================== */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 15px;
+  }
+
+  .container--with-header {
+    margin-top: 80px;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}

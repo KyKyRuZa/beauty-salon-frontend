@@ -3,12 +3,6 @@ body {
   line-height: 1.6;
 }
 
-.container {
-  max-width: 1400px;
-  margin: 120px auto;
-  padding: 0 20px;
-}
-
 /* Layout */
 .profile-layout {
   display: flex;
@@ -498,30 +492,6 @@ input:checked + .slider:before {
   cursor: not-allowed;
 }
 
-.btn-secondary {
-  width: 100%;
-  padding: 15px;
-  background: #f5f5f5;
-  color: #333;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: #e0e0e0;
-  border-color: #bbb;
-}
-
-.btn-secondary:disabled {
-  background: #f9f9f9;
-  color: #999;
-  cursor: not-allowed;
-  border-color: #ddd;
-}
-
 
 /* Responsive */
 @media (max-width: 768px) {
@@ -565,29 +535,6 @@ input:checked + .slider:before {
 }
 
 /* Добавьте в ваш существующий Profile.css */
-
-.loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: 20px;
-}
-
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #ff6b6b;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
 
 .error-container {
   text-align: center;

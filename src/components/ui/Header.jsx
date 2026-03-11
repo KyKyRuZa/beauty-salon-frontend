@@ -197,6 +197,11 @@ const Header = () => {
             </a>
           </nav>
         </div>
+        
+        <Link to="/salons-map" className="map-link" title="Салоны на карте">
+            <span className="material-symbols-outlined">map</span>
+            <span className="map-link-text">Салоны</span>
+        </Link>
 
         <SearchForm
           searchQuery={state.searchQuery}
@@ -205,10 +210,7 @@ const Header = () => {
         />
 
         <div className="header-right">
-          <Link to="/salons-map" className="map-link" title="Салоны на карте">
-            <span className="material-symbols-outlined">map</span>
-            <span className="map-link-text">Салоны</span>
-          </Link>
+          
 
           <div className="header-profile" ref={profileRef}>
             <button

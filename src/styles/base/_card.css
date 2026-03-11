@@ -1,0 +1,198 @@
+/* ===================================
+   БАЗОВЫЕ СТИЛИ КАРТОЧЕК
+   =================================== */
+
+/* Базовый класс карточки */
+.card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* ===================================
+   ЭЛЕМЕНТЫ КАРТОЧКИ
+   =================================== */
+
+/* Изображение карточки */
+.card__image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card__image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e0e0;
+}
+
+.card__image-placeholder .material-symbols-outlined {
+  font-size: 48px;
+  color: #999;
+}
+
+/* Бейдж на изображении (например, "проверено") */
+.card__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.card__badge--verified {
+  background: #4caf50;
+}
+
+.card__badge .material-symbols-outlined {
+  font-size: 18px;
+  color: white;
+}
+
+/* Контент карточки */
+.card__content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Заголовок карточки */
+.card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.card__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  flex: 1;
+}
+
+/* Рейтинг */
+.card__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #fff3e0;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.card__rating-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.card__star-icon {
+  font-size: 18px;
+  color: #ff9800;
+}
+
+/* Информация карточки */
+.card__info {
+  margin-bottom: 16px;
+}
+
+.card__info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.card__info-icon {
+  font-size: 18px;
+  color: #999;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.card__info-text {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Действия карточки */
+.card__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+/* ===================================
+   МОДИФИКАТОРЫ КАРТОЧЕК
+   =================================== */
+
+/* Выбранная карточка */
+.card--selected {
+  box-shadow: 0 4px 16px rgba(233, 30, 99, 0.3);
+  border: 2px solid #e91e63;
+}
+
+/* Непроверенная карточка */
+.card--unverified {
+  opacity: 0.8;
+}
+
+/* ===================================
+   СПЕЦИАЛИЗИРОВАННЫЕ КАРТОЧКИ
+   (наследуют базовые стили)
+   =================================== */
+
+/* Карточка салона */
+.salon-card {
+  composes: card;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  margin-bottom: 16px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Карточка мастера */
+.master-card {
+  composes: card;
+  width: 100%;
+  max-width: 340px;
+  padding: 16px;
+  position: relative;
+}
+
+/* Карточка услуги */
+.service-card {
+  composes: card;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}

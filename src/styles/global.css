@@ -1,5 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&display=swap');
 
+/* ===================================
+   БАЗОВЫЕ СТИЛИ
+   =================================== */
+@import './base/_loading.css';
+@import './base/_buttons.css';
+@import './base/_layout.css';
+@import './base/_card.css';
+
+/* ===================================
+   ИКОНКИ MATERIAL SYMBOLS
+   =================================== */
 .material-symbols-outlined {
   font-family: 'Material Symbols Outlined';
   font-weight: normal;
@@ -18,17 +29,13 @@
   font-feature-settings: 'liga';
 }
 
-.page{
-  font-family: 'Jost';
-  line-height: 24px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: hsl(0, 0%, 96%);
-}
+/* ===================================
+   СБРОС СТИЛЕЙ
+   =================================== */
 ::-webkit-scrollbar {
   display: none;
 }
+
 * {
   margin: 0;
   padding: 0;

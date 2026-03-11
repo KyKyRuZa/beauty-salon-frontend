@@ -1,0 +1,132 @@
+/* ===================================
+   БАЗОВЫЕ СТИЛИ КНОПОК
+   =================================== */
+
+/* Базовый класс кнопки */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  text-decoration: none;
+}
+
+.btn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* ===================================
+   ВАРИАНТЫ КНОПОК
+   =================================== */
+
+/* Primary - розовый (по умолчанию для салона) */
+.btn-primary {
+  background-color: #e91e63;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #c2185b;
+}
+
+/* Primary - зелёный (для профиля/редактирования) */
+.btn-primary--green {
+  background-color: #009944;
+  color: white;
+}
+
+.btn-primary--green:hover {
+  background-color: #007a36;
+}
+
+/* Primary - синий (для админки) */
+.btn-primary--blue {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-primary--blue:hover {
+  background-color: #2980b9;
+}
+
+/* Primary - чёрный (для записи) */
+.btn-primary--black {
+  background-color: #000;
+  color: white;
+}
+
+.btn-primary--black:hover {
+  background-color: #333;
+}
+
+/* Secondary - серый */
+.btn-secondary {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #e0e0e0;
+  border-color: #bbb;
+}
+
+.btn-secondary:disabled {
+  background-color: #f9f9f9;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ddd;
+}
+
+/* Outline - контурная */
+.btn-outline {
+  background: white;
+  border: 1px solid #e0e0e0;
+  color: #666;
+}
+
+.btn-outline:hover {
+  border-color: #e91e63;
+  color: #e91e63;
+}
+
+/* Text - текстовая (без фона) */
+.btn-text {
+  background: none;
+  color: #666;
+  padding: 8px 16px;
+}
+
+.btn-text:hover {
+  background-color: #f5f5f5;
+}
+
+/* ===================================
+   РАЗМЕРЫ КНОПОК
+   =================================== */
+
+.btn-sm {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+.btn-lg {
+  padding: 14px 28px;
+  font-size: 16px;
+}
+
+/* ===================================
+   СОСТОЯНИЯ КНОПОК
+   =================================== */
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
